@@ -1,13 +1,13 @@
 {
   "manifest_version": 2,
 
-  "name": "Perceptual Ad Blocker",
-  "description": "Identify Advertisements Using Perceptual Techniques",
+  "name": "Killphisher",
+  "description": "Identify phishing using perceptual techniques",
   "version": "0.1.0",
   "browser_action": {
     "default_icon": "icon24.png",
     "default_popup": "popup.html",
-    "default_title": "Perceptual Ad Blocker"
+    "default_title": "Killphisher"
   },
   "icons": {
     "16": "icon16.png",
@@ -26,23 +26,10 @@
       "run_at": "document_idle",
       "all_frames": true,
       "match_about_blank": true
-    },
-    {
-      "matches": ["https://www.facebook.com/*"],
-      "js": [
-        "externalCode/jquery/jquery-1.12.4.min.js",
-        "perceptualLibrary/container_finder.js",
-        "perceptualLibrary/link_clicker.js",
-        "perceptualLibrary/check_text_and_link.js",
-        "locale_info.js",
-        "utils.js",
-        "ad_highlighter.js"]
     }
   ],
   "background": {
     "scripts": [
-        "externalCode/grafi.js",
-        "externalCode/tesseract.js",
         "perceptualLibrary/adchoices_hashes.js",
         "perceptualLibrary/hash_encoding.js",
         "perceptualLibrary/perceptual_background.js"

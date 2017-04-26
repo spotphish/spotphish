@@ -1,8 +1,8 @@
 # Killphisher
 
-This Chrome extension is a perceptual anti-phishing tool which detects pages which look like login pages for popular services, but are hosted on a different domain.
+This Chrome extension is a perceptual anti-phishing tool which detects pages which look like login pages of popular services, but are hosted on a different domain.
 
-The technique is inspired by and based on **perceptual ad-blocking**, as described in the paper ["The Future of Ad Blocking: An Analytical Framework and New Techniques."](http://randomwalker.info/publications/ad-blocking-framework-techniques.pdf), [the blog post on the topic](https://freedom-to-tinker.com/2017/04/14/the-future-of-ad-blocking/) and the [github repository](https://github.com/citp/ad-blocking).
+The technique is inspired by and based on **perceptual ad-blocking**, as described in the paper ["The Future of Ad Blocking: An Analytical Framework and New Techniques."](http://randomwalker.info/publications/ad-blocking-framework-techniques.pdf), the [blog post](https://freedom-to-tinker.com/2017/04/14/the-future-of-ad-blocking/) and the [github repository](https://github.com/citp/ad-blocking).
 
 # Code Overview
 
@@ -27,7 +27,7 @@ To get this running from the source code on your local machine (Chrome only):
 - navigate to "chrome://extensions"
 - click the checkbox next to "Developer mode" in the upper right hand corner
 - click the "Load unpacked extension..." button below the "Extensions" title
-- select the “killphisher” folder from your filesystem
+- select the "killphisher" folder from your filesystem
 
 ### License:
 MIT

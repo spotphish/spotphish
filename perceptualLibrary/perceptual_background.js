@@ -15,6 +15,7 @@ var VERBOSE = false;
 // WARNING: Slow.
 var USE_OCR = false;
 
+/*
 if (USE_OCR) {
     // Initialize Tesseract OCR every ten seconds.
     // NOTE: We refresh the object because after some time
@@ -33,6 +34,8 @@ if (USE_OCR) {
         });
     }, 10000);
 }
+*/
+
 // Image hash based on average pixel value, adapted from
 // perceptual hashing algorithm found at
 // https://github.com/naptha/phash.js/tree/master
