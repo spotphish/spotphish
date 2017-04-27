@@ -106,21 +106,22 @@ function coverContainer(container, coverText, matchingText, deepestOnly, isAd, h
   var myPrepend = prepend;
 
   // if we only want the deepest, remove any above this
-  if (deepestOnly) {
+  /*if (deepestOnly) {
     container.parents().each(function (index) {
       $(this).children(".FAH_adBlockerCover").remove();
     });
-  }
+  }*/
   // if we only want the deepest covers and there is a cover within
   // this container already, don't ad this cover.
-  if (!deepestOnly || !(container.find(".FAH_adBlockerCover").length > 0)) {
+  if (!(container.find(".FAH_adBlockerCover").length > 0)) {
     // prepend the cover
     container.css("position", "relative");
     container.prepend(myPrepend);
 
     // make sure the close button closes the cover
     container.children().children(".FAH_closeButton").on("click", function () {
-      container.children(".FAH_adBlockerCover").css("visibility", "hidden");
+        console.log("Event Clicked");
+      container.children(".CITP_adBlockerCover").css("visibility", "hidden");
     });
   }
 
