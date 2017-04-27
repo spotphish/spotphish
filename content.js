@@ -10,11 +10,13 @@
  * ----------------------------------------------------------------------------------
  */
 
-// The perceptual adblocker logic. 28 total lines with comments and empty
-// lines removed.
-
 // stores repeated check interval id to allow it to be canceled
 var intervalID;
+
+var protocol = window.location.protocol,
+    host = window.location.hostname;
+var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com"];
+console.log("PROTOCOL : ", protocol, " HOST : ", host );
 
 // This response is triggered by the background script.
 // If the background script found adchoices, then response.element
@@ -28,7 +30,7 @@ var handleBkgdResponse = function(response) {
         // cover the body, place text "ADCHOICES IDENTIFIED", no local info,
         // not only the deepest container, this is an ad, there is an interval,
         // and the interval's id is intervalID
-        coverContainer($('body'), "ADCHOICES IDENTIFIED", "", false, true, true, intervalID);
+        coverContainer($('body'), "MAY BE A PHISHING SITE", "", false, true, true, intervalID);
     }
     else if ('no_element' in response) {
         //console.log('Not adchoices image!');
@@ -42,20 +44,37 @@ var handleBkgdResponse = function(response) {
 
 var inputTypeCheck;
 // console.log("Welcome message");
-function checkInputBox () {
+function checkInputBox() {
   inputTypeCheck = document.querySelectorAll("input[type='password']")
   if (inputTypeCheck != "undefined" && inputTypeCheck.length >= 1)
   {
-    // console.log("Found password input box");
+   console.log("Found password input box");
    return true
   }else{
-    // console.log("Not found any input box");
+    console.log("Not found any password input box");
     return false
   }
 }
 
-// if we are in an iframe (which contains the vast majority of adchoices ads)
-if (checkInputBox()) {
-  // console.log("Found check box");
-  runImageSearch($('body'), handleBkgdResponse);
+function checkWhitelist( hostName) {
+    var length = whitelist.length;
+    for (var i = 0; i < length; i++ ) {
+        if (hostName.endsWith(whitelist[i])) {
+            console.log("WHITE LISTED : ", whitelist[i]);
+            return true;
+        }
+    }
+    console.log(" NOT WHITE LISTED : ", whitelist[i]);
+    return false;
 }
+
+var isWhitelisted = protocl === "https" ? checkWhitelist(host): false;
+
+function start() {
+    if ( !isWhitelist && checkInputBox()) {
+      // console.log("Found check box");
+      runImageSearch($('body'), handleBkgdResponse);
+    }
+}
+
+window.onload = start;
