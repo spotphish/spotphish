@@ -92,7 +92,7 @@ function runImageSearch(container, resultFunction) {
   // Case 2: adchoices icon is a div background
   // may need to add more elements to this list as advertisers get
   // adversarial.
-  container.find('div,a,span').each(function(index, element) {
+  container.find('div,a,span,i,p').each(function(index, element) {
       var bg = $(element).css('background-image');
       bg = bg.replace('url(','').replace(')','').replace(/\"/gi, "");
 
