@@ -68,7 +68,7 @@ function checkWhitelist( hostName) {
     return false;
 }
 
-var isWhitelisted = protocl === "https" ? checkWhitelist(host): false;
+var isWhitelisted = protocol === "https" ? checkWhitelist(host): false;
 
 function start() {
     if ( !isWhitelisted && checkInputBox()) {
