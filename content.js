@@ -14,9 +14,9 @@
 var intervalID;
 
 var protocol = window.location.protocol,
-    host = window.location.hostname;
+    srcDomain = window.location.hostname;
 var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com"];
-console.log("PROTOCOL : ", protocol, " HOST : ", host );
+console.log("PROTOCOL : ", protocol, " HOST : ", srcDomain );
 
 // This response is triggered by the background script.
 // If the background script found adchoices, then response.element
@@ -68,7 +68,7 @@ function checkWhitelist( hostName) {
     return false;
 }
 
-var isWhitelisted = protocol === "https" ? checkWhitelist(host): false;
+var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
     if ( !isWhitelisted && checkInputBox()) {
@@ -77,4 +77,4 @@ function start() {
     }
 }
 
-window.onload = start;
+start();
