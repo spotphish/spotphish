@@ -28,7 +28,7 @@
   ],
   "background": {
     "scripts": [
-        "perceptualLibrary/adchoices_hashes.js",
+        "perceptualLibrary/killphiser_hashes.js",
         "perceptualLibrary/hash_encoding.js",
         "perceptualLibrary/perceptual_background.js"
       ]

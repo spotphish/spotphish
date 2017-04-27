@@ -64,7 +64,7 @@ function checkWhitelist( hostName) {
             return true;
         }
     }
-    console.log(" NOT WHITE LISTED : ", whitelist[i]);
+    console.log(" NOT WHITE LISTED : ", hostName);
     return false;
 }
 
