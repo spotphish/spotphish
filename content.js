@@ -71,7 +71,7 @@ function checkWhitelist( hostName) {
 var isWhitelisted = protocl === "https" ? checkWhitelist(host): false;
 
 function start() {
-    if ( !isWhitelist && checkInputBox()) {
+    if ( !isWhitelisted && checkInputBox()) {
       // console.log("Found check box");
       runImageSearch($('body'), handleBkgdResponse);
     }
