@@ -40,30 +40,22 @@ var handleBkgdResponse = function(response) {
     return true;
 };
 
-// return whether this is in an iFrame
-// http://stackoverflow.com/questions/326069/how-to-identify-if-a-webpage-is-being-loaded-inside-an-iframe-or-directly-into-t
-function inIframe () {
-    try {
-        return window.self !== window.top;
-    } catch (e) {
-        return true;
-    }
+var inputTypeCheck;
+// console.log("Welcome message");
+function checkInputBox () {
+  inputTypeCheck = document.querySelectorAll("input[type='password']")
+  if (inputTypeCheck != "undefined" && inputTypeCheck.length >= 1)
+  {
+    // console.log("Found password input box");
+   return true
+  }else{
+    // console.log("Not found any input box");
+    return false
+  }
 }
 
 // if we are in an iframe (which contains the vast majority of adchoices ads)
-if (inIframe()) {
-  // set an interval to check every 2 seconds. Probably
-  // best to do some sort of DOM observer trigger for a production version
-  // of this, but the interval works fine for demo purposes.
-
-  intervalID = setInterval(function() {
-      // Only consider the iframe if it is larger than 1x1
-      if (document.body.clientWidth > 1 || document.body.clientHeight > 1) {
-        // uncomment this for debugging to make sure that the container
-        // with the adchoices icon has been examined at all.
-        //$('body').addClass("CITPObserved");
-        runImageSearch($('body'), handleBkgdResponse);
-      }
-
-  }, 2000);
+if (checkInputBox()) {
+  // console.log("Found check box");
+  runImageSearch($('body'), handleBkgdResponse);
 }
