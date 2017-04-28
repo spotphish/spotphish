@@ -16,7 +16,7 @@ var intervalID;
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
 var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
-console.log("PROTOCOL : ", protocol, " HOST : ", srcDomain );
+// var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
 // If the background script found adchoices, then response.element
@@ -45,15 +45,14 @@ var handleBkgdResponse = function(response) {
 var inputTypeCheck;
 // console.log("Welcome message");
 function checkInputBox() {
-  inputTypeCheck = document.querySelectorAll("input[type='password']")
-  if (inputTypeCheck != "undefined" && inputTypeCheck.length >= 1)
-  {
-   console.log("Found password input box");
-   return true
-  }else{
-    console.log("Not found any password input box");
-    return false
-  }
+    inputTypeCheck = document.querySelectorAll("input[type='password']")
+    if (inputTypeCheck && inputTypeCheck.length >= 1) {
+        // console.log("Found password input box");
+        return true;
+    } else {
+        // console.log("Not found any password input box");
+        return false;
+    }
 }
 
 function checkWhitelist( hostName) {
