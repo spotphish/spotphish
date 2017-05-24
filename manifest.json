@@ -18,8 +18,8 @@
     {
       "matches": ["<all_urls>"],
       "js": [
+        "snapshot.js",
         "externalCode/jquery/jquery-1.12.4.min.js",
-        "perceptualLibrary/image_search.js",
         "utils.js",
         "content.js"
       ],
@@ -28,16 +28,16 @@
   ],
   "background": {
     "scripts": [
-        "perceptualLibrary/killphiser_hashes.js",
-        "perceptualLibrary/hash_encoding.js",
-        "perceptualLibrary/perceptual_background.js"
+        "templatematching.js/app.js"
       ]
   },
   "permissions": [
+    "activeTab",
     "tabs",
     "webRequest",
     "webRequestBlocking",
-    "*://*/*"
+    "*://*/*",
+    "<all_urls>"
   ],
   "content_security_policy": "object-src 'self'; img-src * data:; script-src 'self' 'unsafe-eval' chrome-extension://gealglfelmndodeocfbfedggekgiofhe blob: filesystem: chrome-extension-resource:",
   "web_accessible_resources": [
@@ -45,5 +45,8 @@
     "externalCode/tesseract_index.js",
     "externalCode/tesseract_worker.js",
     "externalCode/eng.traineddata.gz"
+  ],
+  "web_accessible_resources": [
+    "assets/img/*.png"
   ]
 }

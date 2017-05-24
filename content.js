@@ -25,19 +25,19 @@ var handleBkgdResponse = function(response) {
     if (typeof response === 'undefined'){
         return true;
     }
-    if ('element' in response) {
+    if ('template_match' in response) {
         //console.log(response['element']);
         // cover the body, place text "ADCHOICES IDENTIFIED", no local info,
         // not only the deepest container, this is an ad, there is an interval,
         // and the interval's id is intervalID
-        coverContainer($('body'), "MAY BE A PHISHING SITE", "", false, true, true, intervalID);
+        console.log("Match found");
     }
-    else if ('no_element' in response) {
+    else if ('no_match' in response) {
         //console.log('Not adchoices image!');
         // cover the body, place text "NOT ADCHOICES", no local info,
         // not only the deepest container, this is not an ad, there is an
         // interval, and the interval's id is intervalID
-        coverContainer($('body'), "NOT A PHISING SITE", "", false, false, true, intervalID);
+        console.log("No match found");
     }
     return true;
 };
@@ -46,13 +46,13 @@ var inputTypeCheck;
 // console.log("Welcome message");
 function checkInputBox() {
     inputTypeCheck = document.querySelectorAll("input[type='password']")
-    if (inputTypeCheck && inputTypeCheck.length >= 1) {
-        // console.log("Found password input box");
-        return true;
-    } else {
-        // console.log("Not found any password input box");
-        return false;
-    }
+        if (inputTypeCheck && inputTypeCheck.length >= 1) {
+            // console.log("Found password input box");
+            return true;
+        } else {
+            // console.log("Not found any password input box");
+            return false;
+        }
 }
 
 function checkWhitelist( hostName) {
@@ -70,10 +70,44 @@ function checkWhitelist( hostName) {
 var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
-    if ( !isWhitelisted && checkInputBox()) {
-      // console.log("Found check box");
-      runImageSearch($('body'), handleBkgdResponse);
-    }
+    //if ( !isWhitelisted && checkInputBox()) {
+        console.log("Calling snapShot");
+        chrome.runtime.sendMessage({
+            message: 'capture',
+            area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
+        }, handleBkgdResponse)
+		//chrome.runtime.sendMessage({data: ["send_snap", res.image]}, handleBkgdResponse);
+        //snapShot(handleBkgdResponse);
+    //}
 }
+var capture = (force) => {
+    chrome.runtime.sendMessage({
+        message: 'capture',
+        area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
+    }, (res) => {
+        console.log("the result of capture", res.image);
+        //save(res.image)
+    })
+}
+
+var filename = () => {
+    var pad = (n) => ((n = n + '') && (n.length >= 2 ? n : '0' + n))
+        var timestamp = ((now) =>
+                [pad(now.getFullYear()), pad(now.getMonth() + 1), pad(now.getDate())].join('-')
+                + ' - ' +
+                [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('-')
+                )(new Date())
+        return 'Screenshot Capture - ' + timestamp + '.png'
+}
+
+var save = (image) => {
+  var link = document.createElement('a')
+  link.download = filename()
+  link.href = image
+  console.log("Image link", link);
+  //link.click()
+}
+
+console.log ("dpr : ", devicePixelRatio);
 
 start();
