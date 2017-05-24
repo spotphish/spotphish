@@ -84,16 +84,31 @@ function coverContainer(container, coverText, matchingText, deepestOnly, isAd, h
   }
 
   // create the cover to prepend.
-  var prepend = "<div class=\"" + classes + "\" style=\"height: " + setHeight + ";position: absolute;width: 100%;background-color: " + color + " !important;z-index: 100; visibility: visible;\">";
-  prepend += "<div class=\"FAH_closeButton\" style=\"position: absolute; right: 5px; top: 5px; cursor: pointer; padding: 0px 3px; border: 1px solid black; border-radius: 5px;\">";
+  var prepend = "<div class=\"" + classes + "\" style=\"height:60%;position: absolute;width: 25%; top: 40%; left: 40%; border-radius: 5px; background-color: blue !important;z-index: 100; visibility: visible;\">";
+  prepend += "<div class=\"FAH_closeButton\" style=\"position: absolute; right: 10px; top: 10px; cursor: pointer; padding: 0px 3px; border: 1px solid black; border-radius: 5px;\">";
   prepend += "<strong>";
   prepend += "X";
   prepend += "</strong>";
   prepend += "</div>";
-  prepend += "<div style=\"width: 100%;text-align:center;\">";
-  prepend += "<span style=\"color: black; font-size:60px;\">";
-  prepend += coverText;
+  prepend += "<div style=\"width: 100%;text-align:left; margin-top: 10%; margin-left: 5%; font-size: 25px; font-weight: bold; color:white;\">";
+  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
+  prepend += 'Are you being phished?' ;
+  prepend += "</div>";
+  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
+  prepend += 'This looks like Paypal' ;
+  prepend += "</div>";
+  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
+  prepend += 'but it isnot?' ;
+  prepend += "</div>";
+  prepend += "<div style=\"width: 100%; text-align:left; color: white;font-size:20px; font-weight:normal; text-decoration: underline;\">";
+  prepend += "<span style=\"color: white; padding-bottom: 4px; \">";
+  prepend += 'Report Phishing' ;
   prepend += "</span>";
+  prepend += "<span  style=\"color: white; padding-bottom: 4px; \">";
+  prepend += "<br/>";
+  prepend += 'Report false alarm';
+  prepend += "</span>";
+  prepend += "</div>";
   // if we have "Sponsored" text in another language, add it below "THIS IS AN AD"
   if (NON_ENGLISH_LOCALE && matchingText !== "") {
     prepend += "<br/>"
@@ -132,6 +147,9 @@ function coverContainer(container, coverText, matchingText, deepestOnly, isAd, h
   }
 }
 
+function addProfile(){
+
+}
 /******************************************************
 ***** Demo of link clicking by x/y coordinate. This will work on a logged-in
 ***** facebook.com page.

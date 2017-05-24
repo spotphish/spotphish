@@ -1,4 +1,4 @@
-const loadImage 
+const loadImage
     = (imageUrl, canvasElement) => {
         return new Promise((resolve) => {
             let image       = new Image();
@@ -19,9 +19,9 @@ const loadImage
 // ...
 //KILLPHISHER: Unused, hence commmented for now.
 /**
- * Loads shader files from (relative) URIs. 
+ * Loads shader files from (relative) URIs.
  */
-/*const gl_LoadShaders 
+/*const gl_LoadShaders
     = () => {
         return Promise.all([
             fetch('tm.vs'),
@@ -31,7 +31,7 @@ const loadImage
             return Promise.all(responses.map(res => res.text()));
         });
     };
-*/    
+*/
 /**
  * Loads inlined shaders.
  */
@@ -66,7 +66,7 @@ const gl_LoadShaders2
                     float sumR = 0.0;
                     float sumG = 0.0;
                     float sumB = 0.0;
-                    
+
                     // the 'sliding window' (= template image) is 32x32.
                     for (int i = 0; i <= 32; i++)
                     {
@@ -99,10 +99,10 @@ const gl_LoadShaders2
         ]);
     };
 
-const gl_CreateShader 
+const gl_CreateShader
     = (gl, type, source) => {
         let shader = gl.createShader(type);
-        
+
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
@@ -121,14 +121,14 @@ const gl_CreateTexture
 
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.bindTexture(gl.TEXTURE_2D, null);
-        
+
         return texture;
     };
 
 // ...
-
+var matchFound1 = false;
 function matchTemplate(screenShot) {
-    var matchFound = false;
+    let matchFound = false;
     //console.log("whitelist", whiteList);
     let canvasElement = document.createElement('canvas');
     let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/paypal-logo.png")]);
@@ -139,7 +139,7 @@ function matchTemplate(screenShot) {
         let images  = results[1];
 
         let gl = canvasElement.getContext('webgl');
-        
+
         let glWidth     = gl.canvas.width;
         let glHeight    = gl.canvas.height;
 
@@ -147,13 +147,13 @@ function matchTemplate(screenShot) {
         // Initialization: Shaders.
 
         let vs = gl_CreateShader(gl, gl.VERTEX_SHADER,      shaders[0]);
-        let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER,    shaders[1]);    
+        let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER,    shaders[1]);
 
         let program = gl.createProgram();
-        
+
         gl.attachShader(program, vs);
         gl.attachShader(program, fs);
-        
+
         gl.linkProgram(program);
         gl.useProgram(program);
 
@@ -166,7 +166,7 @@ function matchTemplate(screenShot) {
 
         let positionAttribute   = gl.getAttribLocation(program, 'a_position');
         let positionBuffer      = gl.createBuffer();
-        
+
         // create a buffer with vertices for a quad which occupies the entire canvas.
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(
@@ -194,7 +194,7 @@ function matchTemplate(screenShot) {
 
         gl.enableVertexAttribArray(positionAttribute);
         gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0);
-        
+
         gl.uniform1i(gl.getUniformLocation(program, 'u_image0'), 0);
         gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
 
@@ -206,18 +206,18 @@ function matchTemplate(screenShot) {
 
         let t0 = performance.now();
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);     
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
 
         // read the contents of the framebuffer (which will contain the result matrix).
         var pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
         gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        
+
         // ...
         // set the threshold for matching templates. A lower value for 'thresholdPercentage' produces more exact matches.
         //
         // Note: As an original image may contain multiple matches, 'thresholdPercentage' should not be set to 0 but rather
-        // a value that allows for some variation between matches. 
-        let thresholdPercentage = 0.02; 
+        // a value that allows for some variation between matches.
+        let thresholdPercentage = 0.02;
         let threshold           = thresholdPercentage * 255;
         let positions           = [];
 
@@ -232,7 +232,7 @@ function matchTemplate(screenShot) {
                 let sadR = pixels[p];
                 let sadG = pixels[p + 1];
                 let sadB = pixels[p + 2];
-                
+
                 if (sadR <= threshold && sadG <= threshold && sadB <= threshold)
                 {
                     let SAD = [sadR, sadG, sadB];
@@ -251,7 +251,7 @@ function matchTemplate(screenShot) {
             let d1 = obj1.SAD[0] < obj2.SAD[0];
             let d2 = obj1.SAD[1] < obj2.SAD[1];
             let d3 = obj1.SAD[2] < obj2.SAD[2];
-    
+
             if (d1 && d2 && d3)
                 return -1;
 
@@ -272,21 +272,21 @@ function matchTemplate(screenShot) {
             {
                 prunedPositions.push(pos);
             }
-            else 
+            else
             {
                 let passed = prunedPositions.every((p, i) => {
                     if
                     (
-                        Math.abs(pos.x - p.x) <= 3 && 
+                        Math.abs(pos.x - p.x) <= 3 &&
                         Math.abs(pos.y - p.y) <= 3
                     )
                     {
-                        return false;  
+                        return false;
                     }
 
                     return true;
                 });
-                
+
                 if (!passed)
                 {
                     continue;
@@ -294,14 +294,17 @@ function matchTemplate(screenShot) {
                 else
                 {
                     prunedPositions.push(pos);
-                    i++;    
+                    i++;
                 }
             }
         }
-        
+
         console.log(prunedPositions, prunedPositions.length);
-        if (prunedPositions.lenght > 0) {
+        console.log("match count", prunedPositions.length);
+        if (prunedPositions.length > 0) {
+            console.log("inside match check");
             matchFound = true;
+            matchFound1 = true;
         }
         //let t1 = performance.now();
         //let time = t1 - t0;
@@ -319,7 +322,7 @@ function matchTemplate(screenShot) {
         for (let pos of prunedPositions)
         {
             let posX = pos.x;
-            let posY = pos.y;   
+            let posY = pos.y;
 
             ctx.rect(posX, posY, images[1].width, images[1].height);
             ctx.strokeStyle = 'red';
@@ -339,19 +342,19 @@ function matchTemplate(screenShot) {
     });
     return matchFound;
 }
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-        console.log("Inside app.js");
-        console.log(request);
-        if (request.data) {
-            var result = matchTemplate();
-            if (result)
-                sendResponse({template_match: "match found"});
-            else
-                sendResponse({no_match: "no match"});
-        }
-    }
-);
+// chrome.runtime.onMessage.addListener(
+//     function(request, sender, sendResponse) {
+//         console.log("Inside app.js");
+//         console.log(request);
+//         if (request.data) {
+//             var result = matchTemplate();
+//             if (result)
+//                 sendResponse({template_match: "match found"});
+//             else
+//                 sendResponse({no_match: "no match"});
+//         }
+//     }
+// );
 
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'capture') {
@@ -365,11 +368,12 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                     })
                 }
                 else {
-                    mathcResult  = matchTemplate(image);
+                    matchResult  = matchTemplate(image);
                 }
-                if (matchResult)
+                if (matchFound1)
                     res({template_match: "match found"});
-                else 
+                else
+                    console.log("Match not found")
                     res({no_match: "no match"});
             })
         })

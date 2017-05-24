@@ -188,7 +188,8 @@ chrome.runtime.onMessage.addListener(
                     this.callback({no_element: "Inside!"});
                     return true;
                 }
-
+                 console.log("ELEMENT SOURCE");
+                 console.log(this.element);
 
                 // Hash the image!
                 var hash = aHash(this);
@@ -196,9 +197,10 @@ chrome.runtime.onMessage.addListener(
                 // Compare hash to set of example adchoice icon hashes
                 var found_element = false;
                 for (var j = 0; j < this.adchoice_samples.length; j++) {
-                    console.log(hexToBinary(this.adchoice_samples[j]).result);
-                    console.log(hash);
+                    // console.log(hexToBinary(this.adchoice_samples[j]).result);
+                    // console.log(hash);
                     var sim_score = 1 - distance(hash, hexToBinary(this.adchoice_samples[j]).result) / 628.0;
+                    console.log("Deepak: Score");
                     console.log(sim_score);
                     if (VERBOSE) {
                         console.log("Sim score: " + sim_score);
@@ -206,6 +208,8 @@ chrome.runtime.onMessage.addListener(
 
                     if (sim_score > SIM_THRESHOLD) {
                         found_element = true;
+                        console.log("found on add");
+                        console.log(this.element);
                         if (VERBOSE) {
                           console.log('GOT IT!');
                           console.log(hash);
