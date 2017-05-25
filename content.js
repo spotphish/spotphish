@@ -41,7 +41,7 @@ var handleBkgdResponse = function(response) {
         // cover the body, place text "NOT ADCHOICES", no local info,
         // not only the deepest container, this is not an ad, there is an
         // interval, and the interval's id is intervalID
-        coverContainer($('body'), "NOT A PHISING SITE", "", false, false, true, intervalID);
+        // coverContainer($('body'), "NOT A PHISING SITE", "", false, false, true, intervalID);
     }
     return true;
 };
