@@ -127,11 +127,15 @@ const gl_CreateTexture
 
 // ...
 var matchFound1 = false;
-function matchTemplate(screenShot) {
+console.log("check how many time this load");
+function matchTemplate(screenShot, cb) {
     let matchFound = false;
     //console.log("whitelist", whiteList);
     let canvasElement = document.createElement('canvas');
+    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/fb-shot-new.png")]);
     let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/paypal-logo.png")]);
+    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/idbi-logo.png")]);
+    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/hdfc-logo1.png")]);
 
     Promise.all([gl_LoadShaders2(), p]).then((results) => {
 
@@ -306,6 +310,8 @@ function matchTemplate(screenShot) {
             matchFound = true;
             matchFound1 = true;
         }
+        cb();
+        console.log()
         //let t1 = performance.now();
         //let time = t1 - t0;
 
@@ -362,19 +368,26 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
             chrome.tabs.captureVisibleTab(tab.windowId, {format: 'png'}, (image) => {
             // image is base64
                 var matchResult = false;
+                matchFound1 = false;
+
                 if (req.dpr !== 1) {
                     crop(image, req.area, req.dpr, false, (cropped) => {
                         matchResult = matchTemplate(cropped);
                     })
                 }
                 else {
-                    matchResult  = matchTemplate(image);
+                   matchTemplate(image, function(){
+                         console.log("match found variiable", matchFound1);
+                        if (matchFound1)
+                        {
+                            res({template_match: "match found"});
+                        }
+                        else{
+                            console.log("Match not found")
+                            res({no_match: "no match"});
+                        }
+                    });
                 }
-                if (matchFound1)
-                    res({template_match: "match found"});
-                else
-                    console.log("Match not found")
-                    res({no_match: "no match"});
             })
         })
     }

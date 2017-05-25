@@ -15,7 +15,7 @@ var intervalID;
 
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
-var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
+var whitelist = [ "google.com", "facebook1.com", "google.co.in", "twitter.com", "paypal1.com"];
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
@@ -33,7 +33,7 @@ var handleBkgdResponse = function(response) {
         // not only the deepest container, this is an ad, there is an interval,
         // and the interval's id is intervalID
         console.log("Match found");
-       coverContainer($('body'), "NOT A PHISING SITE", "", false, true, true, intervalID);
+      coverContainer($('body'), "NOT A PHISING SITE", "", false, true, true, intervalID);
     }
     else if ('no_match' in response) {
        console.log("Match not found");
@@ -74,28 +74,29 @@ function checkWhitelist( hostName) {
 var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
-    //if ( !isWhitelisted && checkInputBox()) {
+    if ( !isWhitelisted && checkInputBox()) {
         console.log("Calling snapShot");
         chrome.runtime.sendMessage({
             message: 'capture',
             area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
         }, handleBkgdResponse)
-}
-var capture = (force) => {
-    chrome.runtime.sendMessage({
-        message: 'capture',
-        area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
-    }, (res) => {
-        console.log("the result of capture", res.image);
-        //save(res.image)
-    })
-
-    // if ( !isWhitelisted && checkInputBox()) {
-    if ( checkInputBox()) {
-      alert("hello");
-      runImageSearch($('body'), handleBkgdResponse);
     }
 }
+// var capture = (force) => {
+//     chrome.runtime.sendMessage({
+//         message: 'capture',
+//         area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
+//     }, (res) => {
+//         console.log("the result of capture", res.image);
+//         //save(res.image)
+//     })
+
+//     // if ( !isWhitelisted && checkInputBox()) {
+//     if ( checkInputBox()) {
+//       alert("hello");
+//       runImageSearch($('body'), handleBkgdResponse);
+//     }
+// }
 
 var filename = () => {
     var pad = (n) => ((n = n + '') && (n.length >= 2 ? n : '0' + n))
