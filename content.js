@@ -15,7 +15,7 @@ var intervalID;
 
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
-var whitelist = [ "google.com", "facebook1.com", "google.co.in", "twitter.com", "paypal1.com"];
+var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
@@ -32,11 +32,11 @@ var handleBkgdResponse = function(response) {
         // cover the body, place text "ADCHOICES IDENTIFIED", no local info,
         // not only the deepest container, this is an ad, there is an interval,
         // and the interval's id is intervalID
-        console.log("Match found");
-      coverContainer($('body'), "NOT A PHISING SITE", "", false, true, true, intervalID);
+        // console.log("Match found");
+      coverContainer($('body'), response.site, "", false, true, true, intervalID);
     }
     else if ('no_match' in response) {
-       console.log("Match not found");
+       // console.log("Match not found");
         //console.log('Not adchoices image!');
         // cover the body, place text "NOT ADCHOICES", no local info,
         // not only the deepest container, this is not an ad, there is an
@@ -116,6 +116,6 @@ var save = (image) => {
   link.click();
 }
 
-console.log ("dpr : ", devicePixelRatio);
+// console.log ("dpr : ", devicePixelRatio);
 
 start();

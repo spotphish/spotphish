@@ -1,12 +1,10 @@
-const loadImage
-= (imageUrl, canvasElement) => {
+const loadImage = (imageUrl, canvasElement) => {
     return new Promise((resolve) => {
-        let image       = new Image();
-        image.onload    = () => {
-            if (canvasElement)
-            {
-                canvasElement.width    = image.width;
-                canvasElement.height   = image.height;
+        let image = new Image();
+        image.onload = () => {
+            if (canvasElement) {
+                canvasElement.width = image.width;
+                canvasElement.height = image.height;
             }
 
             resolve(image);
@@ -35,10 +33,9 @@ const loadImage
 /**
  * Loads inlined shaders.
  */
-const gl_LoadShaders2
-= () => {
+const gl_LoadShaders2 = () => {
     return Promise.resolve([
-            `
+        `
             const vec2 scale = vec2(0.5, 0.5);
 
             attribute   vec2 a_position;
@@ -50,7 +47,7 @@ const gl_LoadShaders2
                 v_texCoord  = a_position * scale + scale;
             }
             `,
-            `
+        `
             precision mediump float;
 
             varying vec2        v_texCoord;
@@ -96,11 +93,10 @@ const gl_LoadShaders2
                 gl_FragColor = vec4(sumR / float(255), sumG / float(255), sumB / float(255), 1);
             }
             `
-                ]);
+    ]);
 };
 
-const gl_CreateShader
-= (gl, type, source) => {
+const gl_CreateShader = (gl, type, source) => {
     let shader = gl.createShader(type);
 
     gl.shaderSource(shader, source);
@@ -109,8 +105,7 @@ const gl_CreateShader
     return shader;
 };
 
-const gl_CreateTexture
-= (gl, image) => {
+const gl_CreateTexture = (gl, image) => {
     let texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -126,29 +121,28 @@ const gl_CreateTexture
 };
 
 // ...
-var matchFound1 = false;
-console.log("check how many time this load");
-const matchTemplate = (screenShot, logo) => {
+// console.log("check how many time this load");
+const matchTemplate = (screenShot, template) => {
     return new Promise((resolve) => {
         let matchFound = false;
         let canvasElement = document.createElement('canvas');
-        let p = Promise.all([loadImage(screenShot, canvasElement), loadImage(logo)]);
+        let p = Promise.all([loadImage(screenShot, canvasElement), loadImage(template.logo)]);
 
         Promise.all([gl_LoadShaders2(), p]).then((results) => {
 
             let shaders = results[0];
-            let images  = results[1];
+            let images = results[1];
 
             let gl = canvasElement.getContext('webgl');
 
-            let glWidth     = gl.canvas.width;
-            let glHeight    = gl.canvas.height;
+            let glWidth = gl.canvas.width;
+            let glHeight = gl.canvas.height;
 
             // ...
             // Initialization: Shaders.
 
-            let vs = gl_CreateShader(gl, gl.VERTEX_SHADER,      shaders[0]);
-            let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER,    shaders[1]);
+            let vs = gl_CreateShader(gl, gl.VERTEX_SHADER, shaders[0]);
+            let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER, shaders[1]);
 
             let program = gl.createProgram();
 
@@ -165,28 +159,25 @@ const matchTemplate = (screenShot, logo) => {
             // ...
             // Initialization: Buffers.
 
-            let positionAttribute   = gl.getAttribLocation(program, 'a_position');
-            let positionBuffer      = gl.createBuffer();
+            let positionAttribute = gl.getAttribLocation(program, 'a_position');
+            let positionBuffer = gl.createBuffer();
 
             // create a buffer with vertices for a quad which occupies the entire canvas.
             gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
             gl.bufferData(
-                    gl.ARRAY_BUFFER,
-                    new Float32Array([
-                        -1.0, -1.0,
-                        1.0, -1.0,
-                        -1.0,  1.0,
-                        -1.0,  1.0,
-                        1.0, -1.0,
-                        1.0,  1.0
-                    ]),
-                    gl.STATIC_DRAW
-                    )
+                gl.ARRAY_BUFFER,
+                new Float32Array([-1.0, -1.0,
+                    1.0, -1.0, -1.0, 1.0, -1.0, 1.0,
+                    1.0, -1.0,
+                    1.0, 1.0
+                ]),
+                gl.STATIC_DRAW
+            )
 
-                // ...
-                // Initialization: Textures.
+            // ...
+            // Initialization: Textures.
 
-                let textures = [];
+            let textures = [];
             textures.push(gl_CreateTexture(gl, images[0]));
             textures.push(gl_CreateTexture(gl, images[1]));
 
@@ -219,23 +210,20 @@ const matchTemplate = (screenShot, logo) => {
             // Note: As an original image may contain multiple matches, 'thresholdPercentage' should not be set to 0 but rather
             // a value that allows for some variation between matches.
             let thresholdPercentage = 0.02;
-            let threshold           = thresholdPercentage * 255;
-            let positions           = [];
+            let threshold = thresholdPercentage * 255;
+            let positions = [];
 
             // process the result matrix and find the minimum values (<= the set threshold) in the 'pixels' array.
-            for (let y = 0; y < glHeight; y++)
-            {
+            for (let y = 0; y < glHeight; y++) {
                 let idx = y * glWidth;
 
-                for (let x = 0; x < glWidth; x++)
-                {
-                    let p   = (idx + x) * 4;    // each pixel is 4 bytes (RGBA).
+                for (let x = 0; x < glWidth; x++) {
+                    let p = (idx + x) * 4; // each pixel is 4 bytes (RGBA).
                     let sadR = pixels[p];
                     let sadG = pixels[p + 1];
                     let sadB = pixels[p + 2];
 
-                    if (sadR <= threshold && sadG <= threshold && sadB <= threshold)
-                    {
+                    if (sadR <= threshold && sadG <= threshold && sadB <= threshold) {
                         let SAD = [sadR, sadG, sadB];
 
                         positions.push({
@@ -267,43 +255,33 @@ const matchTemplate = (screenShot, logo) => {
             // the same match. We remove these 'extra' matches from our result set.
             let prunedPositions = [];
             let i = 0;
-            for (let pos of positions)
-            {
-                if (!prunedPositions.length)
-                {
+            for (let pos of positions) {
+                if (!prunedPositions.length) {
                     prunedPositions.push(pos);
-                }
-                else
-                {
+                } else {
                     let passed = prunedPositions.every((p, i) => {
-                        if
-                            (
-                             Math.abs(pos.x - p.x) <= 3 &&
-                             Math.abs(pos.y - p.y) <= 3
-                            )
-                            {
-                                return false;
-                            }
+                        if (
+                            Math.abs(pos.x - p.x) <= 3 &&
+                            Math.abs(pos.y - p.y) <= 3
+                        ) {
+                            return false;
+                        }
 
                         return true;
                     });
 
-                    if (!passed)
-                    {
+                    if (!passed) {
                         continue;
-                    }
-                    else
-                    {
+                    } else {
                         prunedPositions.push(pos);
                         i++;
                     }
                 }
             }
-
-            console.log("match result", prunedPositions.length);
+            // console.log("Match result", prunedPositions.length);
             if (prunedPositions.length > 0) {
-                console.log("inside match check");
-                resolve();
+                // console.log("Inside match check");
+                resolve(template.site);
             }
             //cb();
             //console.log()
@@ -347,120 +325,102 @@ const matchTemplate = (screenShot, logo) => {
 
 var filename = () => {
     var pad = (n) => ((n = n + '') && (n.length >= 2 ? n : '0' + n))
-        var timestamp = ((now) =>
-                [pad(now.getFullYear()), pad(now.getMonth() + 1), pad(now.getDate())].join('-')
-                + ' - ' +
-                [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('-')
-                )(new Date())
-        return 'Screenshot Capture - ' + timestamp + '.png'
+    var timestamp = ((now) => [pad(now.getFullYear()), pad(now.getMonth() + 1), pad(now.getDate())].join('-') + ' - ' + [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('-'))(new Date())
+    return 'Screenshot Capture - ' + timestamp + '.png'
 }
 var save = (image) => {
     var link = document.createElement('a')
-        link.download = filename()
-        link.href = image
-        console.log("Image link", link);
+    link.download = filename()
+    link.href = image
+    console.log("Image link", link);
     link.click();
 }
 
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'capture') {
         chrome.tabs.getSelected(null, (tab) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, {format: 'png'}, (image) => {
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
                 // image is base64
-                var matchResult = false;
-                matchFound1 = false;
-                matchTempCb = function() {
-                    console.log("match found variiable", matchFound1);
-                    if (matchFound1)
-                    {
-                        res({template_match: "match found"});
-                    }
-                    else{
-                        console.log("Match not found")
-                            res({no_match: "no match"});
-                    }
-                };
+
                 var matches = [];
                 var normalizedImage;
                 //TODO:Resolve/reject promise if no match happens
-                crop(image, req.area, req.dpr, false, (cropped) =>  {
+                crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
-                    for (i = 0; i < whiteList.length; i++){
-                        console.log(whiteList[i], normalizedImage);
-                        matches[i] = matchTemplate(normalizedImage, whiteList[i].logo);
+
+                    for (i = 0; i < whiteList.length; i++) {
+                        // console.log(whiteList[i], normalizedImage);
+                        matches[i] = matchTemplate(normalizedImage, whiteList[i]);
                     }
 
-                    Promise.race(matches).then(() => {
-                        console.log("After promise");
-                        res({template_match: "match found"});
+                    Promise.race(matches).then((site) => {
+                        // console.log("After promise");
+                        res({ template_match: "Match found", site: site });
                     })
                 })
 
             })
         })
-    }
-    else if (req.message === 'active') {
+    } else if (req.message === 'active') {
         if (req.active) {
             chrome.storage.sync.get((config) => {
                 if (config.method === 'view') {
-                    chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Capture Viewport'})
-                        chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '⬒'})
+                    chrome.browserAction.setTitle({ tabId: sender.tab.id, title: 'Capture Viewport' })
+                    chrome.browserAction.setBadgeText({ tabId: sender.tab.id, text: '⬒' })
                 }
                 // else if (config.method === 'full') {
                 //   chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Capture Document'})
                 //   chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '⬛'})
                 // }
                 else if (config.method === 'crop') {
-                    chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Crop and Save'})
-                        chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '◩'})
-                }
-                else if (config.method === 'wait') {
-                    chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Crop and Wait'})
-                        chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '◪'})
+                    chrome.browserAction.setTitle({ tabId: sender.tab.id, title: 'Crop and Save' })
+                    chrome.browserAction.setBadgeText({ tabId: sender.tab.id, text: '◩' })
+                } else if (config.method === 'wait') {
+                    chrome.browserAction.setTitle({ tabId: sender.tab.id, title: 'Crop and Wait' })
+                    chrome.browserAction.setBadgeText({ tabId: sender.tab.id, text: '◪' })
                 }
             })
-        }
-        else {
-            chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Screenshot Capture'})
-                chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: ''})
+        } else {
+            chrome.browserAction.setTitle({ tabId: sender.tab.id, title: 'Screenshot Capture' })
+            chrome.browserAction.setBadgeText({ tabId: sender.tab.id, text: '' })
         }
     }
     return true
 })
 
-function crop (image, area, dpr, preserve, done) {
+function crop(image, area, dpr, preserve, done) {
     var top = area.y * dpr
-        var left = area.x * dpr
-        var width = area.w * dpr
-        var height = area.h * dpr
-        var w = (dpr !== 1 && preserve) ? width : area.w
-        var h = (dpr !== 1 && preserve) ? height : area.h
+    var left = area.x * dpr
+    var width = area.w * dpr
+    var height = area.h * dpr
+    var w = (dpr !== 1 && preserve) ? width : area.w
+    var h = (dpr !== 1 && preserve) ? height : area.h
 
-        if (dpr === 1) {
-            done(image);
-            return;
-        }
+    if (dpr === 1) {
+        done(image);
+        return;
+    }
 
     var canvas = null
-        if (!canvas) {
-            canvas = document.createElement('canvas')
-                document.body.appendChild(canvas)
-        }
+    if (!canvas) {
+        canvas = document.createElement('canvas')
+        document.body.appendChild(canvas)
+    }
     canvas.width = w
-        canvas.height = h
+    canvas.height = h
 
-        var img = new Image()
-        img.onload = () => {
-            var context = canvas.getContext('2d')
-                context.drawImage(img,
-                        left, top,
-                        width, height,
-                        0, 0,
-                        w, h
-                        )
+    var img = new Image()
+    img.onload = () => {
+        var context = canvas.getContext('2d')
+        context.drawImage(img,
+            left, top,
+            width, height,
+            0, 0,
+            w, h
+        )
 
-                var cropped = canvas.toDataURL('image/png')
-                done(cropped)
-        }
+        var cropped = canvas.toDataURL('image/png')
+        done(cropped)
+    }
     img.src = image
 }

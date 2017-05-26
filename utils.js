@@ -43,7 +43,7 @@ function alreadyCoveredSameType(container, newCoverIsAd) {
 // isAd is true if it is an ad
 // hasInterval is true if there is an interval check associated with this cover
 // intervalID is the id of that interval
-function coverContainer(container, coverText, matchingText, deepestOnly, isAd, hasInterval, intervalID) {
+function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInterval, intervalID) {
     // if we aren't doing anything to non-ads and this isn't an ad, do nothing.
     if (!isAd && !showNonAd) {
       return false;
@@ -84,7 +84,7 @@ function coverContainer(container, coverText, matchingText, deepestOnly, isAd, h
   }
 
   // create the cover to prepend.
-  var prepend = "<div class=\"" + classes + "\" style=\"height:60%;position: absolute;width: 25%; top: 40%; left: 40%; border-radius: 5px; background-color: blue !important;z-index: 100; visibility: visible;\">";
+  var prepend = "<div class=\"" + classes + "\" style=\" padding-bottom: 20px; position: absolute;width: 25%; top: 40%; left: 40%; border-radius: 5px; background-color: blue !important;z-index: 100; visibility: visible;\">";
   prepend += "<div class=\"FAH_closeButton\" style=\"position: absolute; right: 10px; top: 10px; cursor: pointer; padding: 0px 3px; border: 1px solid black; border-radius: 5px;\">";
   prepend += "<strong>";
   prepend += "X";
@@ -95,10 +95,10 @@ function coverContainer(container, coverText, matchingText, deepestOnly, isAd, h
   prepend += 'Are you being phished?' ;
   prepend += "</div>";
   prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
-  prepend += 'This looks like Paypal' ;
+  prepend += 'This looks like '+  url ;
   prepend += "</div>";
   prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
-  prepend += 'but it isnot?' ;
+  prepend += "but it isn't?" ;
   prepend += "</div>";
   prepend += "<div style=\"width: 100%; text-align:left; color: white;font-size:20px; font-weight:normal; text-decoration: underline;\">";
   prepend += "<span style=\"color: white; padding-bottom: 4px; \">";
