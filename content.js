@@ -113,7 +113,7 @@ var save = (image) => {
   link.download = filename()
   link.href = image
   console.log("Image link", link);
-  //link.click()
+  link.click();
 }
 
 console.log ("dpr : ", devicePixelRatio);
