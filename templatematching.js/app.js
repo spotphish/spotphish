@@ -125,269 +125,202 @@ const gl_CreateTexture
         return texture;
     };
 
-// ...
-var matchFound1 = false;
-console.log("check how many time this load");
-function matchTemplate(screenShot, cb) {
-    let matchFound = false;
-    //console.log("whitelist", whiteList);
-    let canvasElement = document.createElement('canvas');
-    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/fb-shot-new.png")]);
-    let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/paypal-logo.png")]);
-    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/idbi-logo.png")]);
-    // let p = Promise.all([loadImage(screenShot, canvasElement), loadImage("assets/img/hdfc-logo1.png")]);
+const matchTemplate
+    = ( screenShot, template_path)  => {
+        return new Promise((resolve, reject) => {
+            let canvasElement = document.createElement('canvas');
+            let p = Promise.all([loadImage(screenShot, canvasElement), loadImage(template_path)]);
+            Promise.all([gl_LoadShaders2(), p]).then((results) => {
 
-    Promise.all([gl_LoadShaders2(), p]).then((results) => {
+                let shaders = results[0];
+                let images  = results[1];
 
-        let shaders = results[0];
-        let images  = results[1];
+                let gl = canvasElement.getContext('webgl');
 
-        let gl = canvasElement.getContext('webgl');
+                let glWidth     = gl.canvas.width;
+                let glHeight    = gl.canvas.height;
 
-        let glWidth     = gl.canvas.width;
-        let glHeight    = gl.canvas.height;
+                // ...
+                // Initialization: Shaders.
 
-        // ...
-        // Initialization: Shaders.
+                let vs = gl_CreateShader(gl, gl.VERTEX_SHADER,      shaders[0]);
+                let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER,    shaders[1]);
 
-        let vs = gl_CreateShader(gl, gl.VERTEX_SHADER,      shaders[0]);
-        let fs = gl_CreateShader(gl, gl.FRAGMENT_SHADER,    shaders[1]);
+                let program = gl.createProgram();
 
-        let program = gl.createProgram();
+                gl.attachShader(program, vs);
+                gl.attachShader(program, fs);
 
-        gl.attachShader(program, vs);
-        gl.attachShader(program, fs);
+                gl.linkProgram(program);
+                gl.useProgram(program);
 
-        gl.linkProgram(program);
-        gl.useProgram(program);
+                // set the (inverse) size of the original and template images in the fragment shader.
+                gl.uniform2f(gl.getUniformLocation(program, 'u_ires0'), 1.0 / images[0].width, 1.0 / images[0].height);
+                gl.uniform2f(gl.getUniformLocation(program, 'u_ires1'), 1.0 / images[1].width, 1.0 / images[1].height);
 
-        // set the (inverse) size of the original and template images in the fragment shader.
-        gl.uniform2f(gl.getUniformLocation(program, 'u_ires0'), 1.0 / images[0].width, 1.0 / images[0].height);
-        gl.uniform2f(gl.getUniformLocation(program, 'u_ires1'), 1.0 / images[1].width, 1.0 / images[1].height);
+                // ...
+                // Initialization: Buffers.
 
-        // ...
-        // Initialization: Buffers.
+                let positionAttribute   = gl.getAttribLocation(program, 'a_position');
+                let positionBuffer      = gl.createBuffer();
 
-        let positionAttribute   = gl.getAttribLocation(program, 'a_position');
-        let positionBuffer      = gl.createBuffer();
+                // create a buffer with vertices for a quad which occupies the entire canvas.
+                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+                gl.bufferData(
+                    gl.ARRAY_BUFFER,
+                    new Float32Array([
+                        -1.0, -1.0,
+                         1.0, -1.0,
+                        -1.0,  1.0,
+                        -1.0,  1.0,
+                         1.0, -1.0,
+                         1.0,  1.0
+                    ]),
+                    gl.STATIC_DRAW
+                )
 
-        // create a buffer with vertices for a quad which occupies the entire canvas.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array([
-                -1.0, -1.0,
-                 1.0, -1.0,
-                -1.0,  1.0,
-                -1.0,  1.0,
-                 1.0, -1.0,
-                 1.0,  1.0
-            ]),
-            gl.STATIC_DRAW
-        )
+                // ...
+                // Initialization: Textures.
 
-        // ...
-        // Initialization: Textures.
+                let textures = [];
+                textures.push(gl_CreateTexture(gl, images[0]));
+                textures.push(gl_CreateTexture(gl, images[1]));
 
-        let textures = [];
-        textures.push(gl_CreateTexture(gl, images[0]));
-        textures.push(gl_CreateTexture(gl, images[1]));
+                // ...
+                // Rendering.
 
-        // ...
-        // Rendering.
+                gl.enableVertexAttribArray(positionAttribute);
+                gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0);
 
-        gl.enableVertexAttribArray(positionAttribute);
-        gl.vertexAttribPointer(positionAttribute, 2, gl.FLOAT, false, 0, 0);
+                gl.uniform1i(gl.getUniformLocation(program, 'u_image0'), 0);
+                gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
 
-        gl.uniform1i(gl.getUniformLocation(program, 'u_image0'), 0);
-        gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, textures[0]);
 
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+                let t0 = performance.now();
 
-        let t0 = performance.now();
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+                // read the contents of the framebuffer (which will contain the result matrix).
+                var pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+                gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-        // read the contents of the framebuffer (which will contain the result matrix).
-        var pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
-        gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                // ...
+                // set the threshold for matching templates. A lower value for 'thresholdPercentage' produces more exact matches.
+                //
+                // Note: As an original image may contain multiple matches, 'thresholdPercentage' should not be set to 0 but rather
+                // a value that allows for some variation between matches.
+                let thresholdPercentage = 0.02;
+                let threshold           = thresholdPercentage * 255;
+                let positions           = [];
 
-        // ...
-        // set the threshold for matching templates. A lower value for 'thresholdPercentage' produces more exact matches.
-        //
-        // Note: As an original image may contain multiple matches, 'thresholdPercentage' should not be set to 0 but rather
-        // a value that allows for some variation between matches.
-        let thresholdPercentage = 0.02;
-        let threshold           = thresholdPercentage * 255;
-        let positions           = [];
-
-        // process the result matrix and find the minimum values (<= the set threshold) in the 'pixels' array.
-        for (let y = 0; y < glHeight; y++)
-        {
-            let idx = y * glWidth;
-
-            for (let x = 0; x < glWidth; x++)
-            {
-                let p   = (idx + x) * 4;    // each pixel is 4 bytes (RGBA).
-                let sadR = pixels[p];
-                let sadG = pixels[p + 1];
-                let sadB = pixels[p + 2];
-
-                if (sadR <= threshold && sadG <= threshold && sadB <= threshold)
+                // process the result matrix and find the minimum values (<= the set threshold) in the 'pixels' array.
+                for (let y = 0; y < glHeight; y++)
                 {
-                    let SAD = [sadR, sadG, sadB];
+                    let idx = y * glWidth;
 
-                    positions.push({
-                        x: x,
-                        y: y,
-                        SAD: SAD
-                    });
-                }
-            }
-        }
-
-        // sort the position objects in ascending order (by the SAD metric).
-        positions.sort((obj1, obj2) => {
-            let d1 = obj1.SAD[0] < obj2.SAD[0];
-            let d2 = obj1.SAD[1] < obj2.SAD[1];
-            let d3 = obj1.SAD[2] < obj2.SAD[2];
-
-            if (d1 && d2 && d3)
-                return -1;
-
-            if (!d1 && !d2 && !d3)
-                return 1;
-
-            return 0;
-        });
-
-        // 'prune' the sorted position objects to retrieve the correct (and distinct) positions.
-        // Due to the set threshold, we may get matches that differ very slightly in x and y but do represent
-        // the same match. We remove these 'extra' matches from our result set.
-        let prunedPositions = [];
-        let i = 0;
-        for (let pos of positions)
-        {
-            if (!prunedPositions.length)
-            {
-                prunedPositions.push(pos);
-            }
-            else
-            {
-                let passed = prunedPositions.every((p, i) => {
-                    if
-                    (
-                        Math.abs(pos.x - p.x) <= 3 &&
-                        Math.abs(pos.y - p.y) <= 3
-                    )
+                    for (let x = 0; x < glWidth; x++)
                     {
-                        return false;
-                    }
+                        let p   = (idx + x) * 4;    // each pixel is 4 bytes (RGBA).
+                        let sadR = pixels[p];
+                        let sadG = pixels[p + 1];
+                        let sadB = pixels[p + 2];
 
-                    return true;
+                        if (sadR <= threshold && sadG <= threshold && sadB <= threshold)
+                        {
+                            let SAD = [sadR, sadG, sadB];
+
+                            positions.push({
+                                x: x,
+                                y: y,
+                                SAD: SAD
+                            });
+                        }
+                    }
+                }
+
+                // sort the position objects in ascending order (by the SAD metric).
+                positions.sort((obj1, obj2) => {
+                    let d1 = obj1.SAD[0] < obj2.SAD[0];
+                    let d2 = obj1.SAD[1] < obj2.SAD[1];
+                    let d3 = obj1.SAD[2] < obj2.SAD[2];
+
+                    if (d1 && d2 && d3)
+                        return -1;
+
+                    if (!d1 && !d2 && !d3)
+                        return 1;
+
+                    return 0;
                 });
 
-                if (!passed)
+                // 'prune' the sorted position objects to retrieve the correct (and distinct) positions.
+                // Due to the set threshold, we may get matches that differ very slightly in x and y but do represent
+                // the same match. We remove these 'extra' matches from our result set.
+                let prunedPositions = [];
+                let i = 0;
+                for (let pos of positions)
                 {
-                    continue;
+                    if (!prunedPositions.length)
+                    {
+                        prunedPositions.push(pos);
+                    }
+                    else
+                    {
+                        let passed = prunedPositions.every((p, i) => {
+                            if
+                            (
+                                Math.abs(pos.x - p.x) <= 3 &&
+                                Math.abs(pos.y - p.y) <= 3
+                            )
+                            {
+                                return false;
+                            }
+
+                            return true;
+                        });
+
+                        if (!passed)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            prunedPositions.push(pos);
+                            i++;
+                        }
+                    }
                 }
-                else
-                {
-                    prunedPositions.push(pos);
-                    i++;
+                if (prunedPositions.length > 0) {
+                    resolve(template_path.substr(template_path.lastIndexOf("/") + 1))
+                }else{
+                    console.log("Not found", template_path.substr(template_path.lastIndexOf("/") + 1));
                 }
-            }
-        }
-
-        console.log(prunedPositions, prunedPositions.length);
-        console.log("match count", prunedPositions.length);
-        if (prunedPositions.length > 0) {
-            console.log("inside match check");
-            matchFound = true;
-            matchFound1 = true;
-        }
-        cb();
-        console.log()
-        //let t1 = performance.now();
-        //let time = t1 - t0;
-
-        // ...
-        // render the template matches.
-
-        /*let canvasRendered      = document.getElementById('rendered');
-        canvasRendered.width    = glWidth;
-        canvasRendered.height   = glHeight;
-
-        let ctx = canvasRendered.getContext('2d');
-        ctx.drawImage(images[0], 0, 0, images[0].width, images[0].height);
-
-        for (let pos of prunedPositions)
-        {
-            let posX = pos.x;
-            let posY = pos.y;
-
-            ctx.rect(posX, posY, images[1].width, images[1].height);
-            ctx.strokeStyle = 'red';
-            ctx.stroke();
-
-            $('#pos_and_time').append(`<p>Matched: (${posX}, ${posY})</p>`);
-        }
-
-        let canvasTemplate      = document.getElementById('template');
-        canvasTemplate.width    = images[1].width;
-        canvasTemplate.height   = images[1].height;
-
-        ctx = canvasTemplate.getContext('2d');
-        ctx.drawImage(images[1], 0, 0, images[1].width, images[1].height);
-
-        $('#pos_and_time').append(`Time: ${time.toFixed(2)} ms`);*/
-    });
-    return matchFound;
-}
-// chrome.runtime.onMessage.addListener(
-//     function(request, sender, sendResponse) {
-//         console.log("Inside app.js");
-//         console.log(request);
-//         if (request.data) {
-//             var result = matchTemplate();
-//             if (result)
-//                 sendResponse({template_match: "match found"});
-//             else
-//                 sendResponse({no_match: "no match"});
-//         }
-//     }
-// );
+            });
+        });
+    }
 
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'capture') {
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, {format: 'png'}, (image) => {
-            // image is base64
-                var matchResult = false;
-                matchFound1 = false;
-
-                if (req.dpr !== 1) {
+                // if dpr is greter than 1 croping image
+                if (req.dpr !== 1){
                     crop(image, req.area, req.dpr, false, (cropped) => {
-                        matchResult = matchTemplate(cropped);
+                    image = cropped;
                     })
                 }
-                else {
-                   matchTemplate(image, function(){
-                         console.log("match found variiable", matchFound1);
-                        if (matchFound1)
-                        {
-                            res({template_match: "match found"});
-                        }
-                        else{
-                            console.log("Match not found")
-                            res({no_match: "no match"});
-                        }
-                    });
-                }
+                // calling template match for each template
+                Promise.race([matchTemplate(image, 'assets/img/paypal-linux.png'), matchTemplate(image, 'assets/img/fb-shot-new.png')]).then(values => {
+                    console.log("Match found", values);
+                    res({template_match: "match found", name: values});
+                }).catch(reason => {
+                    console.log("Not Found", reason);
+                });
             })
         })
     }
