@@ -354,10 +354,14 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                     var ts1 = performance.now();
                     console.log("Time taken for snapshot : " + (ts1 - ts0) + " ms");
 
-                    for (i = 0; i < whiteList.length; i++) {
-                        // console.log(whiteList[i], normalizedImage);
-                        matches[i] = matchTemplate(normalizedImage, whiteList[i]);
-                    }
+                    whiteList.forEach(function (value) {
+                        matches.push(matchTemplate(normalizedImage, value))
+                    });
+
+                   // for (i = 0; i < whiteList.length; i++) {
+                   //      // console.log(whiteList[i], normalizedImage);
+                   //      matches[i] = matchTemplate(normalizedImage, whiteList[i]);
+                   //  }
 
                     Promise.race(matches).then((site) => {
                         // console.log("After promise");
