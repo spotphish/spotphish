@@ -348,10 +348,14 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
 
-                    for (i = 0; i < whiteList.length; i++) {
-                        // console.log(whiteList[i], normalizedImage);
-                        matches[i] = matchTemplate(normalizedImage, whiteList[i]);
-                    }
+                    whiteList.forEach(function (value) {
+                        matches.push(matchTemplate(normalizedImage, value))
+                    });
+
+                   // for (i = 0; i < whiteList.length; i++) {
+                   //      // console.log(whiteList[i], normalizedImage);
+                   //      matches[i] = matchTemplate(normalizedImage, whiteList[i]);
+                   //  }
 
                     Promise.race(matches).then((site) => {
                         // console.log("After promise");
