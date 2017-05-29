@@ -22,8 +22,7 @@
         "utils.js",
         "content.js"
       ],
-      "run_at": "document_idle",
-      "match_about_blank": true
+      "run_at": "document_idle"
     }
   ],
   "background": {

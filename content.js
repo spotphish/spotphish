@@ -15,14 +15,17 @@ var intervalID;
 
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
-var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
+var whitelist = [ "google.com", "faceebook.com", "google.co.in", "twitter.com", "paypal.com"];
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
 // If the background script found adchoices, then response.element
 // will have a stringified version of the dom element that triggered it.
+var t1;
 var handleBkgdResponse = function(response) {
 
+    t2 = performance.now();
+    console.log("Performance : " + (t2 - t1) + " ms"); 
     if (typeof response === 'undefined'){
         return true;
     }
@@ -75,7 +78,8 @@ var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
     if ( !isWhitelisted && checkInputBox()) {
-        console.log("Calling snapShot");
+        t1 = performance.now();
+        console.log("Calling snapShot at T1 : " + t1);
         chrome.runtime.sendMessage({
             message: 'capture',
             area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio

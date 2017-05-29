@@ -122,9 +122,11 @@ const gl_CreateTexture = (gl, image) => {
 
 // ...
 // console.log("check how many time this load");
+var matchFound = false;
 const matchTemplate = (screenShot, template) => {
     return new Promise((resolve) => {
-        let matchFound = false;
+        console.log("Is match found : " + matchFound);
+        let t0 = performance.now();
         let canvasElement = document.createElement('canvas');
         let p = Promise.all([loadImage(screenShot, canvasElement), loadImage(template.logo)]);
 
@@ -278,7 +280,7 @@ const matchTemplate = (screenShot, template) => {
                     }
                 }
             }
-            // console.log("Match result", prunedPositions.length);
+            console.log("Match result", prunedPositions.length);
             if (prunedPositions.length > 0) {
                 // console.log("Inside match check");
                 resolve(template.site);
@@ -319,7 +321,6 @@ const matchTemplate = (screenShot, template) => {
 
               $('#pos_and_time').append(`Time: ${time.toFixed(2)} ms`);*/
         });
-        return matchFound;
     })
 }
 
@@ -336,8 +337,11 @@ var save = (image) => {
     link.click();
 }
 
+var ts0;
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'capture') {
+        ts0 = performance.now();
+        console.log("Recieved message at T : " + ts0);
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
                 // image is base64
@@ -347,6 +351,8 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 //TODO:Resolve/reject promise if no match happens
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
+                    var ts1 = performance.now();
+                    console.log("Time taken for snapshot : " + (ts1 - ts0) + " ms");
 
                     for (i = 0; i < whiteList.length; i++) {
                         // console.log(whiteList[i], normalizedImage);
@@ -355,6 +361,7 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
 
                     Promise.race(matches).then((site) => {
                         // console.log("After promise");
+                        matchFound = true;
                         res({ template_match: "Match found", site: site });
                     })
                 })
