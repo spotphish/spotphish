@@ -29,9 +29,8 @@
     "scripts": [
         "templatematching.js/whitelist.js",
         "templatematching.js/app.js",
-        "perceptualLibrary/adchoices_hashes.js",
-        "perceptualLibrary/hash_encoding.js",
-        "perceptualLibrary/perceptual_background.js"
+        "screenshot.js",
+        "background.js"
       ]
   },
   "permissions": [

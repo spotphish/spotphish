@@ -15,7 +15,7 @@ var intervalID;
 
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
-var whitelist = [ "google.com", "faceebook.com", "google.co.in", "twitter.com", "paypal.com"];
+var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
