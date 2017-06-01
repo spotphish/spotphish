@@ -28,9 +28,10 @@
   "background": {
     "scripts": [
         "templatematching.js/whitelist.js",
-        "templatematching.js/app.js",
         "screenshot.js",
-        "background.js"
+        "background.js",
+        "brief-features.js",
+        "tracking-min.js"
       ]
   },
   "permissions": [

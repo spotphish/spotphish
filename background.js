@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                     console.log("Time taken for snapshot : " + (ts1 - ts0) + " ms");
 
                     whiteList.forEach(function (value) {
-                        matches.push(matchTemplate(normalizedImage, value))
+                        matches.push(matchBriefFeatures(normalizedImage, value))
                     });
 
                    // for (i = 0; i < whiteList.length; i++) {
