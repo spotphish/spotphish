@@ -111,4 +111,4 @@ var save = (image) => {
 
 // console.log ("dpr : ", devicePixelRatio);
 
-window.setTimeout(start(), 2000);
+window.setTimeout(start, 2000);

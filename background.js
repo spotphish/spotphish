@@ -30,6 +30,9 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                         matchFound = true;
                         res({ template_match: "Match found", site: site });
                     })
+                    .catch((e) => {
+                        console.log(e);//promise rejected.
+                    })
                 })
 
             })

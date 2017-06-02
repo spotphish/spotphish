@@ -15,8 +15,12 @@ const loadImage = (imageUrl, canvasElement) => {
     });
 };
 
+var promiseTimeout = 5000; //in ms
 const matchBriefFeatures = (screenShot, template) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(function() {
+            reject("No match found");
+        }, promiseTimeout);
         let t0 = performance.now();
         let p = Promise.all([loadImage(screenShot), loadImage(template.logo)]);
         Promise.all([p]).then((results) => {
