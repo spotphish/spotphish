@@ -35,6 +35,19 @@ const matchBriefFeatures = (screenShot, template) => {
             let matchesShown = 10;
             let blurRadius = 3;
 
+			var isBindingRect = function(matches, diagonalDist = 57) {
+				var nearestPixel = matches[1].keypoint2;
+				var BoundPixels = 0;
+				for (var i = 1; i < 10; i++) {
+					var x = matches[i].keypoint2[0] - nearestPixel[0];
+					var y = matches[i].keypoint2[1] - nearestPixel[1];
+					var dist = Math.sqrt(x*x, y*y);
+					if (dist < diagonalDist)
+						BoundPixels++;
+				}
+				console.log("BoundPixels : " + BoundPixels);
+				return BoundPixels;
+			} 
             var isMatch = function(matches) {
                 var confCount = 0;
                 for (var i = 0; i < 10; i++) {
@@ -42,11 +55,8 @@ const matchBriefFeatures = (screenShot, template) => {
                     if (matches[i].confidence > 0.9)
                         confCount++;
                 }
-
-                if (confCount >= 8)
-                    return true;
-                else
-                    return false;
+                console.log("Conf count : " + confCount);
+                return confCount;
             }
 
             tracking.Brief.N = descriptorLength;
@@ -72,7 +82,9 @@ const matchBriefFeatures = (screenShot, template) => {
             matches.sort(function(a, b) {
                 return b.confidence - a.confidence;
             });
-            if (isMatch(matches))
+            var matchPixels = isMatch(matches);
+            var boundPixels = isBindingRect(matches,template.diagDist); 
+            if (matchPixels > 8 && boundPixels > 7)
                 resolve(template.site);
         });
     })
