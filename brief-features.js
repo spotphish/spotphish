@@ -21,7 +21,6 @@ const matchBriefFeatures = (screenShot, template) => {
         setTimeout(function() {
             reject("No match found");
         }, promiseTimeout);
-        let t0 = performance.now();
         let p = Promise.all([loadImage(screenShot), loadImage(template.logo)]);
         Promise.all([p]).then((results) => {
             var image1 = results[0][1];
@@ -73,8 +72,6 @@ const matchBriefFeatures = (screenShot, template) => {
             matches.sort(function(a, b) {
                 return b.confidence - a.confidence;
             });
-            var t1 = performance.now();
-            console.log("Time taken : " + (t1-t0) + " ms");
             if (isMatch(matches))
                 resolve(template.site);
         });
