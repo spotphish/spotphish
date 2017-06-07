@@ -14,6 +14,7 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
+  "options_page":"option.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -35,6 +36,7 @@
   },
   "permissions": [
     "activeTab",
+    "storage",
     "tabs",
     "notifications",
     "webRequest",
@@ -42,7 +44,6 @@
     "*://*/*",
     "<all_urls>"
   ],
-  "content_security_policy": "object-src 'self'; img-src * data:; script-src 'self' 'unsafe-eval' chrome-extension://gealglfelmndodeocfbfedggekgiofhe blob: filesystem: chrome-extension-resource:",
   "web_accessible_resources": [
     "actual_icons/*.png",
     "externalCode/tesseract_index.js",
@@ -50,6 +51,8 @@
     "externalCode/eng.traineddata.gz"
   ],
   "web_accessible_resources": [
-    "assets/img/*.png"
+    "assets/img/*.png",
+    "assets/img/*.jpg",
+    "assets/fonts/*"
   ]
 }
