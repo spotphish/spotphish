@@ -2,8 +2,6 @@
 var ts0;
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'capture') {
-        ts0 = performance.now();
-        console.log("Recieved message at T : " + ts0);
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
                 // image is base64
@@ -13,11 +11,9 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 //TODO:Resolve/reject promise if no match happens
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
-                    var ts1 = performance.now();
-                    console.log("Time taken for snapshot : " + (ts1 - ts0) + " ms");
 
                     whiteList.forEach(function (value) {
-                        matches.push(matchTemplate(normalizedImage, value))
+                        matches.push(matchBriefFeatures(normalizedImage, value))
                     });
 
                    // for (i = 0; i < whiteList.length; i++) {
@@ -25,10 +21,16 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                    //      matches[i] = matchTemplate(normalizedImage, whiteList[i]);
                    //  }
 
+                    let t0 = performance.now();
                     Promise.race(matches).then((site) => {
                         // console.log("After promise");
                         matchFound = true;
+                        let t1 = performance.now();
+                        console.log("Time taken : " + (t1-t0) + " ms");
                         res({ template_match: "Match found", site: site });
+                    })
+                    .catch((e) => {
+                        console.log(e);//promise rejected.
                     })
                 })
 

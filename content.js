@@ -86,22 +86,10 @@ function start() {
         }, handleBkgdResponse)
     }
 }
-// var capture = (force) => {
-//     chrome.runtime.sendMessage({
-//         message: 'capture',
-//         area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
-//     }, (res) => {
-//         console.log("the result of capture", res.image);
-//         //save(res.image)
-//     })
 
-//     // if ( !isWhitelisted && checkInputBox()) {
-//     if ( checkInputBox()) {
-//       alert("hello");
-//       runImageSearch($('body'), handleBkgdResponse);
-//     }
-// }
-
+//Used for saving screenshot as a file
+//Not needed as of now.
+/*
 var filename = () => {
     var pad = (n) => ((n = n + '') && (n.length >= 2 ? n : '0' + n))
         var timestamp = ((now) =>
@@ -119,7 +107,8 @@ var save = (image) => {
   console.log("Image link", link);
   link.click();
 }
+*/
 
 // console.log ("dpr : ", devicePixelRatio);
 
-start();
+window.setTimeout(start, 2000);

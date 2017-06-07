@@ -1,8 +1,9 @@
 var whiteList = [
-    { "site": "Facebook", "logo": "assets/img/fb-logo_lnx.png" },
-    { "site": "Paypal", "logo": "assets/img/paypal-linux.png" },
-    { "site": "ICICI", "logo": "assets/img/icici-shot.png" },
-    { "site": "HDFC", "logo": "assets/img/hdfc-screen.png" },
-    { "site": "Dropbox", "logo": "assets/img/db3-shot.png" },
-    { "site": "IDBI", "logo": "assets/img/idbi-linux.png" }
+    { "site": "Facebook", "logo": "assets/img/fb-logo_lnx.png", "diagDist": 202 },
+    { "site": "Facebook", "logo": "assets/img/fb-old.png", "diagDist": 121 },
+    { "site": "Paypal", "logo": "assets/img/paypal-linux.png", "diagDist":156 },
+    { "site": "ICICI", "logo": "assets/img/icici-shot.png", "diagDist": 195 },
+    { "site": "HDFC", "logo": "assets/img/hdfc-screen.png", "diagDist":158 },
+    { "site": "IDBI", "logo": "assets/img/idbi-linux.png", "diagDist":217 },
+    { "site": "Dropbox", "logo": "assets/img/db-logo.png", "diagDist":57 }
 ];
