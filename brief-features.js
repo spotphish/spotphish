@@ -52,7 +52,7 @@ const matchBriefFeatures = (screenShot, template) => {
                 var confCount = 0;
                 for (var i = 0; i < 10; i++) {
                     console.log(matches[i]);
-                    if (matches[i].confidence > 0.9)
+                    if (matches[i].confidence > 0.88)
                         confCount++;
                 }
                 console.log("Conf count : " + confCount);
@@ -82,10 +82,12 @@ const matchBriefFeatures = (screenShot, template) => {
             matches.sort(function(a, b) {
                 return b.confidence - a.confidence;
             });
-            var matchPixels = isMatch(matches);
-            var boundPixels = isBindingRect(matches,template.diagDist); 
-            if (matchPixels > 8 && boundPixels > 7)
+            let matchPixels = isMatch(matches);
+            let boundPixels = isBindingRect(matches,template.diagDist); 
+            if ((matchPixels > 8) && (boundPixels > 7)) {
+                console.log("Match found for : " + template.site);
                 resolve(template.site);
+            }
         });
     })
 }
