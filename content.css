@@ -2,11 +2,10 @@
     background: #eb431e;
     position: absolute;
     z-index: 1000;
-    top: 0;
-    right: 0;
+    top: 10px;
+    right: 10px;
     width: auto;
     max-width: 250px;
-    min-width: 200px;
     padding: 5px;
     box-shadow: 4px 4px 4px -2px #232323;
 }
@@ -17,10 +16,11 @@
     right:10px;
     cursor: pointer;
     font-size: 14px;
+    color: #eb431e;
 }
-
-.kp-img-close:hover {
+.kp-img-container:hover .kp-img-close {
     box-shadow: 1px 1px 1px -2px #232323;
     font-size: 16px;
+    color: #B71C1C;
 }
 
