@@ -5,5 +5,6 @@ var whiteList = [
     { "site": "ICICI", "logo": "assets/img/icici-shot.png", "diagDist": 195 },
     { "site": "HDFC", "logo": "assets/img/hdfc-screen.png", "diagDist":158 },
     { "site": "IDBI", "logo": "assets/img/idbi-linux.png", "diagDist":217 },
-    { "site": "Dropbox", "logo": "assets/img/db-logo.png", "diagDist":57 }
+    { "site": "Dropbox", "logo": "assets/img/db-logo.png", "diagDist":57 },
+    { "site": "Google", "logo": "assets/img/google-logo.png", "diagDist":90 }
 ];

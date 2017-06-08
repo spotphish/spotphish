@@ -84,7 +84,7 @@ const matchBriefFeatures = (screenShot, template) => {
             });
             let matchPixels = isMatch(matches);
             let boundPixels = isBindingRect(matches,template.diagDist); 
-            if ((matchPixels > 8) && (boundPixels > 7)) {
+            if ((matchPixels > 8) && (boundPixels >= 7)) {
                 console.log("Match found for : " + template.site);
                 resolve(template.site);
             }
