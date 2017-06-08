@@ -55,6 +55,8 @@ footer{
     min-height: 250px;
     border-radius: 5px;
     margin-top: 3px;
+    margin-left: 20px;
+    box-shadow: 0 4px 4px -2px #232323;
 }
 .image{
     height: auto;
@@ -131,7 +133,7 @@ footer{
     color: red;
     float: right;
 }
-    box-shadow: 0 4px 4px -2px #232323;
+
 .img-edit {
 	margin-right: 5px;
     font-weight: 300;

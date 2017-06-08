@@ -11,7 +11,13 @@ function updateImage(data) {
         console.log("Data found");
         chrome.storage.local.set({"secure_img": data}, function() {
             console.log("Data Saved : ", data);
-            img.src = data.src;
+            if (data.type === 'suggested' || data.type === 'default') {
+                img.src = data.src;
+            } else if (data.type === 'custom') {
+                img.src = "data:image/jpeg;base64," + data.src;
+            }
+            img.height = data.height || 200;
+            img.width = data.width || 200;
             $('.image').empty();
             $('.image').append(img);
         });
@@ -56,7 +62,11 @@ $(document).ready(function() {
 		$(this).addClass("active");
         var data = {};
         data.type = 'suggested';
-        data.src = $(this).children("img")[0].src;
+        var img = $(this).children("img")[0];
+        var scaleFactor = Math.min(200/img.width, 200/img.height);
+        data.width = scaleFactor * img.width;
+        data.height = scaleFactor * img.height;
+        data.src = img.src;
         updateImage(data);
         closeImgUploader();
 
@@ -81,12 +91,19 @@ $(document).ready(function() {
         var img = new Image();
         img.onload = function() {
             console.log("Inside Img");
-            var scaleFactor = Math.min(250/img.width, 250/img.height);
+            var scaleFactor = Math.min(200/img.width, 200/img.height);
             canvas.width = img.width * scaleFactor;
             canvas.height = img.height * scaleFactor;
             ctx.drawImage(img,0,0,canvas.width, canvas.height);
+            var data = {};
+            data.type = 'custom';
+            data.width = canvas.width;
+            data.height = canvas.height;
+            data.src = canvas.toDataURL('image/jpeg');
+            updateImage(data);
         }
         img.src = url;
 		$('.rig li').removeClass("active");
+        $('#canvas-cust').removeClass("hide");
     });
 });
