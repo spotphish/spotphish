@@ -15,7 +15,6 @@ var intervalID;
 
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname;
-var whitelist = [ "google.com", "facebook.com", "google.co.in", "twitter.com", "paypal.com"];
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
@@ -63,10 +62,10 @@ function checkInputBox() {
 }
 
 function checkWhitelist( hostName) {
-    var length = whitelist.length;
+    var length = whiteListedDomains.length;
     for (var i = 0; i < length; i++ ) {
-        if (hostName.endsWith(whitelist[i])) {
-            console.log("WHITE LISTED : ", whitelist[i]);
+        if (hostName.endsWith(whiteListedDomains[i])) {
+            console.log("WHITE LISTED : ", whiteListedDomains[i]);
             return true;
         }
     }

@@ -8,3 +8,5 @@ var whiteList = [
     { "site": "Dropbox", "logo": "assets/img/db-logo.png", "diagDist":57 },
     { "site": "Google", "logo": "assets/img/google-logo.png", "diagDist":90 }
 ];
+
+var whiteListedDomains = [ "google.com", "facebook.com", "google.co.in", "paypal.com", "icicibank.com", "hdfcbank.com", "dropbox.com"];

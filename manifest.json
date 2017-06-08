@@ -19,6 +19,7 @@
       "matches": ["<all_urls>"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
+        "templatematching.js/whitelist.js",
         "utils.js",
         "content.js"
       ],
