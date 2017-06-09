@@ -78,11 +78,11 @@ const matchBriefFeatures = (screenShot, template) => {
             var descriptors2 = tracking.Brief.getDescriptors(gray2, image2.width, corners2);
 
             var matches = tracking.Brief.reciprocalMatch(corners1, descriptors1, corners2, descriptors2);
-            var topMatches = matches.slice(0, 10);
 
             matches.sort(function(a, b) {
                 return b.confidence - a.confidence;
             });
+            var topMatches = matches.slice(0, 10);
             let matchPixels = isMatch(topMatches);
             let boundPixels = isBindingRect(topMatches,template.diagDist); 
             if ((matchPixels > 8) && (boundPixels >= 7)) {

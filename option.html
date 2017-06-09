@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,<200c><200b>100italic,300,300ita<200c><200b>lic,400italic,500,50<200c><200b>0italic,700,700itali<200c><200b>c,900italic,900' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="assets/css/font-awesome.min.css">
+	<link type="text/css" href="option.css" rel="stylesheet">
+    <script type="text/javascript" src="externalCode/jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="option.js"></script>
+
+    <title>Perceptual Adlbocker</title>
+  </head>
+  <body>
+    <header>
+        <div class="logo">
+        KILLPHISHER
+        </div>
+    </header>
+    <div class="wrapper">
+        <div class="secure-img">
+            <div class="title">
+                <span> Secure Image </span>
+                <i class="img-edit fa fa-pencil-square-o icon-2x" style="float:right"></i>
+            </div>
+             <div class="image">
+             </div>
+        </div>
+        <div id="container" class="whitelist-container">
+
+            <div class="white-list">
+              <div class="sub-title"> Manage Secure Group </div>
+              <div class="right-actions">
+                <div class="sub-title"> Items </div>
+                <div class="sub-title"> Actions </div>
+              </div>
+              <div class="clr"></div>
+              <hr />
+              <div class="white-list-scroll">
+                <div class="white-list-row">
+                  <div class="site-name">
+                    wwww.paypal.com
+                  </div>
+                  <div class="wl-actions">
+                      <div class="wl-active">
+                        <input id="checkbox0" type="checkbox">
+                      </div>
+                      <div class="wl-edit">
+                          <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                      <div class="wl-delete">
+                          <span class="glyphicon glyphicon-remove"></span>
+                      </div>
+                      <div class="clr"></div>
+                  </div>
+                </div>
+
+                <div class="white-list-row">
+                  <div class="site-name">
+                    www.paypal.com
+                  </div>
+                  <div class="wl-actions">
+                     <div class="wl-active">
+                        <input id="checkbox1" type="checkbox" checked="">
+                      </div>
+                      <div class="wl-edit">
+                          <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                      <div class="wl-delete">
+                          <span class="glyphicon glyphicon-remove"></span>
+                      </div>
+                      <div class="clr"></div>
+                  </div>
+                </div>
+
+                <div class="white-list-row">
+                  <div class="site-name">
+                    www.paypal.com
+                  </div>
+                  <div class="wl-actions">
+                      <div class="wl-active">
+                        <input id="checkbox3" type="checkbox">
+                      </div>
+                      <div class="wl-edit">
+                          <span class="glyphicon glyphicon-pencil"></span>
+                      </div>
+                      <div class="wl-delete">
+                          <span class="glyphicon glyphicon-remove"></span>
+                      </div>
+                      <div class="clr"></div>
+                  </div>
+                </div>
+                </div>
+            </div>
+          </div>
+        <div class="img-uploader-container hide">
+            <h1> Choose Secure Image 
+            <i class='fa fa-close' id='img-uploader-close'> </i>
+            </h1>
+            <div id="four-columns" class="grid-container" style="display:block;">
+                <ul class="rig columns-4">
+                    <li>
+                        <img src="assets/img/secure_img/kp1.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp2.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp3.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp4.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp5.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp6.jpg" />
+                    </li>
+                    <li>
+                        <img src="assets/img/secure_img/kp7.jpg" />
+                    </li>
+                </ul>
+                <div class="clr"></div>
+            </div>
+            <hr />
+            <canvas id="canvas-cust" class="hide"> </canvas>
+            <input type="file" id="custom-img" name="Upload" />
+            
+        </div>
+        <div class="clr"></div>
+        <!--/.img-uploader-container-->
+    </div>
+    <footer>
+    
+        <div>copyrights@2017</div>
+    </footer>
+  </body>
+</html>
+

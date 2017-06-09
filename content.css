@@ -1,0 +1,26 @@
+.kp-img-container {
+    background: #eb431e;
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    right: 10px;
+    width: auto;
+    max-width: 250px;
+    padding: 5px;
+    box-shadow: 4px 4px 4px -2px #232323;
+}
+
+.kp-img-close {
+    position: absolute;
+    top: 10px;
+    right:10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #eb431e;
+}
+.kp-img-container:hover .kp-img-close {
+    box-shadow: 1px 1px 1px -2px #232323;
+    font-size: 16px;
+    color: #B71C1C;
+}
+

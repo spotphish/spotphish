@@ -11,7 +11,6 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 //TODO:Resolve/reject promise if no match happens
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
-
                     whiteList.forEach(function (value) {
                         matches.push(matchBriefFeatures(normalizedImage, value))
                     });

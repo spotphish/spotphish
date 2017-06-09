@@ -76,7 +76,13 @@ function checkWhitelist( hostName) {
 var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
-    if ( !isWhitelisted && checkInputBox()) {
+    var bInputBox = checkInputBox();
+    if (bInputBox && isWhitelisted) {
+        appendSecureImg();
+        return;
+    }
+
+    if ( !isWhitelisted && bInputBox) {
         t1 = performance.now();
         console.log("Calling snapShot at T1 : " + t1);
         chrome.runtime.sendMessage({
@@ -109,5 +115,43 @@ var save = (image) => {
 */
 
 // console.log ("dpr : ", devicePixelRatio);
+
+function appendSecureImg() {
+    var prepend = "<div class=\"kp-img-container\">";
+    prepend += "<div class=\"FAH_closeButton kp-img-close\">";
+    prepend += "<strong> X </strong>";
+    prepend += "</div>";
+    prepend += "</div>";
+    var myPrepend = prepend;
+    $('body').prepend(myPrepend);
+    chrome.storage.local.get("secure_img", function(result) {
+        var data = result.secure_img;
+            console.log("Data received : ", data );
+        if (data === undefined) {
+            data = {};
+            data.type = "default";
+            data.src = DEFAULT_IMG;
+            updateImage(data);
+            return;
+        }
+        var img = document.createElement('img');
+        img.height = data.height || 200;
+        img.width = data.width || 200;
+        img.id = 'kp-secure-img';
+        img.src = data.src;
+        //$('.image').empty();
+        $('.kp-img-container').append(img);
+
+        $('.kp-img-close').on('click', function(e) {
+            e.preventDefault();
+            $('.kp-img-container').css('display','none');
+
+        });
+    });
+        //Search for image from local storage
+        //If no data stored in local storage use default img
+
+}
+
 
 window.setTimeout(start, 2000);
