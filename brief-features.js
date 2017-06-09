@@ -35,10 +35,10 @@ const matchBriefFeatures = (screenShot, template) => {
             let matchesShown = 10;
             let blurRadius = 3;
 
-			var isBindingRect = function(matches, diagonalDist = 57) {
+			var isBindingRect = function(matches, diagonalDist) {
 				var nearestPixel = matches[1].keypoint2;
 				var BoundPixels = 0;
-				for (var i = 1; i < 10; i++) {
+				for (var i = 1; i < matches.length; i++) {
 					var x = matches[i].keypoint2[0] - nearestPixel[0];
 					var y = matches[i].keypoint2[1] - nearestPixel[1];
 					var dist = Math.sqrt(x*x, y*y);
@@ -50,7 +50,7 @@ const matchBriefFeatures = (screenShot, template) => {
 			} 
             var isMatch = function(matches) {
                 var confCount = 0;
-                for (var i = 0; i < 10; i++) {
+                for (var i = 0; i < matches.length; i++) {
                     console.log(matches[i]);
                     if (matches[i].confidence > 0.88)
                         confCount++;
@@ -78,12 +78,13 @@ const matchBriefFeatures = (screenShot, template) => {
             var descriptors2 = tracking.Brief.getDescriptors(gray2, image2.width, corners2);
 
             var matches = tracking.Brief.reciprocalMatch(corners1, descriptors1, corners2, descriptors2);
+            var topMatches = matches.slice(0, 10);
 
             matches.sort(function(a, b) {
                 return b.confidence - a.confidence;
             });
-            let matchPixels = isMatch(matches);
-            let boundPixels = isBindingRect(matches,template.diagDist); 
+            let matchPixels = isMatch(topMatches);
+            let boundPixels = isBindingRect(topMatches,template.diagDist); 
             if ((matchPixels > 8) && (boundPixels >= 7)) {
                 console.log("Match found for : " + template.site);
                 resolve(template.site);
