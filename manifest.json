@@ -17,6 +17,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "css":["bootstrap.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "templatematching.js/whitelist.js",
@@ -49,7 +50,8 @@
     "actual_icons/*.png",
     "externalCode/tesseract_index.js",
     "externalCode/tesseract_worker.js",
-    "externalCode/eng.traineddata.gz"
+    "externalCode/eng.traineddata.gz",
+    "bootstrap.css"
   ],
   "web_accessible_resources": [
     "assets/img/*.png"

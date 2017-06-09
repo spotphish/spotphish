@@ -28,7 +28,7 @@ var showNonAd = false;
 // icon has been added and it changed from non-ad to ad, we do want
 // to update.
 function alreadyCoveredSameType(container, newCoverIsAd) {
-  var alreadyCovered = (container.find(".CITP_adBlockerCover").length > 0);
+  var alreadyCovered = (container.find(".modalDialog").length > 0);
   var alreadyAd = (container.find(".CITP_isAnAd").length > 0)
   return alreadyCovered && (alreadyAd || !newCoverIsAd);
 }
@@ -55,69 +55,33 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
   }
 
   // remove any existing covers (if we are moving from non-ad to ad)
-  container.find(".CITP_adBlockerCover").remove();
+  container.find(".modalDialog").remove();
 
-  // vary the color and classes based on whether this is an ad or not.
-  var color;
-  var classes = "CITP_adBlockerCover";
-  if (isAd) {
-    if (showNonAd) {
-      color = "rgba(255, 0, 0, 0.8)";
-    } else {
-      color = "rgba(255, 255, 255, 0.8)";
-    }
-    classes += " CITP_isAnAd";
-  } else {
-    color = "rgba(255, 255, 255, 0.8)";
-  }
+  var prepend = "<div class=\"modalDialog \" >";
+  prepend += "<div class=\"modal-dialog\">";
+  prepend += "<div class=\"modal-content\">";
 
-  // some google ads have a height of 0 and then everything in overflow,
-  // so if that is the case set the height of the cover to be the overflow
-  // height.
-  var setHeight;
-  var containerHeight = container.height();
-  var containerScrollHeight = container.prop('scrollHeight');
-  if (containerHeight == 0 && containerScrollHeight > 0) {
-    setHeight = containerScrollHeight;
-  } else {
-    setHeight = "100%"
-  }
+  prepend += "<div class=\"modal-header\">";
+  prepend += "<button  type=\"button\" class=\"close close-killphiser\" data-dismiss=\"modal\">&times;</button>";
+  prepend += "<h4 class=\"modal-title\">Are you being phished?</h4>";
+  prepend += "</div>";
 
-  // create the cover to prepend.
-  var prepend = "<div class=\"" + classes + "\" style=\" padding-bottom: 20px; position: absolute;width: 25%; top: 40%; left: 40%; border-radius: 5px; background-color: blue !important;z-index: 100; visibility: visible;\">";
-  prepend += "<div class=\"FAH_closeButton\" style=\"position: absolute; right: 10px; top: 10px; cursor: pointer; padding: 0px 3px; border: 1px solid black; border-radius: 5px;\">";
-  prepend += "<strong>";
-  prepend += "X";
-  prepend += "</strong>";
+  prepend += "<div class=\"modal-body\">";
+  prepend += "<span>This looks like <b>" +  url  + "</b>.</span></br>";
+  prepend += "<span>But it isn't!</span>";
   prepend += "</div>";
-  prepend += "<div style=\"width: 100%;text-align:left; margin-top: 10%; margin-left: 5%; font-size: 25px; font-weight: bold; color:white;\">";
-  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
-  prepend += 'Are you being phished?' ;
+
+  prepend += "<div class=\"modal-footer\">";
+  prepend += "<button type=\"button\" class=\"btn pull-left btn-default\" >Report Phishing</button>";
+  prepend += "<button type=\"button\" class=\"btn pull-left btn-default\">Report false alarm</button>";
+  prepend += "<button type=\"button\" class=\"btn pull-right btn-default close-killphiser\">Close</button>";
   prepend += "</div>";
-  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
-  prepend += 'This looks like '+  url ;
-  prepend += "</div>";
-  prepend += "<div style=\"color: white; padding-bottom: 8px; \">";
-  prepend += "but it isn't?" ;
-  prepend += "</div>";
-  prepend += "<div style=\"width: 100%; text-align:left; color: white;font-size:20px; font-weight:normal; text-decoration: underline;\">";
-  prepend += "<span style=\"color: white; padding-bottom: 4px; \">";
-  prepend += 'Report Phishing' ;
-  prepend += "</span>";
-  prepend += "<span  style=\"color: white; padding-bottom: 4px; \">";
-  prepend += "<br/>";
-  prepend += 'Report false alarm';
-  prepend += "</span>";
-  prepend += "</div>";
-  // if we have "Sponsored" text in another language, add it below "THIS IS AN AD"
-  if (NON_ENGLISH_LOCALE && matchingText !== "") {
-    prepend += "<br/>"
-    prepend += "<span style=\"color: black; font-size:40px; background: rgba(255,255,255,.8);\">";
-    prepend += "(" + matchingText + ")";
-    prepend += "</span>";
-  }
+
   prepend += "</div>";
   prepend += "</div>";
+  prepend += "</div";
+
+  // prepend += "</div>";
   var myPrepend = prepend;
 
   // if we only want the deepest, remove any above this
@@ -128,17 +92,18 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
   }*/
   // if we only want the deepest covers and there is a cover within
   // this container already, don't ad this cover.
-  if (!(container.find(".FAH_adBlockerCover").length > 0)) {
+  // if (!(container.find(".modalDialog").length > 0)) {
     // prepend the cover
     container.css("position", "relative");
-    container.prepend(myPrepend);
 
+    container.prepend(myPrepend);
+    container.children().not('.modalDialog').css("opacity", 0.3);
     // make sure the close button closes the cover
-    container.children().children(".FAH_closeButton").on("click", function () {
-        console.log("Event Clicked");
-      container.children(".CITP_adBlockerCover").css("visibility", "hidden");
+    container.find(".close-killphiser").on("click", function () {
+      container.children(".modalDialog").css("visibility", "hidden");
+      container.children().css("opacity", 1);
     });
-  }
+  // }
 
 
   // if this is an ad and we have an interval, stop the search for ads.
