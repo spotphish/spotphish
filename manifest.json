@@ -21,7 +21,7 @@
       "css":["bootstrap.css", "content.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
-        "templatematching.js/whitelist.js",
+        "whitelist.js",
         "utils.js",
         "content.js"
       ],
@@ -30,7 +30,7 @@
   ],
   "background": {
     "scripts": [
-        "templatematching.js/whitelist.js",
+        "whitelist.js",
         "screenshot.js",
         "background.js",
         "brief-features.js",
@@ -49,9 +49,6 @@
   ],
   "web_accessible_resources": [
     "actual_icons/*.png",
-    "externalCode/tesseract_index.js",
-    "externalCode/tesseract_worker.js",
-    "externalCode/eng.traineddata.gz",
     "bootstrap.css"
   ],
   "web_accessible_resources": [
