@@ -28,7 +28,7 @@ var showNonAd = false;
 // icon has been added and it changed from non-ad to ad, we do want
 // to update.
 function alreadyCoveredSameType(container, newCoverIsAd) {
-  var alreadyCovered = (container.find(".modalDialog").length > 0);
+  var alreadyCovered = (container.find(".kp-modalDialog").length > 0);
   var alreadyAd = (container.find(".CITP_isAnAd").length > 0)
   return alreadyCovered && (alreadyAd || !newCoverIsAd);
 }
@@ -49,32 +49,50 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
       return false;
     }
 
+
+  var viewportwidth;
+   var viewportheight;
+
+   if (typeof window.innerWidth != 'undefined')
+   {
+        viewportwidth = window.innerWidth,
+        viewportheight = window.innerHeight
+   }
+   console.log("width", viewportwidth);
+   console.log("Height", viewportheight);
+
   // don't cover if this container is already covered;
   if (alreadyCoveredSameType(container, false)) {
     return false;
   }
 
+  if ( viewportwidth > 600){
+    viewportwidth = (viewportwidth / 2) - 300;
+  }
+   if ( viewportheight > 800){
+    viewportheight = ( viewportheight / 2) - 300;
+  }
   // remove any existing covers (if we are moving from non-ad to ad)
-  container.find(".modalDialog").remove();
+  container.find(".kp-modalDialog").remove();
 
-  var prepend = "<div class=\"modalDialog \" >";
-  prepend += "<div class=\"modal-dialog\">";
-  prepend += "<div class=\"modal-content\">";
+  var prepend = "<div class=\"kp-modalDialog \" style=\"top:" + viewportheight + "px; left:" + viewportwidth  + "px;\">";
+  prepend += "<div class=\"kp-modal-dialog\">";
+  prepend += "<div class=\"kp-modal-content\">";
 
-  prepend += "<div class=\"modal-header\">";
-  prepend += "<button  type=\"button\" class=\"close close-killphiser\" data-dismiss=\"modal\">&times;</button>";
-  prepend += "<h4 class=\"modal-title\">Are you being phished?</h4>";
+  prepend += "<div class=\"kp-modal-header\">";
+  prepend += "<button  type=\"button\" class=\"kp-close close-killphiser\" data-dismiss=\"modal\">&times;</button>";
+  prepend += "<h4 class=\"kp-modal-title\">Are you being phished?</h4>";
   prepend += "</div>";
 
-  prepend += "<div class=\"modal-body\">";
+  prepend += "<div class=\"kp-modal-body\">";
   prepend += "<span>This looks like <b>" +  url  + "</b>.</span></br>";
   prepend += "<span>But it isn't!</span>";
   prepend += "</div>";
-
-  prepend += "<div class=\"modal-footer\">";
-  prepend += "<button type=\"button\" class=\"btn pull-left btn-default\" >Report Phishing</button>";
-  prepend += "<button type=\"button\" class=\"btn pull-left btn-default\">Report false alarm</button>";
-  prepend += "<button type=\"button\" class=\"btn pull-right btn-default close-killphiser\">Close</button>";
+  prepend += "<div class=\"kp-modal-footer\">";
+  prepend += "<button type=\"button\" class=\"kp-btn kp-btn-default\" >Report Phishing</button>";
+  prepend += "<button type=\"button\" class=\"kp-btn kp-btn-default\">Report false alarm</button>";
+  prepend += "<button type=\"button\" class=\"kp-btn kp-btn-default close-killphiser kp-pull-right\">Close</button>";
+  prepend += "<div class=\"kp-clr\"></div>";
   prepend += "</div>";
 
   prepend += "</div>";
@@ -95,12 +113,11 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
   // if (!(container.find(".modalDialog").length > 0)) {
     // prepend the cover
     container.css("position", "relative");
-
-    container.prepend(myPrepend);
-    container.children().not('.modalDialog').css("opacity", 0.3);
+    container.prepend(myPrepend).fadeIn();
+    container.children().not('.kp-modalDialog').css("opacity", 0.3);
     // make sure the close button closes the cover
     container.find(".close-killphiser").on("click", function () {
-      container.children(".modalDialog").css("visibility", "hidden");
+      container.children(".kp-modalDialog").css("visibility", "hidden");
       container.children().css("opacity", 1);
     });
   // }
