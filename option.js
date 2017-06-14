@@ -1,6 +1,26 @@
 
     console.log("Start");
 const DEFAULT_IMG = "assets/img/secure_img/kp1.jpg";
+var KPWhiteList;
+function template(index, data) {
+    return '<div class="white-list-row" data-id=' +index + ' >' +
+          '<div class="site-name">' +
+            data +
+          '</div>' +
+          '<div class="wl-actions">' +
+              //'<div class="wl-active">' +
+              //  '<input id="checkbox0" type="checkbox">' +
+              //'</div>' +
+              '<div class="wl-edit" data-id=' +index + '>' +
+                  '<span class="glyphicon glyphicon-pencil"></span>' +
+              '</div>' +
+              '<div class="wl-delete" data-id=' +index + ' >' +
+                  '<span class="glyphicon glyphicon-remove"></span>' +
+              '</div>' +
+              '<div class="clr"></div>' +
+          '</div>' +
+        '</div>';
+}
 function updateImage(data) {
     var img = document.createElement('img');
     img.height = 200;
@@ -46,6 +66,49 @@ function updateImage(data) {
 
 }
 
+function updateTableData() {
+    chrome.storage.local.get("whitelist", function(result) {
+        var data = result.whitelist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPWhiteList = data;
+            } else {
+                KPWhiteList = whiteListedDomains;
+            }
+            renderTable();
+    });
+}
+
+function renderTable() {
+
+    var length = KPWhiteList.length;
+
+    for (i = 0; i < length; i++ ) {
+        $('.white-list-scroll').append(template(i, KPWhiteList[i]));
+    }
+
+    $('.wl-delete').on('click', function(e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        console.log("Clicked : ", KPWhiteList[id]);
+        var res = confirm("Do you want to delete " + KPWhiteList[id] + " from whitelist");
+        if (res) {
+            $('.white-list-scroll').empty();
+            KPWhiteList.splice(id, 1);
+            saveTableData();
+            renderTable();
+        }
+    });
+}
+
+function saveTableData() {
+    chrome.storage.local.set({whitelist : KPWhiteList},() => {
+        var bkg = chrome.extension.getBackgroundPage();
+    	bkg.syncWhiteList();
+        console.log("whitelist : ", KPWhiteList )
+        });
+}
+
 function closeImgUploader() {
     $('.img-uploader-container').addClass("hide");
     $('.whitelist-container').removeClass("hide");
@@ -53,6 +116,7 @@ function closeImgUploader() {
 
 $(document).ready(function() {
     updateImage();
+    updateTableData();
 	$('.rig li').on('click', function(event){
 		event.preventDefault();
 		/*$('.grid-container').fadeOut(500, function(){

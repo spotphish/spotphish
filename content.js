@@ -14,7 +14,23 @@
 var intervalID;
 
 var protocol = window.location.protocol,
-    srcDomain = window.location.hostname;
+    srcDomain = window.location.hostname,
+    href = window.location.href,
+    whList;
+
+chrome.storage.local.get("whitelist", function(result) {
+    var data = result.whitelist;
+        console.log("Data received : ", data );
+        if (data) {
+            whList = data;
+        } else {
+            whList = whiteListedDomains;
+        }
+});
+
+     
+
+//console.log("Protocol : ", protocol, " SrcDomain : ", srcDomain, " href : ", href);
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
@@ -62,10 +78,10 @@ function checkInputBox() {
 }
 
 function checkWhitelist( hostName) {
-    var length = whiteListedDomains.length;
+    var length = whList.length;
     for (var i = 0; i < length; i++ ) {
-        if (hostName.endsWith(whiteListedDomains[i])) {
-            console.log("WHITE LISTED : ", whiteListedDomains[i]);
+        if (hostName.endsWith(whList[i])) {
+            console.log("WHITE LISTED : ", whList[i]);
             return true;
         }
     }
@@ -73,10 +89,16 @@ function checkWhitelist( hostName) {
     return false;
 }
 
-var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
 
 function start() {
     var bInputBox = checkInputBox();
+    var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
+    var tabinfo = {};
+    tabinfo.message = 'tabinfo';
+    tabinfo.pwField = bInputBox;
+    tabinfo.whitelisted = isWhitelisted;
+    chrome.runtime.sendMessage(tabinfo); //sending the info about the tab to the background
+
     if (bInputBox && isWhitelisted) {
         appendSecureImg();
         return;
@@ -88,7 +110,7 @@ function start() {
         chrome.runtime.sendMessage({
             message: 'capture',
             area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
-        }, handleBkgdResponse)
+        }, handleBkgdResponse);
     }
 }
 

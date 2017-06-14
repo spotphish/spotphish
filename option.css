@@ -137,11 +137,10 @@ footer{
 .img-edit {
 	margin-right: 5px;
     font-weight: 300;
-    visibility: hidden;
+    opacity: 0.8;
 }
 .secure-img:hover .img-edit {
 	opacity: 1;
-    visibility: visible;
 }
 
 ul.grid-nav {

@@ -1,14 +1,40 @@
 /*global chrome */
 
 (function () {
+    var curTab;
+
+    var handleTabInfo = function(response) {
+        if (!response) {
+            return;
+        }
+        if (response.status === tab_status.WHITELISTED) {
+            document.getElementById('kp-remove-from-whitelist').style.display = 'block';
+            document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
+        } else if (response.status === tab_status.NOT_WHITELISTED) {
+            document.getElementById('kp-add-to-whitelist').style.display = 'block';
+            document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
+        }
+    }
+
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        curTab = tabs[0];
+        console.log("Current tab : ", curTab);
+        if (isSpecialTab(curTab.url)) {
+            chrome.runtime.sendMessage({message: "update_info", curtab: curTab, status: tab_status.NA});
+        } else {
+            chrome.runtime.sendMessage({message: "get_tabinfo", curtab: curTab}, handleTabInfo);
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kp-add-to-whitelist').addEventListener('click', function (e) {
-            //chrome.runtime.sendMessage({ action: 'suspendOne' });
+            var domain = getPathInfo(curTab.url).host;
+            chrome.runtime.sendMessage({ message: 'addToWhitelist', domain: domain});
             window.close();
         });
         document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {
-            //chrome.runtime.sendMessage({ action: 'suspendOne' });
+            var domain = getPathInfo(curTab.url).host;
+            chrome.runtime.sendMessage({ message: 'removeFromWhitelist', domain: domain});
             window.close();
         });
         document.getElementById('settingsLink').addEventListener('click', function (e) {

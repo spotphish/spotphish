@@ -27,7 +27,7 @@ a {
 	height: 20px;
 	width: 100%;
 	line-height: 19px;
-	background: #134960;
+	background: #eb431e;
 	color: #fff;
 }
 #header img {
@@ -35,12 +35,19 @@ a {
 	padding-right: 3px;
 }
 
+#kp-add-to-whitelist, #kp-remove-from-whitelist {
+    display: none;
+}
 
 .group {
 	padding: 5px 0;
 }
 .optsCurrent, .optsAll, .optsSelected {
 	border-bottom: 1px solid #ccc;
+}
+
+.optsCurrent {
+    display: none;
 }
 
 .menuOption {
