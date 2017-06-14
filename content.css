@@ -17,10 +17,11 @@
     cursor: pointer;
     font-size: 14px;
     color: #eb431e;
+    opacity: 0.8;
 }
 .kp-img-container:hover .kp-img-close {
     box-shadow: 1px 1px 1px -2px #232323;
     font-size: 16px;
-    color: #B71C1C;
+    opacity: 1;
 }
 
