@@ -23,21 +23,23 @@ function template(index, data) {
 }
 function updateImage(data) {
     var img = document.createElement('img');
-    img.height = 200;
-    img.width = 200;
     img.id = 'display-img';
 
     if (data) {
         console.log("Data found");
+        img.height = data.height;
+        img.width = data.width;
         chrome.storage.local.set({"secure_img": data}, function() {
             console.log("Data Saved : ", data);
             if (data.type === 'suggested' || data.type === 'default') {
                 img.src = data.src;
             } else if (data.type === 'custom') {
-                img.src = "data:image/jpeg;base64," + data.src;
+                //img.src = "data:image/jpeg;base64," + data.src;
+                img.src = data.src;
+                console.log(img.src);
             }
-            img.height = data.height || 200;
-            img.width = data.width || 200;
+            //img.height = data.height || 200;
+            //img.width = data.width || 200;
             $('.image').empty();
             $('.image').append(img);
         });
