@@ -35,6 +35,8 @@ function updateImage(data) {
             }
             console.log("Data received : ", data);
             img.src = data.src;
+            img.height = data.height || 200;
+            img.width = data.width || 200;
             $('.image').empty();
             $('.image').append(img);
         });
