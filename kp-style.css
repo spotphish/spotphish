@@ -37,7 +37,6 @@
   float: right;
 }
 
-
 .kp-close {
   float: right;
   font-size: 21px;
@@ -109,7 +108,10 @@
   right: 25%;
   z-index: 99999;
   opacity: 1 ;
-  width: 500px;
+  width: 50%;
+  min-width: 420px;
+  max-width: 500px;
+  height: 300px;
 }
 
 .kp-modal-title{
