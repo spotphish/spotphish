@@ -8,6 +8,8 @@
     max-width: 250px;
     padding: 5px;
     box-shadow: 4px 4px 4px -2px #232323;
+    animation-name: kp-secure-img;
+    animation-duration: 2s;
 }
 
 .kp-img-close {
@@ -23,5 +25,11 @@
     box-shadow: 1px 1px 1px -2px #232323;
     font-size: 16px;
     opacity: 1;
+}
+
+@keyframes kp-secure-img {
+    0%   { right: 40%; top: 40%;}
+    50%   { right: 40%; top: 40%;}
+    100%   { top:10px; right: 10px;}
 }
 
