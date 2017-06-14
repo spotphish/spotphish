@@ -285,6 +285,12 @@ ul.rig.columns-4 li {
 .wl-delete{
     float: left;
     width: 30%;
+    opacity: 0.8;
+} 
+
+.wl-delete:hover {
+    opacity: 1;
+    font-size: 18px;
 } 
 
 .clr { clear:both; }
