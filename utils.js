@@ -10,10 +10,39 @@
 // sets logging level
 var VERBOSE = false;
 
+const tab_status = {
+    NA : 0,
+    WHITELISTED : 1,
+    NOT_WHITELISTED : 2
+};
+
 if (typeof NON_ENGLISH_LOCALE === 'undefined') {
   var NON_ENGLISH_LOCALE = false;
 }
 
+function getPathInfo(path) {
+    //  create a link in the DOM and set its href
+    var link = document.createElement('a');
+    link.setAttribute('href', path);
+
+    //  return an easy-to-use object that breaks apart the path
+    return {
+        host:     link.hostname,  //  'example.com'
+        port:     link.port,      //  12345
+        path:     link.pathname,  //  '/blog/foo/bar'
+        protocol: link.protocol   //  'http:'
+    }
+}
+
+function isSpecialTab(url) {
+    if (url.indexOf('chrome:') === 0
+        || url.indexOf('chrome-devtools:') === 0
+        || url.indexOf('file:') === 0
+        || url.indexOf('chrome.google.com/webstore') >= 0) {
+        return true;
+    }
+    return false;
+}
 // return whether the container is already covered
 function alreadyCovered(container) {
   return (container.find(".FAH_adBlockerCover").length > 0);
