@@ -69,8 +69,8 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
   if ( viewportwidth > 600){
     viewportwidth = (viewportwidth / 2) - 300;
   }
-   if ( viewportheight > 800){
-    viewportheight = ( viewportheight / 2) - 300;
+   if ( viewportheight > 600){
+    viewportheight = ( viewportheight / 2) - 250;
   }
   // remove any existing covers (if we are moving from non-ad to ad)
   container.find(".kp-modalDialog").remove();
