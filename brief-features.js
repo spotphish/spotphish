@@ -52,7 +52,7 @@ const matchBriefFeatures = (screenShot, template) => {
                 var confCount = 0;
                 for (var i = 0; i < matches.length; i++) {
                     console.log(matches[i]);
-                    if (matches[i].confidence > 0.88)
+                    if (matches[i].confidence > 0.89)
                         confCount++;
                 }
                 console.log("Conf count : " + confCount);
