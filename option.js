@@ -1,5 +1,8 @@
 
 const DEFAULT_IMG = "assets/img/secure_img/kp1.jpg";
+const whitelist_msg = "Login pages on which you will see your personal secure image.";
+const safesite_msg = "Trusted domains which are highly unlikely to host phishing pages. We skip checking pages on these sites as a performance optimization.";
+const redflag_msg = "We have snapshots of the login pages of these sites. If any page you browse looks very similar to one of these snapshots, it is flagged as a possible phishing attempt.";
 var KPWhiteList,
     KPSkipList,
     KPRedFlagList;
@@ -112,11 +115,15 @@ function updateTableData() {
 
 function renderTable() {
     $('.white-list-scroll').empty();
+    $('.wl-desc p').empty();
     if (tab === "whitelist") {
+        $('.wl-desc p').append(whitelist_msg);
         renderWhiteListTable();
     } else if (tab === 'redflag') {
+        $('.wl-desc p').append(redflag_msg);
         renderRedFlagTable();
     } else if (tab === 'safedomain') {
+        $('.wl-desc p').append(safesite_msg);
         renderSafeDomainTable();
     } 
 }
