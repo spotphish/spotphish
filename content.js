@@ -90,10 +90,11 @@ function checkInputBox() {
         }
 }
 
-function checkWhitelist( hostName) {
+function checkWhitelist(url) {
     var length = whList.length;
+    var site = stripQueryParams(url);
     for (var i = 0; i < length; i++ ) {
-        if (hostName.endsWith(whList[i])) {
+        if (site === whList[i]) {
             console.log("WHITE LISTED : ", whList[i]);
             return true;
         }
@@ -117,7 +118,7 @@ function checkSkiplist( hostName) {
 
 function start() {
     var bInputBox = checkInputBox();
-    var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
+    var isWhitelisted = protocol === "https:" ? checkWhitelist(href): false;
     var isSkiplisted = protocol === "https:" ? checkSkiplist(srcDomain): false;
     var tabinfo = {};
     tabinfo.message = 'tabinfo';

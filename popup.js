@@ -28,8 +28,8 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kp-add-to-whitelist').addEventListener('click', function (e) {
-            var domain = getPathInfo(curTab.url).host;
-            chrome.runtime.sendMessage({ message: 'addToWhitelist', domain: domain});
+            var site = stripQueryParams(curTab.url);
+            chrome.runtime.sendMessage({ message: 'addToWhitelist', site: site});
             window.close();
         });
         document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {

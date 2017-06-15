@@ -34,6 +34,16 @@ function getPathInfo(path) {
     }
 }
 
+function stripQueryParams(url) {
+    var urlData = getPathInfo(url);
+    var site = urlData.protocol +"//" + urlData.host;
+    if (urlData.port) {
+        site = site + ":" + urlData.port;
+    }
+    site = site + urlData.path;
+    return site;
+}
+
 function isSpecialTab(url) {
     if (url.indexOf('chrome:') === 0
         || url.indexOf('chrome-devtools:') === 0

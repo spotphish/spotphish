@@ -86,11 +86,11 @@ function init() {
     syncRedFlagList();
 }
 
-function addToKPWhiteList(domain) {
-    if (domain in KPWhiteList) {
+function addToKPWhiteList(site) {
+    if (site in KPWhiteList) {
         return;
     }
-    KPWhiteList.push(domain);
+    KPWhiteList.push(site);
     saveKPWhiteList();
 }
 
@@ -179,7 +179,7 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
         }
 
     } else if (req.message === 'addToWhitelist') {
-        addToKPWhiteList(req.domain);
+        addToKPWhiteList(req.site);
     } else if (req.message === 'removeFromWhitelist') {
         removeFromKPWhiteList(req.domain);
     }
@@ -193,6 +193,11 @@ chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
     }
 });
 
+chrome.runtime.onInstalled.addListener(function(details) {
+if (details.reason === 'install') {
+        chrome.tabs.create({ url: "option.html" });
+    }
+});
 
 init();
 //function getCurrentTabStatus()
