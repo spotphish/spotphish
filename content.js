@@ -16,16 +16,29 @@ var intervalID;
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname,
     href = window.location.href,
-    whList;
+    whList, skipList, redFlagList;
 
-chrome.storage.local.get("whitelist", function(result) {
-    var data = result.whitelist;
-        console.log("Data received : ", data );
-        if (data) {
-            whList = data;
-        } else {
-            whList = whiteListedDomains;
-        }
+chrome.storage.local.get(["skiplist","redflaglist","whitelist"], function(result) {
+    var whiteListData = result.whitelist;
+    console.log("Data received : ", result );
+    if (whiteListData) {
+        whList = whiteListData;
+    } else {
+        whList = whiteListedDomains;
+    }
+    var skipListData = result.skiplist;
+    if (skipListData) {
+        skipList = skipListData;
+    } else {
+        skipList = skipDomains;
+    }
+    var redFlagData = result.redflaglist;
+    if (redFlagData) {
+        redFlagList = redFlagData;
+    } else {
+        redFlagList = redFlagSites;
+    }
+    start();
 });
 
      
@@ -89,10 +102,23 @@ function checkWhitelist( hostName) {
     return false;
 }
 
+function checkSkiplist( hostName) {
+    var length = skipList.length;
+    for (var i = 0; i < length; i++ ) {
+        if (hostName.endsWith(skipList[i])) {
+            console.log("SKIP LISTED : ", skipList[i]);
+            return true;
+        }
+    }
+    console.log(" NOT SKIP LISTED : ", hostName);
+    return false;
+}
+
 
 function start() {
     var bInputBox = checkInputBox();
     var isWhitelisted = protocol === "https:" ? checkWhitelist(srcDomain): false;
+    var isSkiplisted = protocol === "https:" ? checkSkiplist(srcDomain): false;
     var tabinfo = {};
     tabinfo.message = 'tabinfo';
     tabinfo.pwField = bInputBox;
@@ -104,14 +130,16 @@ function start() {
         return;
     }
 
-    if ( !isWhitelisted && bInputBox) {
-        t1 = performance.now();
-        console.log("Calling snapShot at T1 : " + t1);
-        chrome.runtime.sendMessage({
-            message: 'capture',
-            area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
-        }, handleBkgdResponse);
-    }
+    window.setTimeout(function() {
+        if ( !isSkiplisted && bInputBox) {
+            t1 = performance.now();
+            console.log("Calling snapShot at T1 : " + t1);
+            chrome.runtime.sendMessage({
+                message: 'capture',
+                area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
+            }, handleBkgdResponse);
+        }
+    }, 2000);
 }
 
 //Used for saving screenshot as a file
@@ -175,5 +203,3 @@ function appendSecureImg() {
 
 }
 
-
-window.setTimeout(start, 2000);

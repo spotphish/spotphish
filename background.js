@@ -2,7 +2,9 @@
 var debug = false, 
     globalCurrentTabId,
     tabInfoList = {},
-    KPWhiteList;
+    KPWhiteList,
+    KPSkipList,
+    KPRedFlagList;
 
 
 function updateTabInfo(tab, data) {
@@ -20,21 +22,22 @@ function updateTabInfo(tab, data) {
     //console.log("tabinfoList : ", tabInfoList);
 }
 
-function checkWhitelist(domain) {
-    var list = KPWhiteList;
-    var length = list.length();
-    for (var i = 0; i < length; i++ ) {
-        if (domain.endsWith(list[i])) {
-            console.log("WHITE LISTED : ", list[i]);
-            return true;
-        }
-    }
-    return false;
-}
 
 function saveKPWhiteList() {
     chrome.storage.local.set({whitelist : KPWhiteList},() => {
         console.log("whitelist : ", KPWhiteList )
+        });
+}
+
+function saveKPRedFlagList() {
+    chrome.storage.local.set({redflaglist : KPRedFlagList},() => {
+        console.log("redflaglist : ", KPRedFlagList )
+        });
+}
+
+function saveKPSkipList() {
+    chrome.storage.local.set({skiplist : KPSkipList},() => {
+        console.log("skiplist : ", KPSkipList )
         });
 }
 
@@ -45,14 +48,42 @@ function syncWhiteList(){
             if (data) {
                 KPWhiteList = data;
             } else {
-                KPWhiteList = whiteListedDomains;
+                KPWhiteList = whiteListedURLs;
                 saveKPWhiteList();
+            }
+    });
+}
+
+function syncSkipList(){
+    chrome.storage.local.get("skiplist", function(result) {
+        var data = result.skiplist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPSkipList = data;
+            } else {
+                KPSkipList = skipDomains;
+                saveKPSkipList();
+            }
+    });
+}
+
+function syncRedFlagList(){
+    chrome.storage.local.get("redflaglist", function(result) {
+        var data = result.redflaglist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPRedFlagList = data;
+            } else {
+                KPRedFlagList = redFlagSites;
+                saveKPRedFlagList();
             }
     });
 }
 
 function init() {
     syncWhiteList();
+    syncSkipList();
+    syncRedFlagList();
 }
 
 function addToKPWhiteList(domain) {
@@ -63,6 +94,14 @@ function addToKPWhiteList(domain) {
     saveKPWhiteList();
 }
 
+function addToKPSkipList(domain) {
+    if (domain in KPSkipList) {
+        return;
+    }
+    KPSkipList.push(domain);
+    saveKPSkipList();
+}
+
 function removeFromKPWhiteList(domain) {
     var index = KPWhiteList.indexOf(domain);
     if (index !== -1) {
@@ -70,6 +109,26 @@ function removeFromKPWhiteList(domain) {
         saveKPWhiteList();
     } else {
         console.log("Domain not Whitelisted : ", domain);
+    }
+}
+
+function removeFromKPSkipList(domain) {
+    var index = KPSkipList.indexOf(domain);
+    if (index !== -1) {
+        KPSkipList.splice(index,1);
+        saveKPSkipList();
+    } else {
+        console.log("Domain not in skip list : ", domain);
+    }
+}
+
+function removeFromKPRedFlagList(domain) {
+    var index = KPRedFlagList.indexOf(domain);
+    if (index !== -1) {
+        KPRedFlagList.splice(index,1);
+        saveKPRedFlagList();
+    } else {
+        console.log("Domain not in red flag list : ", domain);
     }
 }
 
@@ -85,13 +144,13 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 //TODO:Resolve/reject promise if no match happens
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
-                    whiteList.forEach(function (value) {
+                    KPRedFlagList.forEach(function (value) {
                         matches.push(matchBriefFeatures(normalizedImage, value))
                     });
 
-                   // for (i = 0; i < whiteList.length; i++) {
-                   //      // console.log(whiteList[i], normalizedImage);
-                   //      matches[i] = matchTemplate(normalizedImage, whiteList[i]);
+                   // for (i = 0; i < redFlagSites.length; i++) {
+                   //      // console.log(redFlagSites[i], normalizedImage);
+                   //      matches[i] = matchTemplate(normalizedImage, redFlagSites[i]);
                    //  }
 
                     let t0 = performance.now();
