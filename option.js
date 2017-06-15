@@ -11,9 +11,9 @@ function template(index, data) {
               //'<div class="wl-active">' +
               //  '<input id="checkbox0" type="checkbox">' +
               //'</div>' +
-              '<div class="wl-edit" data-id=' +index + '>' +
-                  '<span class="glyphicon glyphicon-pencil"></span>' +
-              '</div>' +
+              //'<div class="wl-edit" data-id=' +index + '>' +
+              //    '<span class="glyphicon glyphicon-pencil"></span>' +
+              //'</div>' +
               '<div class="wl-delete" data-id=' +index + ' >' +
                   '<span class="glyphicon glyphicon-remove"></span>' +
               '</div>' +
