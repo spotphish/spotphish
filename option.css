@@ -45,8 +45,7 @@ footer{
 }
 
 .secure-img{
-    /*background: #797979;*/
-    background: #5e91f2;
+    background: #1565C0;
     min-width: 250px;
     float: left;
     width: auto;
@@ -118,20 +117,44 @@ footer{
 	width: 100%;
 	padding: 30px 0;
 }
-
+/*
 .img-uploader-container {
     box-shadow: 0 4px 4px -2px #232323;
-	width: 800px;
+	width: 60%;
     margin-left: 5%;
     background: #eee;
     padding: 5px 10px;
     float: left;
 }
+*/
 #img-uploader-close {
-    color: red;
+    color: blue;
+    right: 20px;
     float: right;
+    margin-right: 20px;
+    margin-top: 10px;
+}
+.wl-input {
+    padding: 5px;
+    width: 80%;
+    float: left;
+}
+.wl-input-wrapper {
+    margin-bottom: 20px;
 }
 
+.wl-fa-save , .wl-fa-cancel{
+    padding: 5px;
+    margin: 5px;
+    font-size: 16px;
+}
+
+.wl-fa-cancel {
+    color: red;
+}
+.wl-fa-save {
+    color: green;
+}
 .img-edit {
 	margin-right: 5px;
     font-weight: 300;
@@ -240,7 +263,7 @@ ul.rig.columns-4 li {
 		padding: 0 10px;
 	}
 }
-.whitelist-container {
+.whitelist-container, .img-uploader-container {
     float: left;
     width: 62%;
     height: 60%;
@@ -251,12 +274,36 @@ ul.rig.columns-4 li {
     background: #eee;
     margin-left: 5%;
 }
+.wl-tab-bar {
+    background: #5e91f2;
+    color: #FFF;
+}
+
+.wl-tab-item {
+    color: #FFF;
+    font-weight: 400;
+}
+
+.wl-active-tab {
+    background: #1565C0;
+}
+.wl-add-btn {
+    background: #5e91f2;
+    right: 30px;
+    font-weight: 400;
+    font-size: 20px;
+    color: #FFF;
+    padding: 5px 15px;
+    position: absolute;
+
+}
 .white-list{
     min-height: 250px;
     padding: 2px 20px;
     color: #666666;
     min-width: 250px;
     padding-top: 10px;
+    position: relative;
 }
 .content{
     min-height: 250px;
@@ -265,6 +312,10 @@ ul.rig.columns-4 li {
     float: left;
     width: 50%;
     color: #000;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 400px;
 }
 .white-list-row{
     float: left;
@@ -295,7 +346,6 @@ ul.rig.columns-4 li {
 
 .wl-delete:hover {
     opacity: 1;
-    font-size: 18px;
 } 
 
 .clr { clear:both; }

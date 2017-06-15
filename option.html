@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,<200c><200b>100italic,300,300ita<200c><200b>lic,400italic,500,50<200c><200b>0italic,700,700itali<200c><200b>c,900italic,900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 	<link rel="stylesheet" href="assets/css/font-awesome.min.css">
 	<link type="text/css" href="option.css" rel="stylesheet">
     <script type="text/javascript" src="externalCode/jquery/jquery-3.1.1.min.js"></script>
@@ -35,26 +36,34 @@
             </div>
         </div>
 
-        <div id="container" class="whitelist-container">
+     <div id="container" class="whitelist-container">
+		<div class="w3-bar wl-tab-bar">
+			<button class="w3-bar-item w3-button tablink wl-tab-item wl-active-tab" data-list="whitelist" >Whitelist URLs</button>
+    		<button class="w3-bar-item w3-button tablink wl-tab-item" data-list="redflag" >Whitelist Templates</button>
+    		<button class="w3-bar-item w3-button tablink wl-tab-item" data-list="safedomain">Safe Domains</button>
+  		</div>
 
             <div class="white-list">
               <div class="sub-title"> Manage Whitelist </div>
-              <div class="right-actions">
-                <div class="sub-title"> Items </div>
-                <div class="sub-title"> Actions </div>
-              </div>
+                <button class="w3-button w3-circle wl-add-btn">+</button>
               <div class="clr"></div>
               <hr />
               <div class="white-list-scroll">
                 </div>
             <hr />
+              <div class="wl-input-wrapper hide">
+                <input class="w3-input w3-border wl-input" placeholder="Add to Whitelist URL" type="text">
+                <i class="fa fa-check wl-fa-save" ></i>
+                <i class="fa fa-close wl-fa-cancel"></i>
+              </div>
             </div>
           </div>
         <div class="clear"> </div>
         <div class="img-uploader-container hide">
-            <h1> Choose Secure Image 
+            <div class="sub-title"> Choose Secure Image 
             <i class='fa fa-close' id='img-uploader-close'> </i>
-            </h1>
+            </div>
+            <hr />
             <div id="four-columns" class="grid-container" style="display:block;">
                 <ul class="rig columns-4">
                     <li>

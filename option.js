@@ -1,7 +1,12 @@
 
-    console.log("Start");
 const DEFAULT_IMG = "assets/img/secure_img/kp1.jpg";
-var KPWhiteList;
+var KPWhiteList,
+    KPSkipList,
+    KPRedFlagList;
+
+var tab = "whitelist";
+
+
 function template(index, data) {
     return '<div class="white-list-row" data-id=' +index + ' >' +
           '<div class="site-name">' +
@@ -16,6 +21,20 @@ function template(index, data) {
               //'</div>' +
               '<div class="wl-delete" data-id=' +index + ' >' +
                   '<span class="glyphicon glyphicon-remove"></span>' +
+              '</div>' +
+              '<div class="clr"></div>' +
+          '</div>' +
+        '</div>';
+}
+
+function template1(index, data) {
+    return '<div class="white-list-row" data-id=' +index + ' >' +
+          '<div class="site-name">' +
+            data +
+          '</div>' +
+          '<div class="wl-actions">' +
+              '<div class="wl-active">' +
+                '<input id="checkbox0" type="checkbox" checked disabled="true">' +
               '</div>' +
               '<div class="clr"></div>' +
           '</div>' +
@@ -69,19 +88,40 @@ function updateImage(data) {
 }
 
 function updateTableData() {
-    chrome.storage.local.get("whitelist", function(result) {
+    chrome.storage.local.get(["whitelist", "skiplist","redflaglist"], function(result) {
         var data = result.whitelist;
-            console.log("Data received : ", data );
-            if (data) {
-                KPWhiteList = data;
+            console.log("Data received : ", result );
+            if (result.whitelist) {
+                KPWhiteList = result.whitelist;
             } else {
                 KPWhiteList = whiteListedDomains;
+            }
+            if (result.skiplist) {
+                KPSkipList = result.skiplist;
+            } else {
+                //KPWhiteList = whiteListedDomains;
+            }
+            if (result.redflaglist) {
+                KPRedFlagList = result.redflaglist;
+            } else {
+                //KPWhiteList = whiteListedDomains;
             }
             renderTable();
     });
 }
 
 function renderTable() {
+    $('.white-list-scroll').empty();
+    if (tab === "whitelist") {
+        renderWhiteListTable();
+    } else if (tab === 'redflag') {
+        renderRedFlagTable();
+    } else if (tab === 'safedomain') {
+        renderSafeDomainTable();
+    } 
+}
+
+function renderWhiteListTable() {
 
     var length = KPWhiteList.length;
 
@@ -97,13 +137,58 @@ function renderTable() {
         if (res) {
             $('.white-list-scroll').empty();
             KPWhiteList.splice(id, 1);
-            saveTableData();
+            saveWhiteListData()
             renderTable();
         }
     });
 }
 
-function saveTableData() {
+function renderSafeDomainTable() {
+
+    var length = KPSkipList.length;
+
+    for (i = 0; i < length; i++ ) {
+        $('.white-list-scroll').append(template(i, KPSkipList[i]));
+    }
+
+    $('.wl-delete').on('click', function(e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        console.log("Clicked : ", KPSkipList[id]);
+        var res = confirm("Do you want to delete " + KPSkipList[id] + " from Safe Domain list");
+        if (res) {
+            $('.white-list-scroll').empty();
+            KPSkipList.splice(id, 1);
+            saveSkipListData();
+            //saveTableData();
+            renderTable();
+        }
+    });
+}
+
+function renderRedFlagTable() {
+
+    var length = KPRedFlagList.length;
+
+    for (i = 0; i < length; i++ ) {
+        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].site));
+    }
+    //$('.wl-delete').css("display", "none");
+
+   /* $('.wl-delete').on('click', function(e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        console.log("Clicked : ", KPRedFlagList[id]);
+        var res = confirm("Do you want to delete " + KPRedFlagList[id] + " from whitelist");
+        if (res) {
+            $('.white-list-scroll').empty();
+            KPWhiteList.splice(id, 1);
+            //saveWhiteListData()
+            renderTable();
+        }
+    });*/
+}
+function saveWhiteListData() {
     chrome.storage.local.set({whitelist : KPWhiteList},() => {
         var bkg = chrome.extension.getBackgroundPage();
     	bkg.syncWhiteList();
@@ -111,9 +196,32 @@ function saveTableData() {
         });
 }
 
+function saveSkipListData() {
+    chrome.storage.local.set({skiplist : KPSkipList},() => {
+        var bkg = chrome.extension.getBackgroundPage();
+    	bkg.syncSkipList();
+        console.log("skiplist : ", KPSkipList )
+        });
+}
+
 function closeImgUploader() {
     $('.img-uploader-container').addClass("hide");
     $('.whitelist-container').removeClass("hide");
+}
+
+function addData(val) {
+    if (!val || val === "") {
+        return;
+    }
+    if (tab === "whitelist") {
+        KPWhiteList.push(val);
+        saveWhiteListData();
+        renderWhiteListTable();
+    } else if (tab === 'safedomain') {
+        KPSkipList.push(val);
+        saveSkipListData();
+        renderSafeDomainTable();
+    } 
 }
 
 $(document).ready(function() {
@@ -173,5 +281,33 @@ $(document).ready(function() {
         img.src = url;
 		$('.rig li').removeClass("active");
         $('#canvas-cust').removeClass("hide");
+    });
+
+    $('.wl-tab-item').on('click', function(e) {
+        $('.wl-tab-item').removeClass('wl-active-tab');
+        $(this).addClass('wl-active-tab');
+        tab = $(this).data('list');
+        if(tab === "redflag") {
+            $('.wl-add-btn').addClass('hide');
+        } else {
+            $('.wl-add-btn').removeClass('hide');
+        }
+        renderTable();
+        console.log("Tab : ", tab);
+    });
+
+    $('.wl-add-btn').on('click', function(e) {
+        $('.wl-input-wrapper').removeClass('hide');
+    });
+    $('.wl-fa-save').on('click', function(e) {
+        var val = $('.wl-input').val();
+        console.log("Value : ", val);
+        //TODO: Save to the appropriate list
+        $('.wl-input-wrapper').addClass('hide');
+        addData(val);
+
+    });
+    $('.wl-fa-cancel').on('click', function(e) {
+        $('.wl-input-wrapper').addClass('hide');
     });
 });
