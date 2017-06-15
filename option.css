@@ -6,6 +6,8 @@
 body {
 	font-family: sans-serif;
 	font-weight: 200;
+    background: #e1e2e1;
+    color: #666666;
 }
 
 hr {
@@ -21,7 +23,7 @@ header {
     font-weight: 400;
     color: white;
     font-family: "Roboto";
-    background: #eb431e;
+    background: #1565C0;
     box-shadow: 0 4px 4px -2px #232323;
     -moz-box-shadow: 0 4px 4px -2px #232323;
     -webkit-box-shadow: 0 4px 4px -2px #232323;
@@ -34,10 +36,9 @@ header .logo {
 
 footer{
     min-height: 20px;
-    color: red;
     color: white;
     font-family: "Roboto";
-    background: #eb431e;
+    background: #1565C0;
     text-align: center;
     position: fixed;
     left: 0;
@@ -47,7 +48,7 @@ footer{
 
 .secure-img{
     /*background: #797979;*/
-    background: #eb431e;
+    background: #5e91f2;
     min-width: 250px;
     float: left;
     width: auto;
@@ -128,6 +129,8 @@ footer{
     box-shadow: 0 4px 4px -2px #232323;
 	width: 800px;
 	margin: 0 auto;
+    background: #eee;
+    padding: 5px 10px;
 }
 #img-uploader-close {
     color: red;
@@ -246,32 +249,36 @@ ul.rig.columns-4 li {
 	min-width: 800px;
     max-width: 1200px;
 	margin: 0 auto;
+    background: #eee;
 }
 .white-list{
     float: left;
     width: 62%;
     min-height: 250px;
     padding: 2px 20px;
-    color: #eb431e;
+    color: #666666;
     min-width: 250px;
     padding-top: 10px;
+    background: #eee;
 }
 .content{
     min-height: 250px;
 }
 .site-name{
     float: left;
-    width: 50%
+    width: 50%;
+    color: #000;
 }
 .white-list-row{
     padding: 20px 0px;
     font-size: 16px;
     font-family: "Roboto";
-    font-weight: 100;
+    font-weight: 150;
 }
 .wl-actions{
     float: left;
-    width: 50%
+    width: 50%;
+    color: #1565C0;
 }
 .wl-active{
     float: left;

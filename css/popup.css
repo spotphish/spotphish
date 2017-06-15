@@ -27,7 +27,7 @@ a {
 	height: 20px;
 	width: 100%;
 	line-height: 19px;
-	background: #eb431e;
+	background: #1564bf;
 	color: #fff;
 }
 #header img {
@@ -35,7 +35,7 @@ a {
 	padding-right: 3px;
 }
 
-#kp-add-to-whitelist, #kp-remove-from-whitelist {
+#kp-remove-from-whitelist {
     display: none;
 }
 
@@ -46,9 +46,6 @@ a {
 	border-bottom: 1px solid #ccc;
 }
 
-.optsCurrent {
-    display: none;
-}
 
 .menuOption {
 	font-size: 17px;
@@ -56,6 +53,9 @@ a {
 	white-space: nowrap;
 	cursor: pointer;
 	padding: 0 15px;
+}
+.menuOption:hover {
+    background:  #90caf9;
 }
 .menuOption:hover .optionText {
 	text-decoration: underline;
