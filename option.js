@@ -1,5 +1,5 @@
 
-const DEFAULT_IMG = "assets/img/secure_img/kp1.jpg";
+const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 const whitelist_msg = "Login pages on which you will see your personal secure image.";
 const safesite_msg = "Trusted domains which are highly unlikely to host phishing pages. We skip checking pages on these sites as a performance optimization.";
 const redflag_msg = "We have snapshots of the login pages of these sites. If any page you browse looks very similar to one of these snapshots, it is flagged as a possible phishing attempt.";
@@ -8,7 +8,7 @@ var KPWhiteList,
     KPRedFlagList;
 
 var tab = "whitelist";
-
+console.log(DEFAULT_IMG);
 
 function template(index, data) {
     return '<div class="white-list-row" data-id=' +index + ' >' +
@@ -221,14 +221,18 @@ function addData(val) {
         return;
     }
     if (tab === "whitelist") {
-        KPWhiteList.push(val);
-        saveWhiteListData();
-        renderWhiteListTable();
+        if(KPWhiteList.indexOf(val) === -1) {
+            KPWhiteList.push(val);
+            saveWhiteListData();
+            renderWhiteListTable();
+        }
     } else if (tab === 'safedomain') {
-        KPSkipList.push(val);
-        saveSkipListData();
-        renderSafeDomainTable();
-    } 
+        if(KPSkipList.indexOf(val) === -1) {
+            KPSkipList.push(val);
+            saveSkipListData();
+            renderSafeDomainTable();
+        }
+    }
 }
 
 $(document).ready(function() {
