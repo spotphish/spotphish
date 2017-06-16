@@ -99,7 +99,7 @@ function checkWhitelist(url) {
             return true;
         }
     }
-    console.log(" NOT WHITE LISTED : ", hostName);
+    console.log(" NOT WHITE LISTED : ", url);
     return false;
 }
 

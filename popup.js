@@ -9,10 +9,11 @@
         }
         if (response.status === tab_status.WHITELISTED) {
             document.getElementById('kp-remove-from-whitelist').style.display = 'block';
-            document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
+            document.getElementById('kp-add-to-whitelist').style.display = 'none';
+            //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
         } else if (response.status === tab_status.NOT_WHITELISTED) {
             document.getElementById('kp-add-to-whitelist').style.display = 'block';
-            document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
+            //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
         }
     }
 
@@ -33,8 +34,8 @@
             window.close();
         });
         document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {
-            var domain = getPathInfo(curTab.url).host;
-            chrome.runtime.sendMessage({ message: 'removeFromWhitelist', domain: domain});
+            var site = stripQueryParams(curTab.url);
+            chrome.runtime.sendMessage({ message: 'removeFromWhitelist', site: site});
             window.close();
         });
         document.getElementById('settingsLink').addEventListener('click', function (e) {

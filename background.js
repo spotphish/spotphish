@@ -102,13 +102,13 @@ function addToKPSkipList(domain) {
     saveKPSkipList();
 }
 
-function removeFromKPWhiteList(domain) {
-    var index = KPWhiteList.indexOf(domain);
+function removeFromKPWhiteList(site) {
+    var index = KPWhiteList.indexOf(site);
     if (index !== -1) {
         KPWhiteList.splice(index,1);
         saveKPWhiteList();
     } else {
-        console.log("Domain not Whitelisted : ", domain);
+        console.log("site not Whitelisted : ", site);
     }
 }
 
@@ -181,7 +181,7 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
     } else if (req.message === 'addToWhitelist') {
         addToKPWhiteList(req.site);
     } else if (req.message === 'removeFromWhitelist') {
-        removeFromKPWhiteList(req.domain);
+        removeFromKPWhiteList(req.site);
     }
     return true;
 
