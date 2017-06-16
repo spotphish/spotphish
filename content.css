@@ -29,7 +29,7 @@
 
 @keyframes kp-secure-img {
     0%   { right: 40%; top: 40%;}
-    50%   { right: 40%; top: 40%;}
-    100%   { top:10px; right: 10px;}
+    50%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
+    100%   { top:10px; right: 10px;  }
 }
 
