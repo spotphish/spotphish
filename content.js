@@ -99,7 +99,7 @@ function checkWhitelist(url) {
             return true;
         }
     }
-    console.log(" NOT WHITE LISTED : ", url);
+    console.log(" NOT WHITE LISTED : ", site);
     return false;
 }
 

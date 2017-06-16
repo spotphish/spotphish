@@ -53,8 +53,7 @@
     "bootstrap.css"
   ],
   "web_accessible_resources": [
-    "assets/img/*.png",
-    "assets/img/*.jpg",
+    "assets/img/*",
     "assets/fonts/*"
   ]
 }
