@@ -178,7 +178,7 @@ function renderRedFlagTable() {
     var length = KPRedFlagList.length;
 
     for (i = 0; i < length; i++ ) {
-        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].site));
+        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName));
     }
     //$('.wl-delete').css("display", "none");
 
