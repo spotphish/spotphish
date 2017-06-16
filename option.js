@@ -30,14 +30,14 @@ function template(index, data) {
         '</div>';
 }
 
-function template1(index, data) {
+function template1(index, data, status) {
     return '<div class="white-list-row" data-id=' +index + ' >' +
           '<div class="site-name">' +
             data +
           '</div>' +
           '<div class="wl-actions">' +
               '<div class="wl-active">' +
-                '<input id="checkbox0" type="checkbox" checked disabled="true">' +
+                '<input class="wl-checkbox" type="checkbox" checked=' + status + ' data-id=' + index + ' >' +
               '</div>' +
               '<div class="clr"></div>' +
           '</div>' +
@@ -69,18 +69,22 @@ function updateImage(data) {
     } else {
         chrome.storage.local.get("secure_img", function(result) {
             var data = result.secure_img;
-                console.log("Data received : ", typeof data );
-            if (data === undefined) {
+            console.log("Type of Data: ", typeof data );
+            console.log("Data received : ", data);
+            if (typeof data === "undefined") {
+
                 data = {};
                 data.type = "default";
                 data.src = DEFAULT_IMG;
                 updateImage(data);
-                return;
+                //$('.image').append(img);
+                //return;
             }
             console.log("Data received : ", data);
             img.src = data.src;
             img.height = data.height || 200;
             img.width = data.width || 200;
+            console.log("Image : ", img);
             $('.image').empty();
             $('.image').append(img);
         });
@@ -178,27 +182,28 @@ function renderRedFlagTable() {
     var length = KPRedFlagList.length;
 
     for (i = 0; i < length; i++ ) {
-        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName));
+        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled));
     }
     //$('.wl-delete').css("display", "none");
 
-   /* $('.wl-delete').on('click', function(e) {
+    $('.wl-checkbox').change(function(e) {
         e.preventDefault();
         var id = $(this).data("id");
         console.log("Clicked : ", KPRedFlagList[id]);
-        var res = confirm("Do you want to delete " + KPRedFlagList[id] + " from whitelist");
-        if (res) {
+        //var res = confirm("Do you want to delete " + KPRedFlagList[id] + " from whitelist");
+        var enabled = $(this).is(':checked');
+        if (enabled !== KPRedFlagList[id].enabled) {
             $('.white-list-scroll').empty();
-            KPWhiteList.splice(id, 1);
-            //saveWhiteListData()
+            KPRedFlagList[id].enabled = enabled;
+            saveRedFlagData()
             renderTable();
         }
-    });*/
+    });
 }
 function saveWhiteListData() {
     chrome.storage.local.set({whitelist : KPWhiteList},() => {
         var bkg = chrome.extension.getBackgroundPage();
-    	bkg.syncWhiteList();
+        bkg.syncWhiteList();
         console.log("whitelist : ", KPWhiteList )
         });
 }
@@ -208,6 +213,14 @@ function saveSkipListData() {
         var bkg = chrome.extension.getBackgroundPage();
     	bkg.syncSkipList();
         console.log("skiplist : ", KPSkipList )
+        });
+}
+
+function saveRedFlagData() {
+    chrome.storage.local.set({ redflaglist : KPRedFlagList},() => {
+        var bkg = chrome.extension.getBackgroundPage();
+    	bkg.syncRedFlagList();
+        console.log("redflaglist : ", KPRedFlagList );
         });
 }
 
