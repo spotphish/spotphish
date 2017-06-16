@@ -49,8 +49,8 @@ function updateImage(data) {
 
     if (data) {
         console.log("Data found");
-        img.height = data.height;
-        img.width = data.width;
+        img.height = data.height || 200;
+        img.width = data.width || 200;
         chrome.storage.local.set({"secure_img": data}, function() {
             console.log("Data Saved : ", data);
             if (data.type === 'suggested' || data.type === 'default') {
@@ -68,7 +68,7 @@ function updateImage(data) {
         // For Selected Image
     } else {
         chrome.storage.local.get("secure_img", function(result) {
-            var data = result.secure_img;
+            data = result.secure_img;
             console.log("Type of Data: ", typeof data );
             console.log("Data received : ", data);
             if (typeof data === "undefined") {
@@ -155,9 +155,7 @@ function renderWhiteListTable() {
 }
 
 function renderSafeDomainTable() {
-
     var length = KPSkipList.length;
-
     for (i = 0; i < length; i++ ) {
         $('.white-list-scroll').append(template(i, KPSkipList[i]));
     }
