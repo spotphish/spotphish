@@ -145,7 +145,9 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
                     KPRedFlagList.forEach(function (value) {
-                        matches.push(matchBriefFeatures(normalizedImage, value))
+                        if (value.enabled) {
+                            matches.push(matchBriefFeatures(normalizedImage, value));
+                        }
                     });
 
                    // for (i = 0; i < redFlagSites.length; i++) {

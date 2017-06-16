@@ -37,7 +37,7 @@ function template1(index, data, status) {
           '</div>' +
           '<div class="wl-actions">' +
               '<div class="wl-active">' +
-                '<input class="wl-checkbox" type="checkbox" checked=' + status + ' data-id=' + index + ' >' +
+                '<input class="wl-checkbox" type="checkbox" '+ status + ' data-id=' + index + ' >' +
               '</div>' +
               '<div class="clr"></div>' +
           '</div>' +
@@ -182,7 +182,7 @@ function renderRedFlagTable() {
     var length = KPRedFlagList.length;
 
     for (i = 0; i < length; i++ ) {
-        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled));
+        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled ? "checked" : ""));
     }
     //$('.wl-delete').css("display", "none");
 
