@@ -266,6 +266,11 @@ ul.rig.columns-4 li {
         margin-bottom: 30px;
         max-width: 400px;
     }
+    .img-uploader-container {
+        width: 100%;
+        margin-top: 30px;
+        padding: 0 10px;
+    }
 
     .whitelist-container, .img-uploader-container {
         padding-top: 50px;
@@ -276,12 +281,15 @@ ul.rig.columns-4 li {
 
 @media (min-width: 881px) and (max-width: 2000px) {
 	.img-uploader-container {
-		width: auto;
 		padding: 0 10px;
+        width: 60%;
+        float: left;
+        padding: 0 10px;
 	}
     .whitelist-container, .img-uploader-container {
         min-width: 450px;
     }
+
 
   /*  .whitelist-container {
         width: auto;
