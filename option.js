@@ -11,7 +11,7 @@ var tab = "whitelist";
 console.log(DEFAULT_IMG);
 
 function template(index, data) {
-    return '<div class="white-list-row" data-id=' +index + ' >' +
+    return '<div class="white-list-row" data-id=' + index + ' >' +
           '<div class="site-name">' +
             data +
           '</div>' +
@@ -22,7 +22,7 @@ function template(index, data) {
               //'<div class="wl-edit" data-id=' +index + '>' +
               //    '<span class="glyphicon glyphicon-pencil"></span>' +
               //'</div>' +
-              '<div class="wl-delete" data-id=' +index + ' >' +
+              '<div class="wl-delete" data-id=' + index + ' >' +
                   '<span class="glyphicon glyphicon-remove"></span>' +
               '</div>' +
               '<div class="clr"></div>' +
@@ -31,13 +31,13 @@ function template(index, data) {
 }
 
 function template1(index, data, status) {
-    return '<div class="white-list-row" data-id=' +index + ' >' +
+    return '<div class="white-list-row" data-id=' + index + ' >' +
           '<div class="site-name">' +
             data +
           '</div>' +
           '<div class="wl-actions">' +
               '<div class="wl-active">' +
-                '<input class="wl-checkbox" type="checkbox" '+ status + ' data-id=' + index + ' >' +
+                '<input class="wl-checkbox" type="checkbox" ' + status + ' data-id=' + index + ' >' +
               '</div>' +
               '<div class="clr"></div>' +
           '</div>' +
@@ -69,8 +69,6 @@ function updateImage(data) {
     } else {
         chrome.storage.local.get("secure_img", function(result) {
             data = result.secure_img;
-            console.log("Type of Data: ", typeof data );
-            console.log("Data received : ", data);
             if (typeof data === "undefined") {
 
                 data = {};
@@ -97,23 +95,23 @@ function updateImage(data) {
 function updateTableData() {
     chrome.storage.local.get(["whitelist", "skiplist","redflaglist"], function(result) {
         var data = result.whitelist;
-            console.log("Data received : ", result );
-            if (result.whitelist) {
-                KPWhiteList = result.whitelist;
-            } else {
-                KPWhiteList = whiteListedDomains;
-            }
-            if (result.skiplist) {
-                KPSkipList = result.skiplist;
-            } else {
-                //KPWhiteList = whiteListedDomains;
-            }
-            if (result.redflaglist) {
-                KPRedFlagList = result.redflaglist;
-            } else {
-                //KPWhiteList = whiteListedDomains;
-            }
-            renderTable();
+        console.log("Data received : ", result );
+        if (result.whitelist) {
+            KPWhiteList = result.whitelist;
+        } else {
+            KPWhiteList = whiteListedURLs;
+        }
+        if (result.skiplist) {
+            KPSkipList = result.skiplist;
+        } else {
+            KPSkipList = skipDomains;
+        }
+        if (result.redflaglist) {
+            KPRedFlagList = result.redflaglist;
+        } else {
+            KPRedFlagList = redFlagSites;
+        }
+        renderTable();
     });
 }
 
@@ -129,14 +127,14 @@ function renderTable() {
     } else if (tab === 'safedomain') {
         $('.wl-desc p').append(safesite_msg);
         renderSafeDomainTable();
-    } 
+    }
 }
 
 function renderWhiteListTable() {
 
     var length = KPWhiteList.length;
 
-    for (i = 0; i < length; i++ ) {
+    for (i = 0; i < length; i++) {
         $('.white-list-scroll').append(template(i, KPWhiteList[i]));
     }
 
@@ -148,7 +146,7 @@ function renderWhiteListTable() {
         if (res) {
             $('.white-list-scroll').empty();
             KPWhiteList.splice(id, 1);
-            saveWhiteListData()
+            saveWhiteListData();
             renderTable();
         }
     });
@@ -156,7 +154,7 @@ function renderWhiteListTable() {
 
 function renderSafeDomainTable() {
     var length = KPSkipList.length;
-    for (i = 0; i < length; i++ ) {
+    for (i = 0; i < length; i++) {
         $('.white-list-scroll').append(template(i, KPSkipList[i]));
     }
 
@@ -179,7 +177,7 @@ function renderRedFlagTable() {
 
     var length = KPRedFlagList.length;
 
-    for (i = 0; i < length; i++ ) {
+    for (i = 0; i < length; i++) {
         $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled ? "checked" : ""));
     }
     //$('.wl-delete').css("display", "none");
@@ -193,33 +191,33 @@ function renderRedFlagTable() {
         if (enabled !== KPRedFlagList[id].enabled) {
             $('.white-list-scroll').empty();
             KPRedFlagList[id].enabled = enabled;
-            saveRedFlagData()
+            saveRedFlagData();
             renderTable();
         }
     });
 }
 function saveWhiteListData() {
-    chrome.storage.local.set({whitelist : KPWhiteList},() => {
+    chrome.storage.local.set({whitelist : KPWhiteList}, () => {
         var bkg = chrome.extension.getBackgroundPage();
         bkg.syncWhiteList();
-        console.log("whitelist : ", KPWhiteList )
-        });
+        console.log("whitelist : ", KPWhiteList);
+    });
 }
 
 function saveSkipListData() {
-    chrome.storage.local.set({skiplist : KPSkipList},() => {
+    chrome.storage.local.set({skiplist : KPSkipList}, () => {
         var bkg = chrome.extension.getBackgroundPage();
-    	bkg.syncSkipList();
-        console.log("skiplist : ", KPSkipList )
-        });
+        bkg.syncSkipList();
+        console.log("skiplist : ", KPSkipList);
+    });
 }
 
 function saveRedFlagData() {
-    chrome.storage.local.set({ redflaglist : KPRedFlagList},() => {
+    chrome.storage.local.set({ redflaglist : KPRedFlagList}, () => {
         var bkg = chrome.extension.getBackgroundPage();
-    	bkg.syncRedFlagList();
-        console.log("redflaglist : ", KPRedFlagList );
-        });
+        bkg.syncRedFlagList();
+        console.log("redflaglist : ", KPRedFlagList);
+    });
 }
 
 function closeImgUploader() {
@@ -232,13 +230,13 @@ function addData(val) {
         return;
     }
     if (tab === "whitelist") {
-        if(KPWhiteList.indexOf(val) === -1) {
+        if (KPWhiteList.indexOf(val) === -1) {
             KPWhiteList.push(val);
             saveWhiteListData();
             renderWhiteListTable();
         }
     } else if (tab === 'safedomain') {
-        if(KPSkipList.indexOf(val) === -1) {
+        if (KPSkipList.indexOf(val) === -1) {
             KPSkipList.push(val);
             saveSkipListData();
             renderSafeDomainTable();
@@ -249,19 +247,14 @@ function addData(val) {
 $(document).ready(function() {
     updateImage();
     updateTableData();
-	$('.rig li').on('click', function(event){
-		event.preventDefault();
-		/*$('.grid-container').fadeOut(500, function(){
-			$('#' + gridID).fadeIn(500);
-		});*/
-		//var gridID = $(this).attr("data-id");
-		
-		$('.rig li').removeClass("active");
-		$(this).addClass("active");
+    $('.rig li').on('click', function(event) {
+        event.preventDefault();
+        $('.rig li').removeClass("active");
+        $(this).addClass("active");
         var data = {};
         data.type = 'suggested';
         var img = $(this).children("img")[0];
-        var scaleFactor = Math.min(200/img.width, 200/img.height);
+        var scaleFactor = Math.min(200 / img.width, 200 / img.height);
         data.width = scaleFactor * img.width;
         data.height = scaleFactor * img.height;
         data.src = img.src;
@@ -275,11 +268,11 @@ $(document).ready(function() {
         $('.whitelist-container').addClass("hide");
         $('.img-uploader-container').removeClass("hide");
     });
-    $('#img-uploader-close').on('click',function(e) {
+    $('#img-uploader-close').on('click', function(e) {
         closeImgUploader();
     });
 
-    $('#custom-img').change( function(e) {
+    $('#custom-img').change(function(e) {
         var canvas = document.getElementById('canvas-cust');
         console.log("Canvas : ", canvas);
         var ctx = canvas.getContext('2d');
@@ -289,19 +282,19 @@ $(document).ready(function() {
         var img = new Image();
         img.onload = function() {
             console.log("Inside Img");
-            var scaleFactor = Math.min(200/img.width, 200/img.height);
+            var scaleFactor = Math.min(200 / img.width, 200 / img.height);
             canvas.width = img.width * scaleFactor;
             canvas.height = img.height * scaleFactor;
-            ctx.drawImage(img,0,0,canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             var data = {};
             data.type = 'custom';
             data.width = canvas.width;
             data.height = canvas.height;
             data.src = canvas.toDataURL('image/jpeg');
             updateImage(data);
-        }
+        };
         img.src = url;
-		$('.rig li').removeClass("active");
+        $('.rig li').removeClass("active");
         $('#canvas-cust').removeClass("hide");
     });
 
@@ -309,7 +302,7 @@ $(document).ready(function() {
         $('.wl-tab-item').removeClass('wl-active-tab');
         $(this).addClass('wl-active-tab');
         tab = $(this).data('list');
-        if(tab === "redflag") {
+        if (tab === "redflag") {
             $('.wl-add-btn').addClass('hide');
         } else {
             $('.wl-add-btn').removeClass('hide');
