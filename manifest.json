@@ -5,20 +5,20 @@
   "description": "Identify phishing using perceptual techniques",
   "version": "0.1.0",
   "browser_action": {
-    "default_icon": "icon24.png",
+    "default_icon": "assets/icons/icon24.png",
     "default_popup": "popup.html",
     "default_title": "Killphisher"
   },
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
   },
   "options_page":"option.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css":["kp-style.css", "content.css"],
+      "css":["css/kp-style.css", "css/content.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "whitelist.js",
