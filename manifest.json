@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css":["css/kp-style.css", "css/content.css", "css/content1.css", "externalCode/jquery.Jcrop.min.css"],
+      "css":["css/kp-style.css", "css/content.css", "externalCode/jquery.Jcrop.min.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "externalCode/jquery.Jcrop.min.js",
