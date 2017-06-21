@@ -12,15 +12,15 @@ var save = (image) => {
     link.click();
 }
 
-function crop(image, area, dpr, preserve, done) {
+function crop(image, area, dpr, crop, done) {
     var top = area.y * dpr
     var left = area.x * dpr
     var width = area.w * dpr
     var height = area.h * dpr
-    var w = (dpr !== 1 && preserve) ? width : area.w
-    var h = (dpr !== 1 && preserve) ? height : area.h
+    var w = area.w
+    var h = area.h
 
-    if (dpr === 1) {
+    if (dpr === 1 && !crop) {
         done(image);
         return;
     }

@@ -189,8 +189,8 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
         console.log("Inside crop capture");
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
-                crop(image, req.area, req.dpr, false, (cropped) => {
-                        res({message: 'image', image: cropped})
+                crop(image, req.area, req.dpr, true, (cropped) => {
+                        res({message: 'image', image: cropped});
                 })
             })
         })
@@ -216,10 +216,10 @@ init();
 function inject (tab) {
   chrome.tabs.sendMessage(tab.id, {message: 'init'}, (res) => {
     if (res) {
-      clearTimeout(timeout)
+      //clearTimeout(timeout)
     }
   })
-
+/*
   var timeout = setTimeout(() => {
     chrome.tabs.insertCSS(tab.id, {file: 'vendor/jquery.Jcrop.min.css', runAt: 'document_start'})
     chrome.tabs.insertCSS(tab.id, {file: 'css/content1.css', runAt: 'document_start'})
@@ -232,6 +232,7 @@ function inject (tab) {
       chrome.tabs.sendMessage(tab.id, {message: 'init'})
     }, 100)
   }, 100)
+*/
 }
 
 chrome.browserAction.onClicked.addListener((tab) => {
