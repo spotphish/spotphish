@@ -32,6 +32,7 @@
   "background": {
     "scripts": [
         "whitelist.js",
+        "externalCode/idbstore.min.js",
         "utils.js",
         "screenshot.js",
         "background.js",

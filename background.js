@@ -4,6 +4,7 @@ var debug = false,
     tabInfoList = {},
     KPWhiteList,
     KPSkipList,
+    objWhitelist,
     KPRedFlagList;
 
 
@@ -84,10 +85,34 @@ function init() {
     syncWhiteList();
     syncSkipList();
     syncRedFlagList();
+    objWhitelist = new IDBStore({
+            storeName: 'whitelist',
+            keyPath: 'id',
+            autoIncrement: true,
+            onStoreReady: initWhitelist
+    });
 }
 
+function initWhitelist() {
+    objWhitelist.getAll((data) => {
+        console.log("IDB data : ", data);
+        if (data.length <= 0) {
+            objWhitelist.putBatch(KPRedFlagList);
+            console.log("No data");
+        }
+    })
+    objWhitelist.remove(5,
+            function (ret) {
+                console.log("Success : ", ret);
+            }, (e) => {
+                console.log("Error : ", e);
+            });
+    objWhitelist.put(KPRedFlagList[5]);
+}
 function addToKPWhiteList(site) {
-    if (site in KPWhiteList) {
+    var index = KPWhiteList.indexOf(site);
+    if (index !== -1) {
+        console.log("Already in list : ", site);
         return;
     }
     KPWhiteList.push(site);
@@ -207,6 +232,7 @@ chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
 
 chrome.runtime.onInstalled.addListener(function(details) {
 if (details.reason === 'install') {
+        objWhitelist.clear();
         chrome.tabs.create({ url: "option.html" });
     }
 });
