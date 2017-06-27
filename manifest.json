@@ -34,8 +34,9 @@
         "utils.js",
         "screenshot.js",
         "background.js",
-        "brief-features.js",
-        "tracking-min.js"
+        "orb-features.js",
+        "tracking-min.js",
+        "jsfeat-min.js"
       ]
   },
   "permissions": [
@@ -54,6 +55,7 @@
   ],
   "web_accessible_resources": [
     "assets/img/*",
-    "assets/fonts/*"
+    "assets/fonts/*",
+    "assets/defaults/*"
   ]
 }

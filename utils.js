@@ -16,6 +16,29 @@ const tab_status = {
     NOT_WHITELISTED : 2
 };
 
+function ajax_get(url, cb) {
+    var request = new XMLHttpRequest(),
+        callback = cb || function() {};
+    request.open('GET', url, true);
+    request.onload = function() {
+        if (request.status >= 200 && request.status < 400) {
+            var data;
+            try {
+                data = JSON.parse(request.responseText);
+            } catch (e) {
+                data = null;
+            }
+            return callback(null, data);
+        } else {
+            callback('ajax_get error');
+        }
+    };
+    request.onerror = function() {
+        return callback('ajax_get error');
+    };
+    request.send();
+}
+
 if (typeof NON_ENGLISH_LOCALE === 'undefined') {
   var NON_ENGLISH_LOCALE = false;
 }
