@@ -7,18 +7,26 @@ var KPWhiteList,
     KPSkipList,
     KPRedFlagList;
 
+var bkg = chrome.extension.getBackgroundPage();
 var tab = "whitelist";
 console.log(DEFAULT_IMG);
+/*
+var cb = function (data) {
+    console.log("IDB-Data", data);
+}
+var bkg = chrome.extension.getBackgroundPage();
+bkg.initWhitelist("IDBI", cb);
+*/
 
 function template(index, data) {
-    return '<div class="white-list-row" data-id=' + index + ' >' +
+    return '<div class="white-list-row" data-id=' + index + ' data-name=' + data + ' >' +
           '<div class="site-name">' +
             data +
           '</div>' +
           '<div class="wl-actions">' +
-              //'<div class="wl-active">' +
-              //  '<input id="checkbox0" type="checkbox">' +
-              //'</div>' +
+              '<div class="wl-active">' +
+                '<input id="checkbox0" type="checkbox">' +
+              '</div>' +
               //'<div class="wl-edit" data-id=' +index + '>' +
               //    '<span class="glyphicon glyphicon-pencil"></span>' +
               //'</div>' +
@@ -43,6 +51,33 @@ function template1(index, data, status) {
           '</div>' +
         '</div>';
 }
+
+function template3(data) {
+    var name = data.url;
+    var logo = "";
+    if (data.logo) {
+        logo = '<img src="' + data.logo + '" ></img>';
+    }
+    var template = '<div class="white-list-row" data-id=' + data.id + ' data-name=' + data.site + ' >' +
+          '<div class="site-name">' +
+            name +
+          '</div>' + logo +
+          '<div class="wl-actions">' +
+              '<div class="wl-active">' +
+                '<input id="checkbox0" type="checkbox">' +
+              '</div>' +
+              //'<div class="wl-edit" data-id=' +index + '>' +
+              //    '<span class="glyphicon glyphicon-pencil"></span>' +
+              //'</div>' +
+              '<div class="wl-delete" >' +
+                  '<span class="glyphicon glyphicon-remove wl-delete-icon"></span>' +
+              '</div>' +
+              '<div class="clr"></div>' +
+          '</div>' +
+        '</div>';
+    return template;
+}
+
 function updateImage(data) {
     var img = document.createElement('img');
     img.id = 'display-img';
@@ -120,7 +155,8 @@ function renderTable() {
     $('.wl-desc p').empty();
     if (tab === "whitelist") {
         $('.wl-desc p').append(whitelist_msg);
-        renderWhiteListTable();
+            bkg.initWhitelist("IDBI", renderWhiteListTable);
+        //renderWhiteListTable();
     } else if (tab === 'redflag') {
         $('.wl-desc p').append(redflag_msg);
         renderRedFlagTable();
@@ -130,24 +166,29 @@ function renderTable() {
     }
 }
 
-function renderWhiteListTable() {
+function renderWhiteListTable(data) {
 
-    var length = KPWhiteList.length;
+    //var length = KPWhiteList.length;
+    var length = data.length;
+    console.log("IDB-data", data);
+    data.forEach((x)=> {
+        if (x.url) {
+            $('.white-list-scroll').append(template3(x));
+        }
+    });
 
-    for (i = 0; i < length; i++) {
-        $('.white-list-scroll').append(template(i, KPWhiteList[i]));
-    }
-
-    $('.wl-delete').on('click', function(e) {
+    $('.white-list-row').on('click', function(e) {
         e.preventDefault();
         var id = $(this).data("id");
-        console.log("Clicked : ", KPWhiteList[id]);
-        var res = confirm("Do you want to delete " + KPWhiteList[id] + " from whitelist");
-        if (res) {
-            $('.white-list-scroll').empty();
-            KPWhiteList.splice(id, 1);
-            saveWhiteListData();
-            renderTable();
+        var name = $(this).data("name");
+        console.log("Clicked : ", name);
+        console.log(e.target);
+        if ($(e.target).is('.wl-delete-icon')) {
+            var res = confirm("Do you want to delete " + name + " from whitelist");
+            if (res) {
+                $(this).remove();
+                bkg.removeFromWhiteListById(id);
+            }
         }
     });
 }

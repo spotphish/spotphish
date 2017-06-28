@@ -16,9 +16,9 @@ var intervalID;
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname,
     href = window.location.href,
-    whList, skipList, redFlagList;
+    whList, skipList;
 
-chrome.storage.local.get(["skiplist","redflaglist","whitelist"], function(result) {
+chrome.storage.local.get(["skiplist","whitelist"], function(result) {
     var whiteListData = result.whitelist;
     console.log("Data received : ", result );
     if (whiteListData) {
@@ -31,12 +31,6 @@ chrome.storage.local.get(["skiplist","redflaglist","whitelist"], function(result
         skipList = skipListData;
     } else {
         skipList = skipDomains;
-    }
-    var redFlagData = result.redflaglist;
-    if (redFlagData) {
-        redFlagList = redFlagData;
-    } else {
-        redFlagList = redFlagSites;
     }
     start();
 });
@@ -260,12 +254,12 @@ var capture = (force) => {
       jcrop.release()
       setTimeout(() => {
         chrome.runtime.sendMessage({
-          message: 'crop_capture', area: selection, dpr: devicePixelRatio
+            message: 'crop_capture', area: selection, dpr: devicePixelRatio
         }, (res) => {
           overlay(false)
           selection = null;
           console.log(res);
-          save(res.image)
+          //save(res.image)
         })
       }, 50)
     }
@@ -287,7 +281,7 @@ var save = (image) => {
   link.href = image
   link.click()
 }
-
+/*
 window.addEventListener('resize', ((timeout) => () => {
   clearTimeout(timeout)
   timeout = setTimeout(() => {
@@ -295,23 +289,52 @@ window.addEventListener('resize', ((timeout) => () => {
     init(() => overlay(null))
   }, 100)
 })())
-
+*/
 chrome.runtime.onMessage.addListener((req, sender, res) => {
-  if (req.message === 'init') {
-    res({}) // prevent re-injecting
-    console.log("Message received");
-    if (!jcrop) {
-        console.log("!jcrop");
-      image(() => init(() => {
-          console.log("initialized jcrop : ", jcrop);
-        overlay()
-        capture()
-      }))
-    }
-    else {
-      overlay()
-      capture(true)
-    }
+    if (req.message === 'init') {
+        res({}) // prevent re-injecting
+        console.log("Message received");
+        var isTemplate = confirm("Do you want to upload a template?");
+        if (isTemplate) {
+            if (!jcrop) {
+                image(() => init(() => {
+                    overlay();
+                    capture();
+                }));
+            } else {
+                overlay();
+                capture(true);
+            }
+        } else {
+            chrome.runtime.sendMessage({
+                message: 'add_wh', url: req.url});
+      }
   }
   return true
 })
+
+function injectConfirmBox(text) {
+    var append = '<div class="kp-popup kp-is-visible" role="alert">' +
+                '<div class="kp-popup-container">' +
+                '<p>' + text + '</p>' +
+                '<div class="kp-buttons">' +
+                '<div><a href="#0" class="kp-yes">Yes</a></div>' +
+                '<div><a href="#0" class="kp-no">No</a></div>' +
+                '</div>' +
+                '<div="#0" class="kp-popup-close">X<div>'+
+                '</div>' +
+                '</div>';
+    $('body').append(append);
+	$('.kp-popup').on('click', function(event){
+		if( $(event.target).is('.kp-popup-close') || $(event.target).is('.kp-popup') ) {
+			event.preventDefault();
+			$(this).removeClass('kp-is-visible');
+		}
+	});
+	//close popup when clicking the esc keyboard button
+	$(document).keyup(function(event){
+    	if(event.which=='27'){
+    		$('.kp-popup').removeClass('kp-is-visible');
+	    }
+    });
+}

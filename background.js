@@ -5,7 +5,8 @@ var debug = false,
     KPWhiteList,
     KPSkipList,
     objWhitelist,
-    KPRedFlagList;
+    KPRedFlagList,
+    whiteListedUrls;
 
 
 function updateTabInfo(tab, data) {
@@ -58,7 +59,7 @@ function syncWhiteList(){
 function syncSkipList(){
     chrome.storage.local.get("skiplist", function(result) {
         var data = result.skiplist;
-            console.log("Data received : ", data );
+            console.log("Data received : ", data);
             if (data) {
                 KPSkipList = data;
             } else {
@@ -71,7 +72,7 @@ function syncSkipList(){
 function syncRedFlagList(){
     chrome.storage.local.get("redflaglist", function(result) {
         var data = result.redflaglist;
-            console.log("Data received : ", data );
+            console.log("Data received : ", data);
             if (data) {
                 KPRedFlagList = data;
             } else {
@@ -91,24 +92,10 @@ function init() {
             autoIncrement: true,
             onStoreReady: initWhitelist
     });
+
 }
 
-function initWhitelist() {
-    objWhitelist.getAll((data) => {
-        console.log("IDB data : ", data);
-        if (data.length <= 0) {
-            objWhitelist.putBatch(KPRedFlagList);
-            console.log("No data");
-        }
-    })
-    objWhitelist.remove(5,
-            function (ret) {
-                console.log("Success : ", ret);
-            }, (e) => {
-                console.log("Error : ", e);
-            });
-    objWhitelist.put(KPRedFlagList[5]);
-}
+
 function addToKPWhiteList(site) {
     var index = KPWhiteList.indexOf(site);
     if (index !== -1) {
@@ -207,7 +194,8 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
 
     } else if (req.message === 'addToWhitelist') {
         addToKPWhiteList(req.site);
-        inject(req.currentTab);
+        console.log("In Add to whitelist");
+        inject(req.currentTab, req.site);
     } else if (req.message === 'removeFromWhitelist') {
         removeFromKPWhiteList(req.site);
     } else if (req.message === 'crop_capture') {
@@ -216,9 +204,17 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
                 crop(image, req.area, req.dpr, true, (cropped) => {
                         res({message: 'image', image: cropped});
+                        var url = stripQueryParams(sender.tab.url);
+                        console.log ("URL: ", url, " tab: ", sender.tab);
+                        objWhitelist.put({ url: url, type: "custom", logo: cropped, site: getPathInfo(url).host })
                 })
             })
         })
+    } else if (req.message === 'add_wh') {
+        //TODO: Put into whitelist
+        var url = stripQueryParams(sender.tab.url);
+        console.log ("URL: ", url, " tab: ", sender.tab);
+        objWhitelist.put({ url: url, type: "custom", site: getPathInfo(url).host })
     }
     return true;
 
@@ -239,8 +235,8 @@ if (details.reason === 'install') {
 
 init();
 //function getCurrentTabStatus()
-function inject (tab) {
-  chrome.tabs.sendMessage(tab.id, {message: 'init'}, (res) => {
+function inject (tab, site) {
+  chrome.tabs.sendMessage(tab.id, {message: 'init', url: site}, (res) => {
     if (res) {
       //clearTimeout(timeout)
     }
@@ -260,64 +256,32 @@ function inject (tab) {
   }, 100)
 */
 }
-
+/*
 chrome.browserAction.onClicked.addListener((tab) => {
   inject(tab)
 })
+*/
+/* Indexed DB related functions */
 
-chrome.runtime.onMessage.addListener((req, sender, res) => {
-  if (req.message === 'capture') {
-    chrome.tabs.getSelected(null, (tab) => {
-
-      chrome.tabs.captureVisibleTab(tab.windowId, {format: 'png'}, (image) => {
-        // image is base64
-
-        chrome.storage.sync.get((config) => {
-          if (config.method === 'view') {
-            if (req.dpr !== 1 && !config.dpr) {
-              crop(image, req.area, req.dpr, config.dpr, (cropped) => {
-                res({message: 'image', image: cropped})
-              })
-            }
-            else {
-              res({message: 'image', image: image})
-            }
-          }
-          else {
-            crop(image, req.area, req.dpr, config.dpr, (cropped) => {
-              res({message: 'image', image: cropped})
-            })
-          }
-        })
-      })
+function initWhitelist(site, cb) {
+    objWhitelist.getAll((data) => {
+        if (data.length <= 0) {
+            objWhitelist.putBatch(redFlagSites);
+        }
+        var data1 = data.map((x) => {
+            return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo}
+        });
+        whiteListedUrls = data.map((x) => {
+            return x.url;
+        });
+        if (cb) {
+            cb(data1);
+        }
     })
-  }
-  else if (req.message === 'active') {
-    if (req.active) {
-      chrome.storage.sync.get((config) => {
-        if (config.method === 'view') {
-          chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Capture Viewport'})
-          chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '⬒'})
-        }
-        // else if (config.method === 'full') {
-        //   chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Capture Document'})
-        //   chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '⬛'})
-        // }
-        else if (config.method === 'crop') {
-          chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Crop and Save'})
-          chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '◩'})
-        }
-        else if (config.method === 'wait') {
-          chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Crop and Wait'})
-          chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: '◪'})
-        }
-      })
-    }
-    else {
-      chrome.browserAction.setTitle({tabId: sender.tab.id, title: 'Screenshot Capture'})
-      chrome.browserAction.setBadgeText({tabId: sender.tab.id, text: ''})
-    }
-  }
-  return true
-})
+}
+
+
+function removeFromWhiteListById(id) {
+    objWhitelist.remove(id);
+}
 

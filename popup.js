@@ -22,6 +22,7 @@
         console.log("Current tab : ", curTab);
         if (isSpecialTab(curTab.url)) {
             chrome.runtime.sendMessage({message: "update_info", curtab: curTab, status: tab_status.NA});
+            document.getElementById('kp-add-to-whitelist').style.display = 'none';
         } else {
             chrome.runtime.sendMessage({message: "get_tabinfo", curtab: curTab}, handleTabInfo);
         }

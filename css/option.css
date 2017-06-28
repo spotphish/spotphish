@@ -352,11 +352,16 @@ ul.rig.columns-4 li {
     max-width: 500px;
 }
 .white-list-row{
-    float: left;
-    width: 45%;
+    width: auto;;
     padding: 20px 0px;
     font-size: 16px;
     font-weight: 150;
+}
+
+.white-list-row img {
+    float: left;
+    width: 40px;
+    height: 30px;
 }
 .wl-actions{
     float: right;
@@ -383,3 +388,4 @@ ul.rig.columns-4 li {
 }
 
 .clr { clear:both; }
+
