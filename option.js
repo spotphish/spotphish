@@ -230,9 +230,6 @@ function renderRedFlagTable() {
         }
     });
 }
-function saveWhiteListData() {
-    //TODO: Add to the indexed DB, Take a parameter for data
-}
 
 function saveSkipListData() {
     chrome.storage.local.set({skiplist : KPSkipList}, () => {
@@ -261,7 +258,7 @@ function addData(val) {
     }
     if (tab === "whitelist") {
             bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
-            renderWhiteListTable();
+            renderTable();
         }
     } else if (tab === 'safedomain') {
         if (KPSkipList.indexOf(val) === -1) {
