@@ -259,7 +259,6 @@ function addData(val) {
     if (tab === "whitelist") {
             bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
             renderTable();
-        }
     } else if (tab === 'safedomain') {
         if (KPSkipList.indexOf(val) === -1) {
             KPSkipList.push(val);
