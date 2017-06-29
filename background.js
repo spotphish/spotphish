@@ -155,11 +155,8 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
                     Promise.all([findOrbFeatures(normalizedImage)]).then((results) => {
-                        console.log(results);
                         scrCorners = results[0].corners;
                         scrDescriptors = results[0].descriptors;
-                        console.log(scrCorners);
-                        console.log(scrDescriptors);
                         KPRedFlagList.forEach(function (value) {
                             if (value.enabled) {
                                 matches.push(matchOrbFeatures(
