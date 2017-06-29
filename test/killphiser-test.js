@@ -264,7 +264,7 @@ function getSourceImageData(data, url) {
 }
 
 // open website or scrren shots
-function toOpen(url) {
+function toOpen(url, dirPath) {
     setInterval(function() {}, 500);
     var webPage = require('webpage');
     var page = webPage.create();
@@ -273,12 +273,12 @@ function toOpen(url) {
     };
 
     var expectedContent = '<html><body><img id="image1" src="' + url + '"></img><canvas id="canvas"></canvas></body></html>';
-    var expectedLocation = 'file:///Users/deepakshinde/work/killphisher/test/test-sample.html';
+    var expectedLocation = 'file:///'+ dirPath  +'/test-sample111.html';
     page.setContent(expectedContent, expectedLocation);
 
     //on page load function
     page.onLoadFinished = function() {
-        filename = 'lib/jsfeat-min.js';
+        filename = '../jsfeat-min.js';
         injected = phantom.injectJs(filename);
         var t0 = performance.now();
 
@@ -309,9 +309,10 @@ var scanDirectory = function(path) {
     var fs = require('fs');
     if (fs.exists(path) && fs.isFile(path)) {
         // console.log("New image");
+        var dirPath = fs.workingDirectory;
         var imgpath = fs.workingDirectory + "/" + path;
         // var imgpath = fs.workingDirectory + "/" + path;
-        toOpen(imgpath);
+        toOpen(imgpath, dirPath);
     } else if (fs.isDirectory(path)) {
         fs.list(path).forEach(function(e) {
             if (e !== "." && e !== "..") { //< Avoid loops
