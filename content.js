@@ -16,16 +16,9 @@ var intervalID;
 var protocol = window.location.protocol,
     srcDomain = window.location.hostname,
     href = window.location.href,
-    whList, skipList;
+    skipList;
 
-chrome.storage.local.get(["skiplist","whitelist"], function(result) {
-    var whiteListData = result.whitelist;
-    console.log("Data received : ", result );
-    if (whiteListData) {
-        whList = whiteListData;
-    } else {
-        whList = whiteListedDomains;
-    }
+chrome.storage.local.get(["skiplist"], function(result) {
     var skipListData = result.skiplist;
     if (skipListData) {
         skipList = skipListData;
@@ -37,7 +30,6 @@ chrome.storage.local.get(["skiplist","whitelist"], function(result) {
 
 
 
-//console.log("Protocol : ", protocol, " SrcDomain : ", srcDomain, " href : ", href);
 // var whitelist = [ "google1.com", "facebooksss.com", "google11.co.in", "twitter11.com"];
 
 // This response is triggered by the background script.
@@ -83,7 +75,7 @@ function checkInputBox() {
             return false;
         }
 }
-
+/*
 function checkWhitelist(url) {
     var length = whList.length;
     var site = stripQueryParams(url);
@@ -96,7 +88,7 @@ function checkWhitelist(url) {
     console.log(" NOT WHITE LISTED : ", site);
     return false;
 }
-
+*/
 function checkSkiplist( hostName) {
     var length = skipList.length;
     for (var i = 0; i < length; i++ ) {
@@ -112,29 +104,28 @@ function checkSkiplist( hostName) {
 
 function start() {
     var bInputBox = checkInputBox();
-    var isWhitelisted = protocol === "https:" ? checkWhitelist(href): false;
-    var isSkiplisted = protocol === "https:" ? checkSkiplist(srcDomain): false;
-    var tabinfo = {};
-    tabinfo.message = 'tabinfo';
-    tabinfo.pwField = bInputBox;
-    tabinfo.whitelisted = isWhitelisted;
-    chrome.runtime.sendMessage(tabinfo); //sending the info about the tab to the background
-
-    if (bInputBox && isWhitelisted) {
-        appendSecureImg();
+    if (!bInputBox) {
+        console.log("No pwd field");
         return;
     }
-
-    window.setTimeout(function() {
-        if ( !isSkiplisted && bInputBox) {
-            t1 = performance.now();
-            console.log("Calling snapShot at T1 : " + t1);
-            chrome.runtime.sendMessage({
-                message: 'capture',
-                area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
-            }, handleBkgdResponse);
+    var isSkiplisted = protocol === "https:" ? checkSkiplist(srcDomain): false;
+    chrome.runtime.sendMessage({message: "wl_check", url:stripQueryParams(href)}, function(res){
+        if (res && res.whitelist) {
+            appendSecureImg();
+            return;
         }
-    }, 2000);
+
+        window.setTimeout(function() {
+            if ( !isSkiplisted && bInputBox) {
+                t1 = performance.now();
+                console.log("Calling snapShot at T1 : " + t1);
+                chrome.runtime.sendMessage({
+                    message: 'capture',
+                    area: {x: 0, y: 0, w: innerWidth, h: innerHeight}, dpr: devicePixelRatio
+                }, handleBkgdResponse);
+            }
+        }, 2000);
+    });
 }
 
 //Used for saving screenshot as a file
@@ -292,7 +283,7 @@ window.addEventListener('resize', ((timeout) => () => {
 */
 chrome.runtime.onMessage.addListener((req, sender, res) => {
     if (req.message === 'init') {
-        res({}) // prevent re-injecting
+        //res({}) // prevent re-injecting
         console.log("Message received");
         var isTemplate = confirm("Do you want to upload a template?");
         if (isTemplate) {

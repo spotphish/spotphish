@@ -18,7 +18,7 @@ var bkg = chrome.extension.getBackgroundPage();
 bkg.initWhitelist("IDBI", cb);
 */
 
-function template(index, data) {
+function templateSkipDomain(index, data) {
     return '<div class="white-list-row" data-id=' + index + ' data-name=' + data + ' >' +
           '<div class="site-name">' +
             data +
@@ -128,14 +128,8 @@ function updateImage(data) {
 }
 
 function updateTableData() {
-    chrome.storage.local.get(["whitelist", "skiplist","redflaglist"], function(result) {
-        var data = result.whitelist;
+    chrome.storage.local.get(["skiplist","redflaglist"], function(result) {
         console.log("Data received : ", result );
-        if (result.whitelist) {
-            KPWhiteList = result.whitelist;
-        } else {
-            KPWhiteList = whiteListedURLs;
-        }
         if (result.skiplist) {
             KPSkipList = result.skiplist;
         } else {
@@ -155,7 +149,7 @@ function renderTable() {
     $('.wl-desc p').empty();
     if (tab === "whitelist") {
         $('.wl-desc p').append(whitelist_msg);
-            bkg.initWhitelist("IDBI", renderWhiteListTable);
+            bkg.initWhitelist(renderWhiteListTable);
         //renderWhiteListTable();
     } else if (tab === 'redflag') {
         $('.wl-desc p').append(redflag_msg);
@@ -168,7 +162,6 @@ function renderTable() {
 
 function renderWhiteListTable(data) {
 
-    //var length = KPWhiteList.length;
     var length = data.length;
     console.log("IDB-data", data);
     data.forEach((x)=> {
@@ -196,7 +189,7 @@ function renderWhiteListTable(data) {
 function renderSafeDomainTable() {
     var length = KPSkipList.length;
     for (i = 0; i < length; i++) {
-        $('.white-list-scroll').append(template(i, KPSkipList[i]));
+        $('.white-list-scroll').append(templateSkipDomain(i, KPSkipList[i]));
     }
 
     $('.wl-delete').on('click', function(e) {
@@ -238,11 +231,7 @@ function renderRedFlagTable() {
     });
 }
 function saveWhiteListData() {
-    chrome.storage.local.set({whitelist : KPWhiteList}, () => {
-        var bkg = chrome.extension.getBackgroundPage();
-        bkg.syncWhiteList();
-        console.log("whitelist : ", KPWhiteList);
-    });
+    //TODO: Add to the indexed DB, Take a parameter for data
 }
 
 function saveSkipListData() {
@@ -271,9 +260,7 @@ function addData(val) {
         return;
     }
     if (tab === "whitelist") {
-        if (KPWhiteList.indexOf(val) === -1) {
-            KPWhiteList.push(val);
-            saveWhiteListData();
+            bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
             renderWhiteListTable();
         }
     } else if (tab === 'safedomain') {

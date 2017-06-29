@@ -7,13 +7,11 @@
         if (!response) {
             return;
         }
-        if (response.status === tab_status.WHITELISTED) {
-            document.getElementById('kp-remove-from-whitelist').style.display = 'block';
+        if (response.whitelisted) {
+            //document.getElementById('kp-remove-from-whitelist').style.display = 'block';
             document.getElementById('kp-add-to-whitelist').style.display = 'none';
-            //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
-        } else if (response.status === tab_status.NOT_WHITELISTED) {
+        } else {
             document.getElementById('kp-add-to-whitelist').style.display = 'block';
-            //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
         }
     }
 
@@ -21,10 +19,9 @@
         curTab = tabs[0];
         console.log("Current tab : ", curTab);
         if (isSpecialTab(curTab.url)) {
-            chrome.runtime.sendMessage({message: "update_info", curtab: curTab, status: tab_status.NA});
             document.getElementById('kp-add-to-whitelist').style.display = 'none';
         } else {
-            chrome.runtime.sendMessage({message: "get_tabinfo", curtab: curTab}, handleTabInfo);
+            chrome.runtime.sendMessage({message: "wl_check", url: stripQueryParams(curTab.url)}, handleTabInfo);
         }
     });
 
