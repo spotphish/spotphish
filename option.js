@@ -94,19 +94,17 @@ function updateImage(data) {
 
 function updateTableData() {
     chrome.storage.local.get(["whitelist", "skiplist","redflaglist"], function(result) {
-        var data = result.whitelist;
-        console.log("Data received : ", result );
-        if (result.whitelist) {
+        if (result && result.whitelist) {
             KPWhiteList = result.whitelist;
         } else {
             KPWhiteList = whiteListedURLs;
         }
-        if (result.skiplist) {
+        if (result && result.skiplist) {
             KPSkipList = result.skiplist;
         } else {
             KPSkipList = skipDomains;
         }
-        if (result.redflaglist) {
+        if (result && result.redflaglist) {
             KPRedFlagList = result.redflaglist;
         } else {
             KPRedFlagList = redFlagSites;
