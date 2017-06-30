@@ -1,4 +1,5 @@
-//Sites of brands with logos, used for phising detection using the red flag approach.
+//Sites of brands with logos, used for phising detection using the red flag approach
+//diagDistance is irrelevant for now, can be skipped for any new logo added.
 var redFlagSites = [
     {"templateName":"Facebook", "site": "Facebook", "logo": "assets/img/fb-logo_lnx.png", "diagDist": 202, "enabled":true},
     { "templateName":"Facebook old","site": "Facebook", "logo": "assets/img/fb-old.png", "diagDist": 121 , "enabled":true},
