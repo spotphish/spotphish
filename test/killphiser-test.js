@@ -2,7 +2,8 @@ var system = require('system');
 var args = system.args;
 var fs = require('fs');
 var colors = require('colors');
-if (system.args.length == 4) {
+console.log(system.args.length);
+if (system.args.length >= 3 ) {
     console.log("Starting....");
 }else{
     console.log("Pass the corrects arguments".red);
@@ -16,14 +17,21 @@ var promiseTimeout = 5000; //in ms
 var blurSize = 5;
 var totalImages = 0;
 var matchFound = 0;
+var wrongMatch = 0;
+var noMatch = 0;
 var matchReults = []
 
-var testFor = system.args[3].toLowerCase() || null;
+if (system.args.length == 4){
+    var testFor = system.args[3].toLowerCase() || null;
+}else{
+    var testFor = null;
+}
+
 
 // estimate homography transform between matched points
 function findTransform(scrShot_corners, patternCorners, matches, count, homo3x3, match_mask) {
     // motion kernel
-    var mm_kernel = new jsfeat.motion_model.homography2d();
+    var mm_kernel = new jsfeat.motion_model.affine2d();
     // ransac params
     var num_model_points = 4;
     var reproj_threshold = 3;
@@ -206,27 +214,31 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     // console.log("Time taken : " + (t1 - t0));
     if (testFor) {
         if (good_matches > 8) {
-            matchFound = matchFound + 1;
             if (testFor === site.toLowerCase()) {
-                var result = "Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches;
+                matchFound = matchFound + 1;
+                var result = "Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Total Matches Found: " + matchFound + ", Total Image scanned:" + imgNo ;
                 console.log(colors.green(result));
             } else {
-                var result = "Wrong Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches;
+                wrongMatch = wrongMatch + 1;
+                var result = "Wrong Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Wrong Match Count: " + wrongMatch +", Total Image scanned:" + imgNo;
                 console.log(colors.red(result));
             }
         } else {
-            var result = "No Match:  path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches;
+
             if (testFor === site.toLowerCase()) {
+                noMatch = noMatch + 1;
+                var result = "No Match:  path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", NO Match Count: " + noMatch +", Total Image scanned:" + imgNo;;
                 console.log(colors.red(result));
             }
         }
     } else {
         if (good_matches > 8) {
             matchFound = matchFound + 1;
-            var result = "Match: Image path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ""
+            var result = "Match: Image path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Total Matches Found: " + matchFound + ", Total Image scanned:" + imgNo ;
             console.log(colors.green(result));
         } else {
-            var result = "No Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ""
+             noMatch = noMatch + 1;
+            var result = "No Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", NO Match Count: " + noMatch +", Total Image scanned:" + imgNo;
             console.log(colors.yellow(result));
         }
     }
