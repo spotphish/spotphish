@@ -2,7 +2,6 @@ var system = require('system');
 var args = system.args;
 var fs = require('fs');
 var colors = require('colors');
-console.log(system.args.length);
 if (system.args.length >= 3 ) {
     console.log("Starting....");
 }else{
@@ -218,10 +217,13 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
                 matchFound = matchFound + 1;
                 var result = "Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Total Matches Found: " + matchFound + ", Total Image scanned:" + imgNo ;
                 console.log(colors.green(result));
+                console.log(" ");
             } else {
                 wrongMatch = wrongMatch + 1;
+                 console.log(" ");
                 var result = "Wrong Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Wrong Match Count: " + wrongMatch +", Total Image scanned:" + imgNo;
                 console.log(colors.red(result));
+                console.log(" ");
             }
         } else {
 
@@ -229,6 +231,7 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
                 noMatch = noMatch + 1;
                 var result = "No Match:  path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", NO Match Count: " + noMatch +", Total Image scanned:" + imgNo;;
                 console.log(colors.red(result));
+                console.log(" ");
             }
         }
     } else {
@@ -236,10 +239,12 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
             matchFound = matchFound + 1;
             var result = "Match: Image path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Total Matches Found: " + matchFound + ", Total Image scanned:" + imgNo ;
             console.log(colors.green(result));
+            console.log(" ");
         } else {
              noMatch = noMatch + 1;
-            var result = "No Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", NO Match Count: " + noMatch +", Total Image scanned:" + imgNo;
+            var result = "No Match: path: " + url + ", Match Templates: " + site + ", Good Matches:" + good_matches + ", Total Image scanned:" + imgNo;
             console.log(colors.yellow(result));
+            console.log(" ");
         }
     }
 }
