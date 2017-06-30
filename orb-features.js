@@ -194,7 +194,6 @@ const loadImage = (imageUrl, canvasElement) => {
 function findOrbFeatures(screenShot) {
     return new Promise((resolve) => {
         Promise.all([loadImage(screenShot)]).then((result) => {
-            let t0 = performance.now();
             var threshold = 10;
             jsfeat.fast_corners.set_threshold(threshold);
             var image = result[0];
@@ -209,11 +208,8 @@ function findOrbFeatures(screenShot) {
             var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t); 
             var scrCorners = [];
 	        var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
-            var i = image.width * image.height;
-            while(--i >= 0) {
-                scrCorners[i] = new jsfeat.keypoint_t(0,0,0,0,-1);
-            }
 
+            let t0 = performance.now();
             jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, scrShot_u8);
             jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blurSize);
             var num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrCorners, 3);
@@ -228,6 +224,7 @@ function findOrbFeatures(screenShot) {
     })
 }
 
+//TODO:Make this change in jsfeat code itself.
 function stripCorners(corners) {
     stripped_array = [];
     for (var i = 0; i < corners.length; i++) {
@@ -271,12 +268,6 @@ function createPatterns(logo) {
                 patternCorners[lev] = [];
                 lev_corners = patternCorners[lev];
 
-                // not very efficient, as so many corners are never detected.
-                i = (image.width * image.height) >> lev;
-                while(--i >= 0) {
-                    lev_corners[i] = new jsfeat.keypoint_t(0,0,0,0,-1);
-                }
-
                 patternDescriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
             }
 
@@ -286,7 +277,6 @@ function createPatterns(logo) {
 
             jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blur_size); // this is more robust
             corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-            strippedPatternCorners.push(stripCorners(lev_corners));
             jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
             console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
@@ -306,7 +296,6 @@ function createPatterns(logo) {
                 jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
                 jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blur_size);
                 corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-                strippedPatternCorners.push(stripCorners(lev_corners));
                 jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
                 // fix the coordinates due to scale level
@@ -317,7 +306,7 @@ function createPatterns(logo) {
 
                 console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
                 sc -= sc_pc;
-                result.patterCorners = strippedPatternCorners;
+                result.patterCorners = patternCorners;
                 result.patternDescriptors = patternDescriptors;
                 resolve(result);
             }

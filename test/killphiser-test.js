@@ -257,9 +257,6 @@ function getSourceImageData(data, url) {
     var scrCorners = [];
     var scrDescriptors = new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
     var i = data.width * data.height;
-    while (--i >= 0) {
-        scrCorners[i] = new jsfeat.keypoint_t(0, 0, 0, 0, -1);
-    }
 
     jsfeat.imgproc.grayscale(data.image.data, data.width, data.height, scrShot_u8);
     jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, 5);
@@ -295,7 +292,7 @@ function toOpen(url, dirPath) {
 
     //on page load function
     page.onLoadFinished = function() {
-        filename = '../jsfeat-min.js';
+        filename = '../jsfeat.js';
         injected = phantom.injectJs(filename);
         var t0 = performance.now();
 
