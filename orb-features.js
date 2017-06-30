@@ -131,7 +131,7 @@ function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
 // estimate homography transform between matched points
 function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3, match_mask) {
     // motion kernel
-    var mm_kernel = new jsfeat.motion_model.homography2d();
+    var mm_kernel = new jsfeat.motion_model.affine2d();
     // ransac params
     var num_model_points = 4;
     var reproj_threshold = 3;
