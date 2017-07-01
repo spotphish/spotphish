@@ -35,8 +35,7 @@
         "screenshot.js",
         "background.js",
         "orb-features.js",
-        "tracking-min.js",
-        "jsfeat.js"
+        "externalCode/jsfeat.js"
       ]
   },
   "permissions": [
