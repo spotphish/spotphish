@@ -202,3 +202,63 @@ setTimeout(function() {
 
 }, 5000);
 */
+
+function assert() {
+    var args = [].slice.call(arguments),
+        name = 'ASSERT',
+        cond, rest;
+
+    if (isstring(args[0])) {
+        name = name + ': ' + args[0];
+        cond = args[1];
+        rest = args.slice(2);
+    } else {
+        cond = args[0];
+        rest = args.slice(1);
+    }
+    if (!cond) {
+        var e = new Error(name);
+        console.log(name, rest);
+        console.log(e.stack);
+        throw e;
+    }
+}
+
+/* parseUri, MIT license
+ * http://blog.stevenlevithan.com/archives/parseuri
+ * Copyright 2007, Steven Levithan
+ */
+
+function parseUri(str) {
+    var parser = /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@\/]*)(?::([^:@\/]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/,
+        parserKeys = ["source", "scheme", "authority", "userInfo", "user", "password", "host", "port", "relative", "path", "directory", "file", "query", "fragment"],
+        m = parser.exec(str || ''),
+        parts = {};
+
+    parserKeys.forEach(function(key, i) {
+        parts[key] = m[i] || '';
+    });
+    return parts;
+}
+
+function parseqs(str) {
+    var qp = str.split('&'),
+        params = {};
+
+    qp.forEach(function(el) {
+        var pv = el.split('=');
+        if (pv.length === 2) {
+            params[pv[0]] = pv[1];
+        }
+    });
+    return params;
+}
+
+function isnumber(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function isstring(obj) {
+    return obj instanceof String || typeof obj === 'string';
+}
+

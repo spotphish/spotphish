@@ -1,0 +1,37 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "indent": [
+            "error",
+            4
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "warn",
+            "double"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-unused-vars": [
+           "error", {"vars": "local", "args": "none", "ignoreRestSiblings": true} 
+        ],
+        "no-console": 0
+    },
+    "globals": {
+        "$": false,
+        "chrome": false,
+        "coverContainer": false,
+        "DEFAULT_IMG": false,
+        "updateImage": false,
+        "assert": false
+    }
+}

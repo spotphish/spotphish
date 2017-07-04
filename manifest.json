@@ -23,9 +23,10 @@
         "externalCode/jquery/jquery-1.12.4.min.js",
         "whitelist.js",
         "utils.js",
-        "content.js"
+        "content2.js"
       ],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "background": {
@@ -33,7 +34,7 @@
         "whitelist.js",
         "utils.js",
         "screenshot.js",
-        "background.js",
+        "background2.js",
         "orb-features.js",
         "externalCode/jsfeat.js"
       ]
