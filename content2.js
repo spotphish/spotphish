@@ -22,7 +22,12 @@ function main() {
         });
     }
 
-    rpc({op: "init", top: window === top}).then(x => {
+    const init = {op: "init", top: false};
+    if (window === top) {
+        init.top = true;
+        init.dpr = devicePixelRatio;
+    }
+    rpc(init).then(x => {
         if (x.action === "check") {
             startChecking();
         } else if (x.action === "nop") {

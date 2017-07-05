@@ -32,6 +32,10 @@
         "coverContainer": false,
         "DEFAULT_IMG": false,
         "updateImage": false,
-        "assert": false
+        "assert": false,
+        "ajax_get": false,
+        "crop": false,
+        "findOrbFeatures": false,
+        "matchOrbFeatures": false
     }
 }
