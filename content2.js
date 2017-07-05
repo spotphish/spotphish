@@ -41,15 +41,14 @@ function main() {
 let npolls = 0;
 function startChecking() {
     npolls++;
-    setTimeout(() => {
-        console.log("KP: Checking");
-        const visible = $("input[type=\"password\"]").filter(":visible").length;
-        if (visible) {
-            rpc({op: "checkinfo", data: visible});
-        } else {
-            if (npolls < MAX_POLLS) return startChecking();
+    const visible = $("input[type=\"password\"]").filter(":visible").length;
+    if (visible) {
+        rpc({op: "checkinfo", data: visible});
+    } else {
+        if (npolls < MAX_POLLS) {
+            return setTimeout(startChecking, POLL_INTERVAL);
         }
-    }, POLL_INTERVAL);
+    }
 }
 
 function greenflag(msg) {

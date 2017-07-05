@@ -1,5 +1,5 @@
 const tabinfo = {};
-const watches = [2000, 5000, 10000, 20000];
+const watches = [0, 4000, 9000, 20000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 
 chrome.runtime.onConnect.addListener(port => {
@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
         tab = ti.tab;
-    console.log("init", sender.tab);
+    console.log("init", sender.tab, Date());
     if (msg.top) {
         ti.state = "init";
         ti.watches = [];
@@ -67,6 +67,7 @@ function checkinfo(msg, sender, respond) {
         ti.state = "watching";
         const now = Date.now();
         ti.watches = watches.map(x => now + x);
+        console.log("WATCHING", Date());
     }
 }
 
@@ -96,7 +97,7 @@ function watchdog() {
 }
 
 function redflag(ti) {
-    console.log("SNAP! ", ti.tab.id, ti.tab.url, ti.state, ti.watches);
+    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.watches);
     snapcheck(ti);
     if (ti.watches.length === 0) {
         ti.state = "red_done";
@@ -151,7 +152,7 @@ function snapcheck(ti) {
                 Promise.race(matches).then((site) => {
                     // console.log("After promise");
                     let t1 = performance.now();
-                    console.log("Match found, time taken : " + (t1-t0) + " ms");
+                    console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
                     ti.port.postMessage({op: "redflag", site: site});
                     ti.state = "redflagged";
                 })
