@@ -13,9 +13,9 @@ function main() {
                 console.log("KP: Invalid msg from background?!", msg);
             }
             if (msg.op === "greenflag") {
-                greenflag(msg);
+                showGreenflag(msg);
             } else if (msg.op === "redflag") {
-                redflag(msg);
+                showRedflag(msg);
             } else {
                 console.log("KP: unknown op", msg);
             }
@@ -43,7 +43,7 @@ function startChecking() {
     npolls++;
     const visible = $("input[type=\"password\"]").filter(":visible").length;
     if (visible) {
-        rpc({op: "checkinfo", data: visible});
+        rpc({op: "checkdata", data: visible});
     } else {
         if (npolls < MAX_POLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
@@ -51,22 +51,23 @@ function startChecking() {
     }
 }
 
-function greenflag(msg) {
+function showGreenflag(msg) {
     appendSecureImg();
 }
 
-function redflag(msg) {
+function showRedflag(msg) {
     coverContainer($("body"), msg.site, "", false, true, true, 0);
 }
 
 function appendSecureImg() {
-    var prepend = "<div class=\"kp-img-container\">";
-    prepend += "<div class=\"FAH_closeButton kp-img-close\">";
-    prepend += "<strong> X </strong>";
-    prepend += "</div>";
-    prepend += "</div>";
-    var myPrepend = prepend;
-    $("body").prepend(myPrepend);
+    const prepend = `
+<div class="kp-img-container">
+    <div class="FAH_closeButton kp-img-close">
+        <strong> X </strong>
+    </div>
+</div>`;
+
+    $("body").prepend(prepend);
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
         console.log("Data received : ", data );

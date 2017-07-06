@@ -1,5 +1,5 @@
 const tabinfo = {};
-const watches = [0, 4000, 9000, 20000];
+const watches = [0, 4000, 12000, 30000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 
 chrome.runtime.onConnect.addListener(port => {
@@ -24,12 +24,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     updateTabinfo(sender.tab.id, sender.tab);
     if (msg.op === "init") {
         init(msg, sender, respond);
-    } else if (msg.op === "checkinfo") {
-        checkinfo(msg, sender, respond);
+    } else if (msg.op === "checkdata") {
+        checkdata(msg, sender, respond);
     } else {
         console.log("KPBG: Unknown message", msg);
     }
-    //console.log("BACKGROUND GOT", msg, sender);
 });
 
 function init(msg, sender, respond) {
@@ -59,10 +58,10 @@ function init(msg, sender, respond) {
     return respond({action: "check"});
 }
 
-function checkinfo(msg, sender, respond) {
+function checkdata(msg, sender, respond) {
     respond({action: "nop"});
     const ti = tabinfo[sender.tab.id];
-    assert("checkinfo.1", ti.state === "checking");
+    assert("checkdata.1", ti.state === "checking");
     if (msg.data) {
         ti.state = "watching";
         const now = Date.now();
