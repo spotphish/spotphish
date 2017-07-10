@@ -2,6 +2,13 @@ const tabinfo = {};
 const watches = [0, 4000, 12000, 30000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 
+let debug = false, 
+    globalCurrentTabId,
+    tabInfoList = {},
+    KPWhiteList,
+    KPSkipList,
+    KPRedFlagList;
+
 chrome.runtime.onConnect.addListener(port => {
     const id = port.sender.tab.id;
     updateTabinfo(id, port.sender.tab);
@@ -9,7 +16,6 @@ chrome.runtime.onConnect.addListener(port => {
 
 });
 
-syncRedFlagList();
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
 function updateTabinfo(id, tab) {
@@ -20,13 +26,143 @@ function updateTabinfo(id, tab) {
     }
 }
 
+function saveKPWhiteList() {
+    chrome.storage.local.set({whitelist : KPWhiteList},() => {
+        console.log("whitelist : ", KPWhiteList )
+        });
+}
+
+function saveKPRedFlagList() {
+    chrome.storage.local.set({redflaglist : KPRedFlagList},() => {
+        console.log("redflaglist : ", KPRedFlagList )
+        });
+}
+
+function saveKPSkipList() {
+    chrome.storage.local.set({skiplist : KPSkipList},() => {
+        console.log("skiplist : ", KPSkipList )
+        });
+}
+
+function syncWhiteList(){
+    chrome.storage.local.get("whitelist", function(result) {
+        var data = result.whitelist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPWhiteList = data;
+            } else {
+                KPWhiteList = whiteListedURLs;
+                saveKPWhiteList();
+            }
+    });
+}
+
+function syncSkipList(){
+    chrome.storage.local.get("skiplist", function(result) {
+        var data = result.skiplist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPSkipList = data;
+            } else {
+                KPSkipList = skipDomains;
+                saveKPSkipList();
+            }
+    });
+}
+
+function syncRedFlagList(){
+    chrome.storage.local.get("redflaglist", function(result) {
+        var data = result.redflaglist;
+            console.log("Data received : ", data );
+            if (data) {
+                KPRedFlagList = data;
+            } else {
+                ajax_get('/assets/defaults/pattern.json', function(err, jsonData) {
+                    if (err == null) {
+                        console.log(jsonData);
+                        KPRedFlagList = jsonData
+                        saveKPRedFlagList();
+                    }
+                    else {
+                        console.log(err);
+                    }
+                });
+            }
+    });
+}
+
+function loadDefaults() {
+    syncWhiteList();
+    syncSkipList();
+    syncRedFlagList();
+}
+
+function addToKPWhiteList(site) {
+    if (site in KPWhiteList) {
+        return;
+    }
+    KPWhiteList.push(site);
+    saveKPWhiteList();
+}
+
+function addToKPSkipList(domain) {
+    if (domain in KPSkipList) {
+        return;
+    }
+    KPSkipList.push(domain);
+    saveKPSkipList();
+}
+
+function removeFromKPWhiteList(site) {
+    var index = KPWhiteList.indexOf(site);
+    if (index !== -1) {
+        KPWhiteList.splice(index,1);
+        saveKPWhiteList();
+    } else {
+        console.log("site not Whitelisted : ", site);
+    }
+}
+
+function removeFromKPSkipList(domain) {
+    var index = KPSkipList.indexOf(domain);
+    if (index !== -1) {
+        KPSkipList.splice(index,1);
+        saveKPSkipList();
+    } else {
+        console.log("Domain not in skip list : ", domain);
+    }
+}
+
+function removeFromKPRedFlagList(domain) {
+    var index = KPRedFlagList.indexOf(domain);
+    if (index !== -1) {
+        KPRedFlagList.splice(index,1);
+        saveKPRedFlagList();
+    } else {
+        console.log("Domain not in red flag list : ", domain);
+    }
+}
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
-    updateTabinfo(sender.tab.id, sender.tab);
+    if (sender.tab) {
+        updateTabinfo(sender.tab.id, sender.tab);
+    }
     if (msg.op === "init") {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
         checkdata(msg, sender, respond);
-    } else {
+    } else if (msg.op === 'get_tabinfo') {
+        var tab = msg.curtab;
+        if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
+            respond({status: tabinfo[tab.id].state});
+        } else {
+            respond({status: tab_status.NA});
+        }
+
+    } else if (msg.op === 'addToWhitelist') {
+        addToKPWhiteList(msg.site);
+    } else if (msg.op === 'removeFromWhitelist') {
+        removeFromKPWhiteList(msg.site);
+    }else {
         console.log("KPBG: Unknown message", msg);
     }
 });
@@ -48,12 +184,12 @@ function init(msg, sender, respond) {
         }
         return;
     }
-        
+
     if (checkSkip(tab.url)) {
         ti.state = "safe";
         return respond({action: "nop"});
     }
-    
+
     ti.state = "checking";
     return respond({action: "check"});
 }
@@ -61,6 +197,7 @@ function init(msg, sender, respond) {
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
     const ti = tabinfo[sender.tab.id];
+    console.log("checkdata tab info : ", ti);
     assert("checkdata.1", ti.state === "checking");
     if (msg.data) {
         ti.state = "watching";
@@ -104,19 +241,37 @@ function redflag(ti) {
 }
 
 function checkSkip(url) {
-    // XXX
-    if (url.match("reddit.com")) {
-        return true;
+    let length = KPSkipList.length;
+    let urlInfo = getPathInfo(url);
+    if (urlInfo.protocol === "https:") {
+        for (let i = 0; i < length; i++ ) {
+            if (urlInfo.host.endsWith(KPSkipList[i])) {
+                console.log("SKIP LISTED : ", KPSkipList[i]);
+                return true;
+            }
+        }
     }
+    console.log(" NOT SKIP LISTED : ", url);
     return false;
 }
 
 function checkWhitelist(tab) {
-    // XXX
-    const url = tab.url;
-    if (url.startsWith("https://www.paypal.com/signin")) {
-        return true;
+    let urlData = getPathInfo(tab.url);
+	if (urlData.protocol === "https:") {
+		let site = urlData.protocol +"//" + urlData.host;
+		if (urlData.port) {
+			site = site + ":" + urlData.port;
+		}
+		site = site + urlData.path;
+		for (var i = 0; i < KPWhiteList.length; i++ ) {
+			if (site === KPWhiteList[i]) {
+				console.log("WHITE LISTED : ", KPWhiteList[i]);
+				return true;
+			}
+		}
     }
+    console.log(" NOT WHITE LISTED : ", tab.url);
+    return false;
 }
 
 function snapcheck(ti) {
@@ -152,8 +307,8 @@ function snapcheck(ti) {
                     // console.log("After promise");
                     let t1 = performance.now();
                     console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
-                    ti.port.postMessage({op: "redflag", site: site});
                     ti.state = "redflagged";
+                    ti.port.postMessage({op: "redflag", site: site});
                 })
                 .catch((e) => {
                     console.log(e);//promise rejected.
@@ -170,15 +325,9 @@ chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
     }
 });
 
-let KPRedFlagList;
-function syncRedFlagList(){
-    ajax_get("/assets/defaults/pattern.json", function(err, jsonData) {
-        if (err === null) {
-            console.log(jsonData);
-            KPRedFlagList = jsonData;
-        }
-        else {
-            console.log(err);
-        }
-    });
-}
+chrome.runtime.onInstalled.addListener(function(details) {
+if (details.reason === 'install') {
+        chrome.tabs.create({ url: "option.html" });
+    }
+});
+loadDefaults();

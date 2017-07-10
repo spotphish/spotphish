@@ -7,11 +7,12 @@
         if (!response) {
             return;
         }
-        if (response.status === tab_status.WHITELISTED) {
+        console.log(response);
+        if (response.status === "greenflagged") {
             document.getElementById('kp-remove-from-whitelist').style.display = 'block';
             document.getElementById('kp-add-to-whitelist').style.display = 'none';
             //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
-        } else if (response.status === tab_status.NOT_WHITELISTED) {
+        } else {
             document.getElementById('kp-add-to-whitelist').style.display = 'block';
             //document.getElementsByClassName('optsCurrent')[0].style.display = 'block';
         }
@@ -21,21 +22,21 @@
         curTab = tabs[0];
         console.log("Current tab : ", curTab);
         if (isSpecialTab(curTab.url)) {
-            chrome.runtime.sendMessage({message: "update_info", curtab: curTab, status: tab_status.NA});
+            chrome.runtime.sendMessage({op: "update_info", curtab: curTab, status: tab_status.NA});
         } else {
-            chrome.runtime.sendMessage({message: "get_tabinfo", curtab: curTab}, handleTabInfo);
+            chrome.runtime.sendMessage({op: "get_tabinfo", curtab: curTab}, handleTabInfo);
         }
     });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kp-add-to-whitelist').addEventListener('click', function (e) {
             var site = stripQueryParams(curTab.url);
-            chrome.runtime.sendMessage({ message: 'addToWhitelist', site: site});
+            chrome.runtime.sendMessage({ op: 'addToWhitelist', site: site});
             window.close();
         });
         document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {
             var site = stripQueryParams(curTab.url);
-            chrome.runtime.sendMessage({ message: 'removeFromWhitelist', site: site});
+            chrome.runtime.sendMessage({ op: 'removeFromWhitelist', site: site});
             window.close();
         });
         document.getElementById('settingsLink').addEventListener('click', function (e) {

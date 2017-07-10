@@ -41,8 +41,11 @@ function main() {
 let npolls = 0;
 function startChecking() {
     npolls++;
-    const visible = $("input[type=\"password\"]").filter(":visible").length;
-    if (visible) {
+    //const visible = $("input[type=\"password\"]").filter(":visible").length;
+    const visible = document.querySelectorAll("input[type='password']");
+    console.log("Started checking in content script");
+    if (visible.length > 0) {
+        console.log("password field found");
         rpc({op: "checkdata", data: visible});
     } else {
         if (npolls < MAX_POLLS) {
