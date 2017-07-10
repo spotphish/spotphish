@@ -39,7 +39,7 @@ var t1;
 var handleBkgdResponse = function(response) {
 
     t2 = performance.now();
-    console.log("Performance : " + (t2 - t1) + " ms"); 
+    console.log("Total turnaround time : " + (t2 - t1) + " ms"); 
     if (typeof response === 'undefined'){
         return true;
     }

@@ -39,8 +39,16 @@ function syncRedFlagList(){
             if (data) {
                 KPRedFlagList = data;
             } else {
-                KPRedFlagList = redFlagSites;
-                saveKPRedFlagList();
+                ajax_get('/assets/defaults/pattern.json', function(err, jsonData) {
+                    if (err == null) {
+                        console.log(jsonData);
+                        KPRedFlagList = jsonData
+                        saveKPRedFlagList();
+                    }
+                    else {
+                        console.log(err);
+                    }
+                });
             }
     });
 }
@@ -97,31 +105,43 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
                 // image is base64
 
                 var matches = [];
+                var scrCorners = [];
+                var scrDescriptors = [];
                 var normalizedImage;
                 //TODO:Resolve/reject promise if no match happens
                 crop(image, req.area, req.dpr, false, (cropped) => {
                     normalizedImage = cropped;
-                    KPRedFlagList.forEach(function (value) {
-                        if (value.enabled) {
-                            matches.push(matchBriefFeatures(normalizedImage, value));
-                        }
-                    });
+                    Promise.all([findOrbFeatures(normalizedImage)]).then((results) => {
+                        scrCorners = results[0].corners;
+                        scrDescriptors = results[0].descriptors;
+                        KPRedFlagList.forEach(function (value) {
+                            if (value.enabled) {
+                                matches.push(matchOrbFeatures(
+                                                    scrCorners,
+                                                    scrDescriptors,
+                                                    value.patternCorners,
+                                                    value.patternDescriptors,
+                                                    value.site
+                                                    ));
+                            }
+                        });
 
-                   // for (i = 0; i < redFlagSites.length; i++) {
-                   //      // console.log(redFlagSites[i], normalizedImage);
-                   //      matches[i] = matchTemplate(normalizedImage, redFlagSites[i]);
-                   //  }
+                       // for (i = 0; i < redFlagSites.length; i++) {
+                       //      // console.log(redFlagSites[i], normalizedImage);
+                       //      matches[i] = matchTemplate(normalizedImage, redFlagSites[i]);
+                       //  }
 
-                    let t0 = performance.now();
-                    Promise.race(matches).then((site) => {
-                        // console.log("After promise");
-                        matchFound = true;
-                        let t1 = performance.now();
-                        console.log("Time taken : " + (t1-t0) + " ms");
-                        res({ template_match: "Match found", site: site });
-                    })
-                    .catch((e) => {
-                        console.log(e);//promise rejected.
+                        let t0 = performance.now();
+                        Promise.race(matches).then((site) => {
+                            // console.log("After promise");
+                            matchFound = true;
+                            let t1 = performance.now();
+                            console.log("Time taken : " + (t1-t0) + " ms");
+                            res({ template_match: "Match found", site: site });
+                        })
+                        .catch((e) => {
+                            console.log(e);//promise rejected.
+                        })
                     })
                 })
 

@@ -135,7 +135,7 @@ function updateTableData() {
         } else {
             KPSkipList = skipDomains;
         }
-        if (result.redflaglist) {
+        if (result && result.redflaglist) {
             KPRedFlagList = result.redflaglist;
         } else {
             KPRedFlagList = redFlagSites;

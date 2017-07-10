@@ -24,9 +24,10 @@
         "externalCode/jquery.Jcrop.min.js",
         "whitelist.js",
         "utils.js",
-        "content.js"
+        "content2.js"
       ],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "background": {
@@ -35,9 +36,9 @@
         "externalCode/idbstore.min.js",
         "utils.js",
         "screenshot.js",
-        "background.js",
-        "brief-features.js",
-        "tracking-min.js"
+        "background2.js",
+        "orb-features.js",
+        "externalCode/jsfeat.js"
       ]
   },
   "permissions": [
@@ -48,7 +49,8 @@
     "webRequest",
     "webRequestBlocking",
     "*://*/*",
-    "<all_urls>"
+    "<all_urls>",
+    "unlimitedStorage"
   ],
   "web_accessible_resources": [
     "actual_icons/*.png",
@@ -57,6 +59,7 @@
   "web_accessible_resources": [
     "assets/img/*",
     "assets/fonts/*",
-    "images/*"
+    "images/*",
+    "assets/defaults/*"
   ]
 }
