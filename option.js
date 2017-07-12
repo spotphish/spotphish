@@ -151,10 +151,10 @@ function renderTable() {
         $('.wl-desc p').append(whitelist_msg);
             bkg.syncWhiteList(renderWhiteListTable);
         //renderWhiteListTable();
-    } else if (tab === 'redflag') {
+    } /*else if (tab === 'redflag') {
         $('.wl-desc p').append(redflag_msg);
         renderRedFlagTable();
-    } else if (tab === 'safedomain') {
+    } */else if (tab === 'safedomain') {
         $('.wl-desc p').append(safesite_msg);
         renderSafeDomainTable();
     }
@@ -206,7 +206,7 @@ function renderSafeDomainTable() {
         }
     });
 }
-
+/*
 function renderRedFlagTable() {
 
     var length = KPRedFlagList.length;
@@ -229,7 +229,7 @@ function renderRedFlagTable() {
             renderTable();
         }
     });
-}
+}*/
 
 function saveSkipListData() {
     chrome.storage.local.set({skiplist : KPSkipList}, () => {
