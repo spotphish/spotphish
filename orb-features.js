@@ -238,77 +238,81 @@ function stripCorners(corners) {
 function createPatterns(logo) {
     return new Promise((resolve) => {
         Promise.all([loadImage(logo)]).then((result) => {
-            //data strs for patten/logo
-            var image = result[0];
-            var canvas = document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            var ctx = canvas.getContext('2d');
-            ctx.drawImage(image, 0, 0, image.width, image.height);
-            var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
-            
-            var max_per_level = 150;
-            var sc_pc = 0.1;//Math.sqrt(2.0); // magic number ;)
-            var lev_corners, lev_descr;
-            var corners_num=0;
-            var sc = 1.0;
-            var threshold = 10;
-			var strippedPatternCorners = [];
-            var patternCorners = [];
-            var patternDescriptors = [];
-            var num_train_levels = 4; // no. of stages in the pyramid
-            var result = [];
-            
-            var lev0_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
-            var lev_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
-            
-            jsfeat.fast_corners.set_threshold(threshold);
-            jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, lev0_img);
-            for(lev=0; lev < num_train_levels; ++lev) {
-                patternCorners[lev] = [];
-                lev_corners = patternCorners[lev];
+            try {
+                //data strs for patten/logo
+                var image = result[0];
+                var canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, image.width, image.height);
+                var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
+                
+                var max_per_level = 150;
+                var sc_pc = 0.1;//Math.sqrt(2.0); // magic number ;)
+                var lev_corners, lev_descr;
+                var corners_num=0;
+                var sc = 1.0;
+                var threshold = 10;
+                var strippedPatternCorners = [];
+                var patternCorners = [];
+                var patternDescriptors = [];
+                var num_train_levels = 4; // no. of stages in the pyramid
+                var result = [];
+                
+                var lev0_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
+                var lev_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
+                
+                jsfeat.fast_corners.set_threshold(threshold);
+                jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, lev0_img);
+                for(lev=0; lev < num_train_levels; ++lev) {
+                    patternCorners[lev] = [];
+                    lev_corners = patternCorners[lev];
 
-                patternDescriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
-            }
+                    patternDescriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
+                }
 
-            // do the first level
-            lev_corners = patternCorners[0];
-            lev_descr = patternDescriptors[0];
+                // do the first level
+                lev_corners = patternCorners[0];
+                lev_descr = patternDescriptors[0];
 
-            jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blur_size); // this is more robust
-            corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-            jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
-
-            console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
-
-            sc -= sc_pc;
-
-            // lets do multiple scale levels
-            // we can use Canvas context draw method for faster resize
-            // but its nice to demonstrate that you can do everything with jsfeat
-            for(lev = 1; lev < num_train_levels; ++lev) {
-                lev_corners = patternCorners[lev];
-                lev_descr = patternDescriptors[lev];
-
-                new_width = (lev0_img.cols*sc)|0;
-                new_height = (lev0_img.rows*sc)|0;
-
-                jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
-                jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blur_size);
+                jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blurSize); // this is more robust
                 corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
                 jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
-                // fix the coordinates due to scale level
-                for(i = 0; i < corners_num; ++i) {
-                    lev_corners[i].x *= 1./sc;
-                    lev_corners[i].y *= 1./sc;
-                }
-
                 console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
+
                 sc -= sc_pc;
-                result.patterCorners = patternCorners;
-                result.patternDescriptors = patternDescriptors;
-                resolve(result);
+
+                // lets do multiple scale levels
+                // we can use Canvas context draw method for faster resize
+                // but its nice to demonstrate that you can do everything with jsfeat
+                for(lev = 1; lev < num_train_levels; ++lev) {
+                    lev_corners = patternCorners[lev];
+                    lev_descr = patternDescriptors[lev];
+
+                    new_width = (lev0_img.cols*sc)|0;
+                    new_height = (lev0_img.rows*sc)|0;
+
+                    jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
+                    jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blurSize);
+                    corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
+                    jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
+
+                    // fix the coordinates due to scale level
+                    for(i = 0; i < corners_num; ++i) {
+                        lev_corners[i].x *= 1./sc;
+                        lev_corners[i].y *= 1./sc;
+                    }
+
+                    console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
+                    sc -= sc_pc;
+                    result.patternCorners = patternCorners;
+                    result.patternDescriptors = patternDescriptors;
+                    resolve(result);
+                }
+            } catch(err) {
+                reject(err);
             }
         })
     })

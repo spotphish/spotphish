@@ -30,7 +30,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('kp-add-to-whitelist').addEventListener('click', function (e) {
             var site = stripQueryParams(curTab.url);
-            chrome.runtime.sendMessage({ op: 'addToWhitelist', site: site});
+            chrome.runtime.sendMessage({ op: 'addToWhitelist', currentTab: curTab, site: site});
             window.close();
         });
         document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {

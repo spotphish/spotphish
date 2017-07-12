@@ -149,7 +149,7 @@ function renderTable() {
     $('.wl-desc p').empty();
     if (tab === "whitelist") {
         $('.wl-desc p').append(whitelist_msg);
-            bkg.initWhitelist(renderWhiteListTable);
+            bkg.syncWhiteList(renderWhiteListTable);
         //renderWhiteListTable();
     } else if (tab === 'redflag') {
         $('.wl-desc p').append(redflag_msg);

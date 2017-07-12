@@ -7,7 +7,8 @@ let debug = false,
     tabInfoList = {},
     KPWhiteList,
     KPSkipList,
-    KPRedFlagList;
+    KPTemplates,
+    objWhitelist;
 
 chrome.runtime.onConnect.addListener(port => {
     const id = port.sender.tab.id;
@@ -44,18 +45,6 @@ function saveKPSkipList() {
         });
 }
 
-function syncWhiteList(){
-    chrome.storage.local.get("whitelist", function(result) {
-        var data = result.whitelist;
-            console.log("Data received : ", data );
-            if (data) {
-                KPWhiteList = data;
-            } else {
-                KPWhiteList = whiteListedURLs;
-                saveKPWhiteList();
-            }
-    });
-}
 
 function syncSkipList(){
     chrome.storage.local.get("skiplist", function(result) {
@@ -70,31 +59,34 @@ function syncSkipList(){
     });
 }
 
-function syncRedFlagList(){
-    chrome.storage.local.get("redflaglist", function(result) {
-        var data = result.redflaglist;
-            console.log("Data received : ", data );
-            if (data) {
-                KPRedFlagList = data;
-            } else {
-                ajax_get('/assets/defaults/pattern.json', function(err, jsonData) {
-                    if (err == null) {
-                        console.log(jsonData);
-                        KPRedFlagList = jsonData
-                        saveKPRedFlagList();
-                    }
-                    else {
-                        console.log(err);
-                    }
-                });
-            }
+function getDefaultWhitelist(){
+    return new Promise((resolve, reject) => {
+        ajax_get('/assets/defaults/pattern.json', function(err, jsonData) {
+            return (err === null ? resolve(jsonData) : reject(err));
+        });
     });
 }
 
+function error(err) {
+    console.log(err);
+}
+
 function loadDefaults() {
-    syncWhiteList();
     syncSkipList();
-    syncRedFlagList();
+    //TODO
+    //Should we allow users to add multiple entries for the same site?
+    objWhitelist = new IDBStore({
+            storeName: 'whitelist',
+            keyPath: 'id',
+            autoIncrement: true,
+            onStoreReady: initWhitelist,
+            onError: error,
+            indexes: [
+                { name: 'url', keyPath: 'url', unique: false, multiEntry: false }
+            ]
+    });
+    //TODO:This is bad, should be replaced
+    setTimeout(syncWhiteList, 2000);
 }
 
 function addToKPWhiteList(site) {
@@ -113,15 +105,6 @@ function addToKPSkipList(domain) {
     saveKPSkipList();
 }
 
-function removeFromKPWhiteList(site) {
-    var index = KPWhiteList.indexOf(site);
-    if (index !== -1) {
-        KPWhiteList.splice(index,1);
-        saveKPWhiteList();
-    } else {
-        console.log("site not Whitelisted : ", site);
-    }
-}
 
 function removeFromKPSkipList(domain) {
     var index = KPSkipList.indexOf(domain);
@@ -159,13 +142,33 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         }
 
     } else if (msg.op === 'addToWhitelist') {
-        addToKPWhiteList(msg.site);
+        inject(msg.currentTab, msg.site);
     } else if (msg.op === 'removeFromWhitelist') {
-        removeFromKPWhiteList(msg.site);
-    }else {
+        removeFromWhiteList(msg.site);
+    } else if (msg.op === 'crop_capture') {
+        console.log("Inside crop capture");
+        chrome.tabs.getSelected(null, (tab) => {
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
+                crop(image, msg.area, msg.dpr, true, (cropped) => {
+                        respond({message: 'image', image: cropped});
+                        var url = stripQueryParams(sender.tab.url);
+                        console.log ("URL: ", url, " tab: ", sender.tab);
+                        addToWhiteList({ url: url, type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
+                })
+            })
+        })
+    } else if (msg.op === 'add_wh') {
+        var url = stripQueryParams(sender.tab.url);
+        console.log ("URL: ", url, " tab: ", sender.tab);
+        addToWhiteList({ url: url, type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
+    } else {
         console.log("KPBG: Unknown message", msg);
     }
 });
+
+function inject (tab, site) {
+    chrome.tabs.sendMessage(tab.id, {message: 'init', url: site});
+}
 
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
@@ -264,7 +267,7 @@ function checkWhitelist(tab) {
 		}
 		site = site + urlData.path;
 		for (var i = 0; i < KPWhiteList.length; i++ ) {
-			if (site === KPWhiteList[i]) {
+			if (site === KPWhiteList[i].url) {
 				console.log("WHITE LISTED : ", KPWhiteList[i]);
 				return true;
 			}
@@ -284,13 +287,13 @@ function snapcheck(ti) {
         var scrDescriptors = [];
         var normalizedImage;
         const area = {x: 0, y: 0, w: tab.width, h: tab.height};
-        //TODO:Resolve/reject promise if no match happens
         crop(image, area, ti.dpr, false, cropped => {
             normalizedImage = cropped;
             Promise.all([findOrbFeatures(normalizedImage)]).then((results) => {
                 scrCorners = results[0].corners;
                 scrDescriptors = results[0].descriptors;
-                KPRedFlagList.forEach(function (value) {
+                console.log("KPTemplates : ", KPTemplates);
+                KPTemplates.forEach(function (value) {
                     if (value.enabled) {
                         matches.push(matchOrbFeatures(
                                             scrCorners,
@@ -330,4 +333,84 @@ if (details.reason === 'install') {
         chrome.tabs.create({ url: "option.html" });
     }
 });
+
+/* Indexed DB related functions */
+
+function initWhitelist() {
+    objWhitelist.getAll((data) => {
+        if (data.length <= 0) {
+            getDefaultWhitelist().then(patternData => {
+                objWhitelist.putBatch(patternData, syncWhiteList);
+            });
+        }
+    })
+}
+
+function syncWhiteList(cb){
+    objWhitelist.getAll((data) => {
+        var data1 = data.map((x) => {
+            return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo, enabled: x.enabled}
+        });
+
+        KPTemplates = data.filter((x) => {
+            return x.logo !== undefined && x.enabled === true;
+        }).map((x) => {
+            return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors}
+        });
+        KPWhiteList = data1.filter((x)=> {
+            return x.url !== undefined;
+        }).map((x) => {
+            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled};
+        });
+        if (typeof(cb) === 'function') {
+            cb(data1);
+        }
+        console.log("syncWhiteList called : ", KPWhiteList, KPTemplates);
+    })
+}
+
+function removeFromWhiteListById(id) {
+    objWhitelist.remove(id);
+}
+
+function addToWhiteList(data, tab) {
+    if (data.logo) {
+        createPatterns(data.logo).then(function(result) {
+            console.log("Template promise result : ", result);
+            data.patternCorners = result.patternCorners;
+            data.patternDescriptors = result.patternDescriptors;
+            objWhitelist.put(data, (x) => {
+                syncWhiteList();
+                console.log("Add: ", x);
+            });
+        }).catch((e) => {
+            console.log(e);//promise rejected.
+            return;
+        });
+    } else {
+        objWhitelist.put(data, (x) => {
+            syncWhiteList();
+            console.log("Add: ", x);
+        });
+    }
+
+    tabinfo[tab.id].state = "greenflagged";
+}
+
+function removeFromWhiteList(site) {
+    console.log("removeFromWhiteList called for : ", site);
+    let index = 0;
+    let found = false;
+    for (index; index < KPWhiteList.length; index++) {
+        if (KPWhiteList[index].url === site && KPWhiteList[index].type === 'custom') {
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        objWhitelist.remove(KPWhiteList[index].id, syncWhiteList);
+    } else {
+        console.log("site not Whitelisted : ", site);
+    }
+}
 loadDefaults();
