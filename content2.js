@@ -22,6 +22,10 @@ function main() {
         });
     }
 
+    $(document).ready(do_init);
+}
+
+function do_init() {
     const init = {op: "init", top: false};
     if (window === top) {
         init.top = true;

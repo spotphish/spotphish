@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Killphisher",
-  "description": "Identify phishing using perceptual techniques",
+  "description": "Zero-day phishing protection",
   "version": "0.1.0",
   "browser_action": {
     "default_icon": "assets/icons/icon24.png",
@@ -26,7 +26,7 @@
         "utils.js",
         "content2.js"
       ],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "all_frames": true
     }
   ],

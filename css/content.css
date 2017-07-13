@@ -9,7 +9,7 @@
     padding: 5px;
     box-shadow: 4px 4px 4px -2px #232323;
     animation-name: kp-secure-img;
-    animation-duration: 2s;
+    animation-duration: 4s;
 }
 
 .kp-img-close {
@@ -47,7 +47,8 @@ img#fake-image {
 
 @keyframes kp-secure-img {
     0%   { right: 40%; top: 40%;}
-    50%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
+    25%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
+    75%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
     100%   { top:10px; right: 10px;  }
 }
 
