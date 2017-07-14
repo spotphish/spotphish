@@ -47,6 +47,7 @@
         "IDBStore": false,
         "redFlagSites": true,
         "isSpecialTab": false,
-        "jsfeat": false
+        "jsfeat": false,
+        "defPatterns": false
     }
 }

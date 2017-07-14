@@ -204,40 +204,30 @@ function snapcheck(ti) {
     chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, image => {
         // image is base64
 
-        var matches = [];
         var scrCorners = [];
         var scrDescriptors = [];
         var normalizedImage;
         const area = {x: 0, y: 0, w: tab.width, h: tab.height};
         crop(image, area, ti.dpr, false, cropped => {
             normalizedImage = cropped;
-            Promise.all([findOrbFeatures(normalizedImage)]).then((results) => {
-                scrCorners = results[0].corners;
-                scrDescriptors = results[0].descriptors;
+            findOrbFeatures(normalizedImage).then(result => {
+                scrCorners = result.corners;
+                scrDescriptors = result.descriptors;
                 console.log("KPTemplates : ", KPTemplates);
-                KPTemplates.forEach(function (value) {
-                    if (value.enabled) {
-                        matches.push(matchOrbFeatures(
-                                            scrCorners,
-                                            scrDescriptors,
-                                            value.patternCorners,
-                                            value.patternDescriptors,
-                                            value.site
-                                            ));
-                    }
-                });
-
                 let t0 = performance.now();
-                Promise.race(matches).then((site) => {
-                    // console.log("After promise");
-                    let t1 = performance.now();
-                    console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
-                    ti.state = "redflagged";
-                    ti.port.postMessage({op: "redflag", site: site});
-                })
-                .catch((e) => {
-                    console.log(e);//promise rejected.
-                });
+                for (let i = 0; i < KPTemplates.length; i++) {
+                    const template = KPTemplates[i];
+                    if (template.enabled) {
+                        if (matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
+                            template.patternDescriptors, template.site)) {
+                            let t1 = performance.now();
+                            console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
+                            ti.state = "redflagged";
+                            ti.port.postMessage({op: "redflag", site: template.site});
+                            break;
+                        }
+                    }
+                }
             });
         });
     });
@@ -270,7 +260,7 @@ function syncWhiteList(cb){
         var data1 = data.map((x) => {
             return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo, enabled: x.enabled};
         });
-        if (cb && typeof(cb) === 'function') {
+        if (cb && typeof(cb) === "function") {
             cb(data1);
             return;
         }

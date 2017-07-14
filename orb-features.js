@@ -192,35 +192,32 @@ const loadImage = (imageUrl, canvasElement) => {
 };
 
 function findOrbFeatures(screenShot) {
-    return new Promise((resolve) => {
-        Promise.all([loadImage(screenShot)]).then((result) => {
-            var threshold = 10;
-            jsfeat.fast_corners.set_threshold(threshold);
-            var image = result[0];
-            var canvas = document.createElement("canvas");
-            canvas.width = image.width;
-            canvas.height = image.height;
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(image, 0, 0, image.width, image.height);
-            var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
-            
-            var scrShot_u8 = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
-            var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t); 
-            var scrCorners = [];
-            var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
+    return loadImage(screenShot).then(image => {
+        var threshold = 10;
+        jsfeat.fast_corners.set_threshold(threshold);
+        var canvas = document.createElement("canvas");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, image.width, image.height);
+        var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
+        
+        var scrShot_u8 = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
+        var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t); 
+        var scrCorners = [];
+        var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
 
-            let t0 = performance.now();
-            jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, scrShot_u8);
-            jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blurSize);
-            var num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrCorners, 3);
-            jsfeat.orb.describe(scrShot_u8_smooth, scrCorners, num_scrShot_corners, scrDescriptors);
-            let t1 = performance.now();
-            console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
-            var res = {};
-            res.corners = scrCorners;
-            res.descriptors = scrDescriptors;
-            resolve(res);
-        });
+        let t0 = performance.now();
+        jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, scrShot_u8);
+        jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blurSize);
+        var num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrCorners, 3);
+        jsfeat.orb.describe(scrShot_u8_smooth, scrCorners, num_scrShot_corners, scrDescriptors);
+        let t1 = performance.now();
+        console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
+        var res = {};
+        res.corners = scrCorners;
+        res.descriptors = scrDescriptors;
+        return Promise.resolve(res);
     });
 }
 
@@ -318,35 +315,30 @@ function createPatterns(logo) {
     });
 }
 
-const matchOrbFeatures = (scrCorners, scrDescriptors, patternCorners, patternDescriptors, site) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(function() {
-            reject("No match found");
-        }, promiseTimeout);
-        //Params to play around with
-        //var match_threshold = 48;//increasing this increases the number of points found. hence increases noise.
+function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDescriptors, site) {
+    //Params to play around with
+    //var match_threshold = 48;//increasing this increases the number of points found. hence increases noise.
 
-        //data strs for the screenshot
-        var  matches, homo3x3, match_mask;
-        
-        var t0 = performance.now();
+    //data strs for the screenshot
+    var  matches, homo3x3, match_mask;
+    
+    var t0 = performance.now();
 
-        // transform matrix
-        homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
-        match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
-        matches = []; 
-        var num_matches = 0;
-        var good_matches = 0;
-        num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
-        console.log("Matches count : " + num_matches);
-        good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
-        var t1 = performance.now();
-        console.log("Good matches count : " + good_matches);
-        console.log("Time taken : " + (t1 - t0));
-        if (good_matches > 15) {
-            console.log("Match found for : " + site);
-            resolve(site);
-        }
-
-    });
-};
+    // transform matrix
+    homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
+    match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
+    matches = []; 
+    var num_matches = 0;
+    var good_matches = 0;
+    num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
+    console.log("Matches count : " + num_matches);
+    good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
+    var t1 = performance.now();
+    console.log("Good matches count : " + good_matches);
+    console.log("Time taken : " + (t1 - t0));
+    if (good_matches > 15) {
+        console.log("Match found for : " + site);
+        return true;
+    }
+    return false;
+}

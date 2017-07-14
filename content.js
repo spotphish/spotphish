@@ -118,9 +118,9 @@ var overlay = ((active) => (state) => {
     $(".jcrop-holder")[active ? "show" : "hide"]();
     //chrome.runtime.sendMessage({message: "active", active})
     $(document).keyup(function(event){
-        if(event.which=='27'){
-    	    $('.jcrop-holder').hide();
-	}
+        if (event.which === "27") {
+            $(".jcrop-holder").hide();
+        }
     });
 })(false);
 
@@ -230,12 +230,12 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
             chrome.runtime.sendMessage({
                 op: 'add_wh', url: req.url});
         }*/
-        injectConfirmBox("Do you want to upload a template?");
-  }
-  return true
-})
+        injectConfirmBox("Do you want to upload a template?", req.url);
+    }
+    return true;
+});
 
-function injectConfirmBox(text) {
+function injectConfirmBox(text, url) {
     const append =
 `<div class="kp-popup kp-is-visible" role="alert">
     <div class="kp-popup-container">
@@ -250,12 +250,12 @@ function injectConfirmBox(text) {
 
     $("body").append(append);
     $(".kp-popup").on("click", function(event) {
-		if( $(event.target).is('.kp-popup-close') || $(event.target).is('.kp-popup') ) {
-			event.preventDefault();
-			$(this).removeClass('kp-is-visible');
-		} else if ($(event.target).is('.kp-yes')) {
-			event.preventDefault();
-			$(this).removeClass('kp-is-visible');
+        if ($(event.target).is(".kp-popup-close") || $(event.target).is(".kp-popup")) {
+            event.preventDefault();
+            $(this).removeClass("kp-is-visible");
+        } else if ($(event.target).is(".kp-yes")) {
+            event.preventDefault();
+            $(this).removeClass("kp-is-visible");
             if (!jcrop) {
                 image(() => init(() => {
                     overlay();
@@ -265,11 +265,10 @@ function injectConfirmBox(text) {
                 overlay();
                 capture(true);
             }
-        } else if ($(event.target).is('.kp-np')) {
-			event.preventDefault();
-			$(this).removeClass('kp-is-visible');
-            chrome.runtime.sendMessage({
-                op: 'add_wh', url: req.url});
+        } else if ($(event.target).is(".kp-np")) {
+            event.preventDefault();
+            $(this).removeClass("kp-is-visible");
+            chrome.runtime.sendMessage({op: "add_wh", url: url});
         }
     });
 	//close popup when clicking the esc keyboard button
