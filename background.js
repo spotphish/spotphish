@@ -260,9 +260,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 function initWhitelist() {
     objWhitelist.getAll((data) => {
         if (data.length <= 0) {
-            getDefaultWhitelist().then(patternData => {
-                objWhitelist.putBatch(patternData, syncWhiteList);
-            });
+            objWhitelist.putBatch(defPatterns, syncWhiteList);
         }
     });
 }
