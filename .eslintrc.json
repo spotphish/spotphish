@@ -45,6 +45,7 @@
         "createPatterns": false,
         "skipDomains": true,
         "IDBStore": false,
-        "redFlagSites": true
+        "redFlagSites": true,
+        "isSpecialTab": false
     }
 }
