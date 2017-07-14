@@ -1,4 +1,4 @@
-var num_train_levels = 4
+var num_train_levels = 4;
 var match_threshold = 48;
 var promiseTimeout = 5000; //in ms
 var blurSize = 5; 
@@ -22,13 +22,13 @@ function detect_keypoints(img, corners, max_allowed) {
     var count = jsfeat.yape06.detect(img, corners, 17);
 
     // sort by score and reduce the count if needed
-    if(count > max_allowed) {
+    if (count > max_allowed) {
         jsfeat.math.qsort(corners, 0, count-1, function(a,b){return (b.score<a.score);});
         count = max_allowed;
     }
 
     // calculate dominant orientation for each keypoint
-    for(var i = 0; i < count; ++i) {
+    for (var i = 0; i < count; ++i) {
         corners[i].angle = ic_angle(img, corners[i].x, corners[i].y);
     }
 
@@ -74,38 +74,38 @@ function popcnt32(n) {
 
 function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
     var q_cnt = scrShot_descriptors.rows;
-    var query_du8 = scrShot_descriptors.data;
+    //var query_du8 = scrShot_descriptors.data;
     var query_u32 = scrShot_descriptors.buffer.i32; // cast to integer buffer
     var qd_off = 0;
     var qidx=0,lev=0,pidx=0,k=0;
     var num_matches = 0;
 
-    for(qidx = 0; qidx < q_cnt; ++qidx) {
+    for (qidx = 0; qidx < q_cnt; ++qidx) {
         var best_dist = 256;
         var best_dist2 = 256;
         var best_idx = -1;
         var best_lev = -1;
 
-        for(lev = 0; lev < num_train_levels; ++lev) {
+        for (lev = 0; lev < num_train_levels; ++lev) {
             var lev_descr = patternDescriptors[lev];
             var ld_cnt = lev_descr.rows;
             var ld_i32 = lev_descr.buffer.i32; // cast to integer buffer
             var ld_off = 0;
 
-            for(pidx = 0; pidx < ld_cnt; ++pidx) {
+            for (pidx = 0; pidx < ld_cnt; ++pidx) {
 
                 var curr_d = 0;
                 // our descriptor is 32 bytes so we have 8 Integers
-                for(k=0; k < 8; ++k) {
+                for (k=0; k < 8; ++k) {
                     curr_d += popcnt32( query_u32[qd_off+k]^ld_i32[ld_off+k] );
                 }
 
-                if(curr_d < best_dist) {
+                if (curr_d < best_dist) {
                     best_dist2 = best_dist;
                     best_dist = curr_d;
                     best_lev = lev;
                     best_idx = pidx;
-                } else if(curr_d < best_dist2) {
+                } else if (curr_d < best_dist2) {
                     best_dist2 = curr_d;
                 }
 
@@ -114,7 +114,7 @@ function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
         }
 
         // filter out by some threshold
-        if(best_dist < match_threshold) {
+        if (best_dist < match_threshold) {
             matches[num_matches] = new match_t();
             matches[num_matches].screen_idx = qidx;
             matches[num_matches].pattern_lev = best_lev;
@@ -142,7 +142,7 @@ function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3
     var screen_xy = [];
 
     // construct correspondences
-    for(var i = 0; i < count; ++i) {
+    for (let i = 0; i < count; ++i) {
         var m = matches[i];
         var s_kp = scrShot_corners[m.screen_idx];
         var p_kp = patternCorners[m.pattern_lev][m.pattern_idx];
@@ -157,9 +157,9 @@ function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3
 
     // extract good matches and re-estimate
     var good_cnt = 0;
-    if(ok) {
-        for(var i=0; i < count; ++i) {
-            if(match_mask.data[i]) {
+    if (ok) {
+        for (let i=0; i < count; ++i) {
+            if (match_mask.data[i]) {
                 pattern_xy[good_cnt].x = pattern_xy[i].x;
                 pattern_xy[good_cnt].y = pattern_xy[i].y;
                 screen_xy[good_cnt].x = screen_xy[i].x;
@@ -197,17 +197,17 @@ function findOrbFeatures(screenShot) {
             var threshold = 10;
             jsfeat.fast_corners.set_threshold(threshold);
             var image = result[0];
-            var canvas = document.createElement('canvas');
+            var canvas = document.createElement("canvas");
             canvas.width = image.width;
             canvas.height = image.height;
-            var ctx = canvas.getContext('2d');
+            var ctx = canvas.getContext("2d");
             ctx.drawImage(image, 0, 0, image.width, image.height);
             var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
             
             var scrShot_u8 = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
             var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t); 
             var scrCorners = [];
-	        var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
+            var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
 
             let t0 = performance.now();
             jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, scrShot_u8);
@@ -216,17 +216,17 @@ function findOrbFeatures(screenShot) {
             jsfeat.orb.describe(scrShot_u8_smooth, scrCorners, num_scrShot_corners, scrDescriptors);
             let t1 = performance.now();
             console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
-            var result = {};
-            result.corners = scrCorners;
-            result.descriptors = scrDescriptors;
-            resolve(result);
-        })
-    })
+            var res = {};
+            res.corners = scrCorners;
+            res.descriptors = scrDescriptors;
+            resolve(res);
+        });
+    });
 }
 
 //TODO:Make this change in jsfeat code itself.
 function stripCorners(corners) {
-    stripped_array = [];
+    const stripped_array = [];
     for (var i = 0; i < corners.length; i++) {
         if (corners[i].score != 0) {
             stripped_array.push(corners[i]);
@@ -236,15 +236,15 @@ function stripCorners(corners) {
 }
 
 function createPatterns(logo) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         Promise.all([loadImage(logo)]).then((result) => {
             try {
                 //data strs for patten/logo
                 var image = result[0];
-                var canvas = document.createElement('canvas');
+                var canvas = document.createElement("canvas");
                 canvas.width = image.width;
                 canvas.height = image.height;
-                var ctx = canvas.getContext('2d');
+                var ctx = canvas.getContext("2d");
                 ctx.drawImage(image, 0, 0, image.width, image.height);
                 var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
                 
@@ -254,18 +254,18 @@ function createPatterns(logo) {
                 var corners_num=0;
                 var sc = 1.0;
                 var threshold = 10;
-                var strippedPatternCorners = [];
+                //var strippedPatternCorners = [];
                 var patternCorners = [];
                 var patternDescriptors = [];
                 var num_train_levels = 4; // no. of stages in the pyramid
-                var result = [];
+                var res = {};
                 
                 var lev0_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
                 var lev_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
                 
                 jsfeat.fast_corners.set_threshold(threshold);
                 jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, lev0_img);
-                for(lev=0; lev < num_train_levels; ++lev) {
+                for (let lev = 0; lev < num_train_levels; ++lev) {
                     patternCorners[lev] = [];
                     lev_corners = patternCorners[lev];
 
@@ -287,12 +287,12 @@ function createPatterns(logo) {
                 // lets do multiple scale levels
                 // we can use Canvas context draw method for faster resize
                 // but its nice to demonstrate that you can do everything with jsfeat
-                for(lev = 1; lev < num_train_levels; ++lev) {
+                for (let lev = 1; lev < num_train_levels; ++lev) {
                     lev_corners = patternCorners[lev];
                     lev_descr = patternDescriptors[lev];
 
-                    new_width = (lev0_img.cols*sc)|0;
-                    new_height = (lev0_img.rows*sc)|0;
+                    let new_width = (lev0_img.cols*sc)|0;
+                    let new_height = (lev0_img.rows*sc)|0;
 
                     jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
                     jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blurSize);
@@ -300,22 +300,22 @@ function createPatterns(logo) {
                     jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
                     // fix the coordinates due to scale level
-                    for(i = 0; i < corners_num; ++i) {
+                    for (let i = 0; i < corners_num; ++i) {
                         lev_corners[i].x *= 1./sc;
                         lev_corners[i].y *= 1./sc;
                     }
 
                     console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
                     sc -= sc_pc;
-                    result.patternCorners = patternCorners;
-                    result.patternDescriptors = patternDescriptors;
-                    resolve(result);
+                    res.patternCorners = patternCorners;
+                    res.patternDescriptors = patternDescriptors;
+                    resolve(res);
                 }
-            } catch(err) {
+            } catch (err) {
                 reject(err);
             }
-        })
-    })
+        });
+    });
 }
 
 const matchOrbFeatures = (scrCorners, scrDescriptors, patternCorners, patternDescriptors, site) => {
@@ -324,7 +324,7 @@ const matchOrbFeatures = (scrCorners, scrDescriptors, patternCorners, patternDes
             reject("No match found");
         }, promiseTimeout);
         //Params to play around with
-        var match_threshold = 48;//increasing this increases the number of points found. hence increases noise.
+        //var match_threshold = 48;//increasing this increases the number of points found. hence increases noise.
 
         //data strs for the screenshot
         var  matches, homo3x3, match_mask;
@@ -343,10 +343,10 @@ const matchOrbFeatures = (scrCorners, scrDescriptors, patternCorners, patternDes
         var t1 = performance.now();
         console.log("Good matches count : " + good_matches);
         console.log("Time taken : " + (t1 - t0));
-        if(good_matches > 15) {
+        if (good_matches > 15) {
             console.log("Match found for : " + site);
             resolve(site);
         }
 
     });
-}
+};

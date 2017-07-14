@@ -46,6 +46,7 @@
         "skipDomains": true,
         "IDBStore": false,
         "redFlagSites": true,
-        "isSpecialTab": false
+        "isSpecialTab": false,
+        "jsfeat": false
     }
 }
