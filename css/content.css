@@ -62,6 +62,7 @@ img#fake-image {
   background-color: rgba(94, 110, 141, 0.9);
   opacity: 0;
   visibility: hidden;
+  z-index:99999;
 }
 .kp-popup.kp-is-visible {
   opacity: 1;

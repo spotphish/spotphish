@@ -32,6 +32,7 @@
   ],
   "background": {
     "scripts": [
+        "assets/defaults/pattern.js",
         "whitelist.js",
         "externalCode/idbstore.min.js",
         "utils.js",
@@ -58,6 +59,7 @@
   ],
   "web_accessible_resources": [
     "assets/img/*",
+    "assets/icons/*",
     "assets/fonts/*",
     "images/*",
     "assets/defaults/*"
