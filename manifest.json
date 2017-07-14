@@ -58,6 +58,7 @@
   ],
   "web_accessible_resources": [
     "assets/img/*",
+    "assets/icons/*",
     "assets/fonts/*",
     "images/*",
     "assets/defaults/*"
