@@ -36,6 +36,11 @@
         "ajax_get": false,
         "crop": false,
         "findOrbFeatures": false,
-        "matchOrbFeatures": false
+        "matchOrbFeatures": false,
+        "stripQueryParams": false,
+        "getPathInfo": false,
+        "createPatterns": false,
+        "skipDomains": true,
+        "IDBStore": false
     }
 }

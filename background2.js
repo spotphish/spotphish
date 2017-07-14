@@ -48,31 +48,31 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
         checkdata(msg, sender, respond);
-    } else if (msg.op === 'get_tabinfo') {
+    } else if (msg.op === "get_tabinfo") {
         var tab = msg.curtab;
         if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
             respond({status: tabinfo[tab.id].state});
         } else {
-            respond({status: tab_status.NA});
+            respond({status: "NA"});
         }
 
-    } else if (msg.op === 'addToWhitelist') {
+    } else if (msg.op === "addToWhitelist") {
         inject(msg.currentTab, msg.site);
-    } else if (msg.op === 'removeFromWhitelist') {
+    } else if (msg.op === "removeFromWhitelist") {
         removeFromWhiteList(msg.site);
-    } else if (msg.op === 'crop_capture') {
+    } else if (msg.op === "crop_capture") {
         console.log("Inside crop capture");
         chrome.tabs.getSelected(null, (tab) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (image) => {
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
                 crop(image, msg.area, msg.dpr, true, (cropped) => {
-                        respond({message: 'image', image: cropped});
-                        var url = stripQueryParams(sender.tab.url);
-                        console.log ("URL: ", url, " tab: ", sender.tab);
-                        addToWhiteList({ url: url, type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
-                })
-            })
-        })
-    } else if (msg.op === 'add_wh') {
+                    respond({message: "image", image: cropped});
+                    var url = stripQueryParams(sender.tab.url);
+                    console.log ("URL: ", url, " tab: ", sender.tab);
+                    addToWhiteList({ url: url, type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
+                });
+            });
+        });
+    } else if (msg.op === "add_wh") {
         var url = stripQueryParams(sender.tab.url);
         console.log ("URL: ", url, " tab: ", sender.tab);
         addToWhiteList({ url: url, type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
@@ -82,7 +82,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 });
 
 function inject (tab, site) {
-    chrome.tabs.sendMessage(tab.id, {message: 'init', url: site});
+    chrome.tabs.sendMessage(tab.id, {message: "init", url: site});
 }
 
 function init(msg, sender, respond) {
@@ -182,18 +182,18 @@ function checkSkip(url) {
 
 function checkWhitelist(tab) {
     let urlData = getPathInfo(tab.url);
-	if (urlData.protocol === "https:") {
-		let site = urlData.protocol +"//" + urlData.host;
-		if (urlData.port) {
-			site = site + ":" + urlData.port;
-		}
-		site = site + urlData.path;
-		for (var i = 0; i < KPWhiteList.length; i++ ) {
-			if (site === KPWhiteList[i].url) {
-				console.log("WHITE LISTED : ", KPWhiteList[i]);
-				return true;
-			}
-		}
+    if (urlData.protocol === "https:") {
+        let site = urlData.protocol +"//" + urlData.host;
+        if (urlData.port) {
+            site = site + ":" + urlData.port;
+        }
+        site = site + urlData.path;
+        for (var i = 0; i < KPWhiteList.length; i++ ) {
+            if (site === KPWhiteList[i].url) {
+                console.log("WHITE LISTED : ", KPWhiteList[i]);
+                return true;
+            }
+        }
     }
     console.log(" NOT WHITE LISTED : ", tab.url);
     return false;
@@ -250,7 +250,7 @@ chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
 });
 
 chrome.runtime.onInstalled.addListener(function(details) {
-if (details.reason === 'install') {
+    if (details.reason === "install") {
         chrome.tabs.create({ url: "option.html" });
     }
 });
@@ -264,30 +264,30 @@ function initWhitelist() {
                 objWhitelist.putBatch(patternData, syncWhiteList);
             });
         }
-    })
+    });
 }
 
 function syncWhiteList(cb){
     objWhitelist.getAll((data) => {
         var data1 = data.map((x) => {
-            return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo, enabled: x.enabled}
+            return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo, enabled: x.enabled};
         });
 
         KPTemplates = data.filter((x) => {
             return x.logo !== undefined && x.enabled === true;
         }).map((x) => {
-            return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors}
+            return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
         });
         KPWhiteList = data1.filter((x)=> {
             return x.url !== undefined;
         }).map((x) => {
             return {id: x.id, url: x.url, type: x.type, enabled: x.enabled};
         });
-        if (typeof(cb) === 'function') {
+        if (typeof(cb) === "function") {
             cb(data1);
         }
         console.log("syncWhiteList called : ", KPWhiteList, KPTemplates);
-    })
+    });
 }
 
 function removeFromWhiteListById(id) {
@@ -323,7 +323,7 @@ function removeFromWhiteList(site) {
     let index = 0;
     let found = false;
     for (index; index < KPWhiteList.length; index++) {
-        if (KPWhiteList[index].url === site && KPWhiteList[index].type === 'custom') {
+        if (KPWhiteList[index].url === site && KPWhiteList[index].type === "custom") {
             found = true;
             break;
         }
@@ -336,40 +336,34 @@ function removeFromWhiteList(site) {
 }
 
 function saveKPWhiteList() {
-    chrome.storage.local.set({whitelist : KPWhiteList},() => {
-        console.log("whitelist : ", KPWhiteList )
-        });
-}
-
-function saveKPRedFlagList() {
-    chrome.storage.local.set({redflaglist : KPRedFlagList},() => {
-        console.log("redflaglist : ", KPRedFlagList )
-        });
+    chrome.storage.local.set({whitelist : KPWhiteList}, () => {
+        console.log("whitelist : ", KPWhiteList);
+    });
 }
 
 function saveKPSkipList() {
-    chrome.storage.local.set({skiplist : KPSkipList},() => {
-        console.log("skiplist : ", KPSkipList )
-        });
+    chrome.storage.local.set({skiplist : KPSkipList}, () => {
+        console.log("skiplist : ", KPSkipList);
+    });
 }
 
 
 function syncSkipList(){
     chrome.storage.local.get("skiplist", function(result) {
         var data = result.skiplist;
-            console.log("Data received : ", data );
-            if (data) {
-                KPSkipList = data;
-            } else {
-                KPSkipList = skipDomains;
-                saveKPSkipList();
-            }
+        console.log("Data received : ", data);
+        if (data) {
+            KPSkipList = data;
+        } else {
+            KPSkipList = skipDomains;
+            saveKPSkipList();
+        }
     });
 }
 
 function getDefaultWhitelist(){
     return new Promise((resolve, reject) => {
-        ajax_get('/assets/defaults/pattern.json', function(err, jsonData) {
+        ajax_get("/assets/defaults/pattern.json", function(err, jsonData) {
             return (err === null ? resolve(jsonData) : reject(err));
         });
     });
@@ -384,14 +378,14 @@ function loadDefaults() {
     //TODO
     //Should we allow users to add multiple entries for the same site?
     objWhitelist = new IDBStore({
-            storeName: 'whitelist',
-            keyPath: 'id',
-            autoIncrement: true,
-            onStoreReady: initWhitelist,
-            onError: error,
-            indexes: [
-                { name: 'url', keyPath: 'url', unique: false, multiEntry: false }
-            ]
+        storeName: "whitelist",
+        keyPath: "id",
+        autoIncrement: true,
+        onStoreReady: initWhitelist,
+        onError: error,
+        indexes: [
+            { name: "url", keyPath: "url", unique: false, multiEntry: false }
+        ]
     });
     //TODO:This is bad, should be replaced
     setTimeout(syncWhiteList, 2000);
@@ -421,15 +415,5 @@ function removeFromKPSkipList(domain) {
         saveKPSkipList();
     } else {
         console.log("Domain not in skip list : ", domain);
-    }
-}
-
-function removeFromKPRedFlagList(domain) {
-    var index = KPRedFlagList.indexOf(domain);
-    if (index !== -1) {
-        KPRedFlagList.splice(index,1);
-        saveKPRedFlagList();
-    } else {
-        console.log("Domain not in red flag list : ", domain);
     }
 }
