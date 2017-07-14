@@ -32,6 +32,7 @@
   ],
   "background": {
     "scripts": [
+        "assets/defaults/pattern.js",
         "whitelist.js",
         "externalCode/idbstore.min.js",
         "utils.js",

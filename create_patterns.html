@@ -124,8 +124,8 @@
             redFlagSites[i].patternDescriptors = results[i].patternDescriptors;
         }
 		var a = window.document.createElement('a');
-		a.href = window.URL.createObjectURL(new Blob([JSON.stringify(redFlagSites)], {type: 'text/plain;charset=utf-8;'}));
-		a.download = 'pattern.json';
+		a.href = window.URL.createObjectURL(new Blob(["var defPatterns = " + JSON.stringify(redFlagSites)], {type: 'text/plain;charset=utf-8;'}));
+		a.download = 'pattern.js';
 		// Append anchor to body.
 		document.body.appendChild(a)
 		a.click();
