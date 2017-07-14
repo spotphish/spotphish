@@ -44,6 +44,8 @@
         "getPathInfo": false,
         "createPatterns": false,
         "skipDomains": true,
-        "IDBStore": false
+        "IDBStore": false,
+        "redFlagSites": true,
+        "isSpecialTab": false
     }
 }

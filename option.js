@@ -19,68 +19,54 @@ bkg.initWhitelist("IDBI", cb);
 */
 
 function templateSkipDomain(index, data) {
-    return '<div class="white-list-row" data-id=' + index + ' data-name=' + data + ' >' +
-          '<div class="site-name">' +
-            data +
-          '</div>' +
-          '<div class="wl-actions">' +
-              '<div class="wl-active">' +
-                '<input id="checkbox0" type="checkbox">' +
-              '</div>' +
-              //'<div class="wl-edit" data-id=' +index + '>' +
-              //    '<span class="glyphicon glyphicon-pencil"></span>' +
-              //'</div>' +
-              '<div class="wl-delete" data-id=' + index + ' >' +
-                  '<span class="glyphicon glyphicon-remove"></span>' +
-              '</div>' +
-              '<div class="clr"></div>' +
-          '</div>' +
-        '</div>';
-}
+    const template = `
+<div class="white-list-row" data-id=${index} data-name=${data}>
+    <div class="site-name">
+    ${data}
+    </div>
+    <div class="wl-actions">
+        <div class="wl-active">
+        <input id="checkbox0" type="checkbox">
+        </div>
+        <div class="wl-delete" data-id=${index}>
+            <span class="glyphicon glyphicon-remove"></span>
+        </div>
+        <div class="clr"></div>
+    </div>
+</div>`;
 
-function template1(index, data, status) {
-    return '<div class="white-list-row" data-id=' + index + ' >' +
-          '<div class="site-name">' +
-            data +
-          '</div>' +
-          '<div class="wl-actions">' +
-              '<div class="wl-active">' +
-                '<input class="wl-checkbox" type="checkbox" ' + status + ' data-id=' + index + ' >' +
-              '</div>' +
-              '<div class="clr"></div>' +
-          '</div>' +
-        '</div>';
+    return template;
 }
 
 function template3(data) {
     var name = data.url;
     var logo = "";
     if (data.logo) {
-        logo = '<img src="' + data.logo + '" ></img>';
+        logo = `<img src="${data.logo}"></img>`;
     }
-    var template = '<div class="white-list-row" data-id=' + data.id + ' data-name=' + data.site + ' >' +
-          '<div class="site-name">' +
-            name +
-          '</div>' + logo +
-          '<div class="wl-actions">' +
-              '<div class="wl-active">' +
-                '<input id="checkbox0" type="checkbox">' +
-              '</div>' +
-              //'<div class="wl-edit" data-id=' +index + '>' +
-              //    '<span class="glyphicon glyphicon-pencil"></span>' +
-              //'</div>' +
-              '<div class="wl-delete" >' +
-                  '<span class="glyphicon glyphicon-remove wl-delete-icon"></span>' +
-              '</div>' +
-              '<div class="clr"></div>' +
-          '</div>' +
-        '</div>';
+    var template = `
+<div class="white-list-row" data-id=${data.id} data-name=${data.site}>
+    <div class="site-name">
+        ${name}
+    </div>
+    ${logo}
+    <div class="wl-actions">
+        <div class="wl-active">
+            <input id="checkbox0" type="checkbox">
+        </div>
+        <div class="wl-delete">
+            <span class="glyphicon glyphicon-remove wl-delete-icon"></span>
+        </div>
+        <div class="clr"></div>
+    </div>
+</div>`;
+
     return template;
 }
 
 function updateImage(data) {
-    var img = document.createElement('img');
-    img.id = 'display-img';
+    var img = document.createElement("img");
+    img.id = "display-img";
 
     if (data) {
         console.log("Data found");
@@ -88,17 +74,17 @@ function updateImage(data) {
         img.width = data.width || 200;
         chrome.storage.local.set({"secure_img": data}, function() {
             console.log("Data Saved : ", data);
-            if (data.type === 'suggested' || data.type === 'default') {
+            if (data.type === "suggested" || data.type === "default") {
                 img.src = data.src;
-            } else if (data.type === 'custom') {
+            } else if (data.type === "custom") {
                 //img.src = "data:image/jpeg;base64," + data.src;
                 img.src = data.src;
                 console.log(img.src);
             }
             //img.height = data.height || 200;
             //img.width = data.width || 200;
-            $('.image').empty();
-            $('.image').append(img);
+            $(".image").empty();
+            $(".image").append(img);
         });
         // For Selected Image
     } else {
@@ -110,7 +96,7 @@ function updateImage(data) {
                 data.type = "default";
                 data.src = DEFAULT_IMG;
                 updateImage(data);
-                //$('.image').append(img);
+                //$(".image").append(img);
                 //return;
             }
             console.log("Data received : ", data);
@@ -118,8 +104,8 @@ function updateImage(data) {
             img.height = data.height || 200;
             img.width = data.width || 200;
             console.log("Image : ", img);
-            $('.image').empty();
-            $('.image').append(img);
+            $(".image").empty();
+            $(".image").append(img);
         });
         //Search for image from local storage
         //If no data stored in local storage use default img
@@ -145,38 +131,37 @@ function updateTableData() {
 }
 
 function renderTable() {
-    $('.white-list-scroll').empty();
-    $('.wl-desc p').empty();
+    $(".white-list-scroll").empty();
+    $(".wl-desc p").empty();
     if (tab === "whitelist") {
-        $('.wl-desc p').append(whitelist_msg);
-            bkg.syncWhiteList(renderWhiteListTable);
+        $(".wl-desc p").append(whitelist_msg);
+        bkg.syncWhiteList(renderWhiteListTable);
         //renderWhiteListTable();
-    } /*else if (tab === 'redflag') {
-        $('.wl-desc p').append(redflag_msg);
+    } /*else if (tab === "redflag") {
+        $(".wl-desc p").append(redflag_msg);
         renderRedFlagTable();
-    } */else if (tab === 'safedomain') {
-        $('.wl-desc p').append(safesite_msg);
+    } */else if (tab === "safedomain") {
+        $(".wl-desc p").append(safesite_msg);
         renderSafeDomainTable();
     }
 }
 
 function renderWhiteListTable(data) {
 
-    var length = data.length;
     console.log("IDB-data", data);
     data.forEach((x)=> {
         if (x.url) {
-            $('.white-list-scroll').append(template3(x));
+            $(".white-list-scroll").append(template3(x));
         }
     });
 
-    $('.white-list-row').on('click', function(e) {
+    $(".white-list-row").on("click", function(e) {
         e.preventDefault();
         var id = $(this).data("id");
         var name = $(this).data("name");
         console.log("Clicked : ", name);
         console.log(e.target);
-        if ($(e.target).is('.wl-delete-icon')) {
+        if ($(e.target).is(".wl-delete-icon")) {
             var res = confirm("Do you want to delete " + name + " from whitelist");
             if (res) {
                 $(this).remove();
@@ -188,17 +173,17 @@ function renderWhiteListTable(data) {
 
 function renderSafeDomainTable() {
     var length = KPSkipList.length;
-    for (i = 0; i < length; i++) {
-        $('.white-list-scroll').append(templateSkipDomain(i, KPSkipList[i]));
+    for (let i = 0; i < length; i++) {
+        $(".white-list-scroll").append(templateSkipDomain(i, KPSkipList[i]));
     }
 
-    $('.wl-delete').on('click', function(e) {
+    $(".wl-delete").on("click", function(e) {
         e.preventDefault();
         var id = $(this).data("id");
         console.log("Clicked : ", KPSkipList[id]);
         var res = confirm("Do you want to delete " + KPSkipList[id] + " from Safe Domain list");
         if (res) {
-            $('.white-list-scroll').empty();
+            $(".white-list-scroll").empty();
             KPSkipList.splice(id, 1);
             saveSkipListData();
             //saveTableData();
@@ -212,18 +197,18 @@ function renderRedFlagTable() {
     var length = KPRedFlagList.length;
 
     for (i = 0; i < length; i++) {
-        $('.white-list-scroll').append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled ? "checked" : ""));
+        $(".white-list-scroll").append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled ? "checked" : ""));
     }
-    //$('.wl-delete').css("display", "none");
+    //$(".wl-delete").css("display", "none");
 
-    $('.wl-checkbox').change(function(e) {
+    $(".wl-checkbox").change(function(e) {
         e.preventDefault();
         var id = $(this).data("id");
         console.log("Clicked : ", KPRedFlagList[id]);
         //var res = confirm("Do you want to delete " + KPRedFlagList[id] + " from whitelist");
-        var enabled = $(this).is(':checked');
+        var enabled = $(this).is(":checked");
         if (enabled !== KPRedFlagList[id].enabled) {
-            $('.white-list-scroll').empty();
+            $(".white-list-scroll").empty();
             KPRedFlagList[id].enabled = enabled;
             saveRedFlagData();
             renderTable();
@@ -248,8 +233,8 @@ function saveRedFlagData() {
 }
 
 function closeImgUploader() {
-    $('.img-uploader-container').addClass("hide");
-    $('.whitelist-container').removeClass("hide");
+    $(".img-uploader-container").addClass("hide");
+    $(".whitelist-container").removeClass("hide");
 }
 
 function addData(val) {
@@ -257,9 +242,9 @@ function addData(val) {
         return;
     }
     if (tab === "whitelist") {
-            bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
-            renderTable();
-    } else if (tab === 'safedomain') {
+        bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
+        renderTable();
+    } else if (tab === "safedomain") {
         if (KPSkipList.indexOf(val) === -1) {
             KPSkipList.push(val);
             saveSkipListData();
@@ -271,12 +256,12 @@ function addData(val) {
 $(document).ready(function() {
     updateImage();
     updateTableData();
-    $('.rig li').on('click', function(event) {
+    $(".rig li").on("click", function(event) {
         event.preventDefault();
-        $('.rig li').removeClass("active");
+        $(".rig li").removeClass("active");
         $(this).addClass("active");
         var data = {};
-        data.type = 'suggested';
+        data.type = "suggested";
         var img = $(this).children("img")[0];
         var scaleFactor = Math.min(200 / img.width, 200 / img.height);
         data.width = scaleFactor * img.width;
@@ -285,21 +270,21 @@ $(document).ready(function() {
         updateImage(data);
         closeImgUploader();
 
-        //$('#display-img')[0].src = $(this).children("img")[0].src;
+        //$("#display-img")[0].src = $(this).children("img")[0].src;
     });
 
-    $('.img-edit').on('click', function(e) {
-        $('.whitelist-container').addClass("hide");
-        $('.img-uploader-container').removeClass("hide");
+    $(".img-edit").on("click", function(e) {
+        $(".whitelist-container").addClass("hide");
+        $(".img-uploader-container").removeClass("hide");
     });
-    $('#img-uploader-close').on('click', function(e) {
+    $("#img-uploader-close").on("click", function(e) {
         closeImgUploader();
     });
 
-    $('#custom-img').change(function(e) {
-        var canvas = document.getElementById('canvas-cust');
+    $("#custom-img").change(function(e) {
+        var canvas = document.getElementById("canvas-cust");
         console.log("Canvas : ", canvas);
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext("2d");
         console.log("File : ", e.target.files);
         var url = URL.createObjectURL(e.target.files[0]);
         console.log("url");
@@ -311,42 +296,42 @@ $(document).ready(function() {
             canvas.height = img.height * scaleFactor;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             var data = {};
-            data.type = 'custom';
+            data.type = "custom";
             data.width = canvas.width;
             data.height = canvas.height;
-            data.src = canvas.toDataURL('image/jpeg');
+            data.src = canvas.toDataURL("image/jpeg");
             updateImage(data);
         };
         img.src = url;
-        $('.rig li').removeClass("active");
-        $('#canvas-cust').removeClass("hide");
+        $(".rig li").removeClass("active");
+        $("#canvas-cust").removeClass("hide");
     });
 
-    $('.wl-tab-item').on('click', function(e) {
-        $('.wl-tab-item').removeClass('wl-active-tab');
-        $(this).addClass('wl-active-tab');
-        tab = $(this).data('list');
+    $(".wl-tab-item").on("click", function(e) {
+        $(".wl-tab-item").removeClass("wl-active-tab");
+        $(this).addClass("wl-active-tab");
+        tab = $(this).data("list");
         if (tab === "redflag") {
-            $('.wl-add-btn').addClass('hide');
+            $(".wl-add-btn").addClass("hide");
         } else {
-            $('.wl-add-btn').removeClass('hide');
+            $(".wl-add-btn").removeClass("hide");
         }
         renderTable();
         console.log("Tab : ", tab);
     });
 
-    $('.wl-add-btn').on('click', function(e) {
-        $('.wl-input-wrapper').removeClass('hide');
+    $(".wl-add-btn").on("click", function(e) {
+        $(".wl-input-wrapper").removeClass("hide");
     });
-    $('.wl-fa-save').on('click', function(e) {
-        var val = $('.wl-input').val();
+    $(".wl-fa-save").on("click", function(e) {
+        var val = $(".wl-input").val();
         console.log("Value : ", val);
         //TODO: Save to the appropriate list
-        $('.wl-input-wrapper').addClass('hide');
+        $(".wl-input-wrapper").addClass("hide");
         addData(val);
 
     });
-    $('.wl-fa-cancel').on('click', function(e) {
-        $('.wl-input-wrapper').addClass('hide');
+    $(".wl-fa-cancel").on("click", function(e) {
+        $(".wl-input-wrapper").addClass("hide");
     });
 });
