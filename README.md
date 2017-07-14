@@ -1,24 +1,38 @@
-# Killphisher
+# Killphisher: Zero-Day Phishing Protection
 
-This Chrome extension is a perceptual anti-phishing tool which detects pages which look like login pages of popular services, but are hosted on a different domain.
+We propose a new anti-phishing technique based on creating large visual
+differences between legitimate sites and phishing pages which attempt to mimic
+them.
 
-The technique is inspired by and based on **perceptual ad-blocking**, as described in the paper ["The Future of Ad Blocking: An Analytical Framework and New Techniques."](http://randomwalker.info/publications/ad-blocking-framework-techniques.pdf), the [blog post](https://freedom-to-tinker.com/2017/04/14/the-future-of-ad-blocking/) and the [github repository](https://github.com/citp/ad-blocking).
+Attackers can automatically create thousands of customized phishing emails,
+domains and pages which, being newly minted, evade the browser's
+blacklist-based phishing protection. High-value individuals and employees of
+sensitive organizations are especially vulnerable to such _zero-day phishing_
+attacks.
 
-# Code Overview
+We increase the contrast in user experience between browsing a genuine page
+versus an imitation page in the following manner:
 
-- *manifest.json* contains information about the overall structure of the extension as well as the title, version number, and description.
-- *popup* is just a simple description of the extension that appears when the user clicks the icon in the upper right.
-- *content.js* is the script that runs in iframes, searches for login dialogs and highlights the iframes if it smells phishy.
-- *perceptualLibrary/container_finder.js* contains code that returns a list of containers conforming to various constraints, including width/height bounds or specific css properties but also more high-level things like whether the container is a sidebar or not.
-- *perceptualLibrary/imageSearch.js* contains the perceptual code for detecting images of various kinds.
-- *perceptualLibrary/check_text_and_link* contains code that searches for text and a link within a given container.
-- *perceptualLibrary/adchoices_hashes.js* contains the hashes of logo icons to match.
-- *perceptualLibrary/hash_encoding.js* contains the code that converts from the logo hashes (in hex) to binary.
-- *perceptualLibrary/perceptual_background.js* contains the code that does the fuzzy image hashing and link destination detection.
-- *locale_info.js* keeps information about the "Sponsored" text in various languages to support all Facebook locales.
-- *utils.js* contains the code for covering fishy once they have been identified
-- *externalCode* contains jquery 1.12.4
-- *actual_icons* contains the actual logo icons for Google, Facebook etc.
+  * Annotate genuine login pages with a personal image selected by the user.
+  * Take periodic screenshots of the active browser tab and raise an alarm if
+    it visually resembles the login page of a whitelisted site. The comparison
+    is done using computer vision techniques.
+
+Our approach can thus effectively protect against zero-day phishing, which
+would not be caught by a blacklist-based system. It is implemented as a Chrome
+extension.
+
+More information [here](doc/rationale.md).
+
+![Paypal Greenflag]
+
+*Actual Paypal login, green flag*
+
+<br>
+
+![Paypal Redflag]
+
+*Paypal Phish, red flag*
 
 # Running This Extension
 
@@ -29,5 +43,23 @@ To get this running from the source code on your local machine (Chrome only):
 - click the "Load unpacked extension..." button below the "Extensions" title
 - select the "killphisher" folder from your filesystem
 
+# History
+
+This project is inspired by the paper [The Future of Ad Blocking][foab] by
+Storey et al, which introduces a novel _perceptual ad blocking_ technique. It
+ignores HTML markup and blacklists and uses lightweight computer vision
+techniques to "see" the page like a human and recognize features of the ad
+(like the AdChoices icon) which must be present for regulatory purposes.
+
+We observe that the same constraint holds for phishing - HTML markup may be
+obfuscated, blacklists may be thwarted, but at the end of the day, the rendered
+phishing page must look, in human eyes, very similar to the page it imitates.
+Thus, it can be identified by computer vision techniques.
+
 ### License:
 MIT
+
+
+[Paypal Greenflag]: doc/img/paypal-greenflag.gif
+[Paypal Redflag]: doc/img/paypal-redflag.gif
+[foab]: https://arxiv.org/abs/1705.08568

@@ -24,7 +24,7 @@
         "externalCode/jquery.Jcrop.min.js",
         "whitelist.js",
         "utils.js",
-        "content2.js"
+        "content.js"
       ],
       "run_at": "document_start",
       "all_frames": true
@@ -37,7 +37,7 @@
         "externalCode/idbstore.min.js",
         "utils.js",
         "screenshot.js",
-        "background2.js",
+        "background.js",
         "orb-features.js",
         "externalCode/jsfeat.js"
       ]
