@@ -265,10 +265,11 @@ function injectConfirmBox(text, url) {
                 overlay();
                 capture(true);
             }
-        } else if ($(event.target).is(".kp-np")) {
-            event.preventDefault();
-            $(this).removeClass("kp-is-visible");
-            chrome.runtime.sendMessage({op: "add_wh", url: url});
+        } else if ($(event.target).is('.kp-no')) {
+			event.preventDefault();
+			$(this).removeClass('kp-is-visible');
+            chrome.runtime.sendMessage({
+                op: 'add_wh'});
         }
     });
 	//close popup when clicking the esc keyboard button

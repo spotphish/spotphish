@@ -58,8 +58,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 
     } else if (msg.op === "addToWhitelist") {
         inject(msg.currentTab, msg.site);
+        respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
         removeFromWhiteList(msg.site);
+        respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
         console.log("Inside crop capture");
         chrome.tabs.getSelected(null, (tab) => {
@@ -306,6 +308,8 @@ function addToWhiteList(data, tab) {
     }
 
     tabinfo[tab.id].state = "greenflagged";
+    let urlInfo = getPathInfo(tab.url); 
+    addToKPSkipList(urlInfo.host);
 }
 
 function removeFromWhiteList(site) {
@@ -319,6 +323,7 @@ function removeFromWhiteList(site) {
         }
     }
     if (found) {
+        removeFromKPSkipList(getPathInfo(site).host);
         objWhitelist.remove(KPWhiteList[index].id, syncWhiteList);
     } else {
         console.log("site not Whitelisted : ", site);
@@ -351,13 +356,6 @@ function syncSkipList(){
     });
 }
 
-function getDefaultWhitelist(){
-    return new Promise((resolve, reject) => {
-        ajax_get("/assets/defaults/pattern.json", function(err, jsonData) {
-            return (err === null ? resolve(jsonData) : reject(err));
-        });
-    });
-}
 
 function error(err) {
     console.log(err);

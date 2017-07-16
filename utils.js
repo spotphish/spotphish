@@ -58,7 +58,7 @@ function stripQueryParams(url) {
 }
 
 function isSpecialTab(url) {
-    if (url.indexOf('chrome:') === 0 || url.indexOf('chrome-devtools:') === 0 || url.indexOf('file:') === 0 || url.indexOf('chrome.google.com/webstore') >= 0) {
+    if (url.indexOf('chrome:') === 0 || url.indexOf('chrome-extension:') === 0 || url.indexOf('chrome-devtools:') === 0 || url.indexOf('file:') === 0 || url.indexOf('chrome.google.com/webstore') >= 0) {
         return true;
     }
     return false;
