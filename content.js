@@ -99,9 +99,6 @@ function appendSecureImg() {
 
         });
     });
-        //Search for image from local storage
-        //If no data stored in local storage use default img
-
 }
 
 function rpc(msg) {
@@ -265,14 +262,14 @@ function injectConfirmBox(text, url) {
                 overlay();
                 capture(true);
             }
-        } else if ($(event.target).is('.kp-no')) {
-			event.preventDefault();
-			$(this).removeClass('kp-is-visible');
+        } else if ($(event.target).is(".kp-no")) {
+            event.preventDefault();
+            $(this).removeClass("kp-is-visible");
             chrome.runtime.sendMessage({
-                op: 'add_wh'});
+                op: "add_wh"});
         }
     });
-	//close popup when clicking the esc keyboard button
+    //close popup when clicking the esc keyboard button
     $(document).keyup(function(event) {
         if (event.which === "27") {
             $(".kp-popup").removeClass("kp-is-visible");

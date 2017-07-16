@@ -135,9 +135,7 @@ function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3
     // ransac params
     var num_model_points = 4;
     var reproj_threshold = 3;
-    var ransac_param = new jsfeat.ransac_params_t(num_model_points,
-                                                  reproj_threshold, 0.5, 0.99);
-
+    var ransac_param = new jsfeat.ransac_params_t(num_model_points, reproj_threshold, 0.5, 0.99);
     var pattern_xy = [];
     var screen_xy = [];
 
@@ -153,7 +151,7 @@ function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3
     // estimate motion
     var ok = false;
     ok = jsfeat.motion_estimator.ransac(ransac_param, mm_kernel,
-                                        pattern_xy, screen_xy, count, homo3x3, match_mask, 1000);
+        pattern_xy, screen_xy, count, homo3x3, match_mask, 1000);
 
     // extract good matches and re-estimate
     var good_cnt = 0;

@@ -12,7 +12,7 @@
             document.getElementById("kp-remove-from-whitelist").style.display = "block";
             document.getElementById("kp-add-to-whitelist").style.display = "none";
             //document.getElementsByClassName("optsCurrent")[0].style.display = "block";
-        } else if (response.status === 'watching') {
+        } else if (response.status === "watching") {
             document.getElementById("kp-add-to-whitelist").style.display = "block";
         }
     };
@@ -27,23 +27,23 @@
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('kp-add-to-whitelist').addEventListener('click', function (e) {
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("kp-add-to-whitelist").addEventListener("click", function (e) {
             var site = stripQueryParams(curTab.url);
             chrome.runtime.sendMessage({ op: "addToWhitelist", currentTab: curTab, site: site}, res => {
-                if (res.message === 'whitelisted') {
-                    document.getElementById('kp-remove-from-whitelist').style.display = 'block';
-                    document.getElementById('kp-add-to-whitelist').style.display = 'none';
+                if (res.message === "whitelisted") {
+                    document.getElementById("kp-remove-from-whitelist").style.display = "block";
+                    document.getElementById("kp-add-to-whitelist").style.display = "none";
                 }
             });
             window.close();
         });
-        document.getElementById('kp-remove-from-whitelist').addEventListener('click', function (e) {
+        document.getElementById("kp-remove-from-whitelist").addEventListener("click", function (e) {
             var site = stripQueryParams(curTab.url);
             chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
-                if (res.message === 'removed') {
-                    document.getElementById('kp-remove-from-whitelist').style.display = 'none';
-                    document.getElementById('kp-add-to-whitelist').style.display = 'block';
+                if (res.message === "removed") {
+                    document.getElementById("kp-remove-from-whitelist").style.display = "none";
+                    document.getElementById("kp-add-to-whitelist").style.display = "block";
                 }
             });
             window.close();
