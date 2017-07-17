@@ -16,7 +16,7 @@ CHECK_SOURCES = background.js orb-features.js content.js popup.js option.js
 BACKGROUND = js/bg.js
 CONTENT = js/cs.js
 
-all: check
+all: check css
 #all: $(BACKGROUND) $(CONTENT)
 
 $(BACKGROUND): $(BG_SOURCES)
@@ -28,5 +28,10 @@ $(CONTENT): $(CS_SOURCES)
 check: $(BG_SOURCES) $(CS_SOURCES)
 	eslint $(CHECK_SOURCES)
 
+css: .PHONY
+	make -C css
+
 clean:
 	rm $(BACKGROUND) $(CONTENT)
+
+.PHONY:

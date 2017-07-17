@@ -1,68 +1,57 @@
 .kp-img-container {
-  background: #eb431e;
-  position: absolute;
-  z-index: 1000;
-  top: 10px;
-  right: 10px;
-  width: auto;
-  max-width: 250px;
-  padding: 5px;
-  box-shadow: 4px 4px 4px -2px #232323;
-  animation-name: kp-secure-img;
-  animation-duration: 4s; }
+    background: #eb431e;
+    position: absolute;
+    z-index: 1000;
+    top: 10px;
+    right: 10px;
+    width: auto;
+    max-width: 250px;
+    padding: 5px;
+    box-shadow: 4px 4px 4px -2px #232323;
+    animation-name: kp-secure-img;
+    animation-duration: 4s;
+}
 
 .kp-img-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #eb431e;
-  opacity: 0.8; }
-
+    position: absolute;
+    top: 10px;
+    right:10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #eb431e;
+    opacity: 0.8;
+}
 .kp-img-container:hover .kp-img-close {
-  box-shadow: 1px 1px 1px -2px #232323;
-  font-size: 16px;
-  opacity: 1; }
+    box-shadow: 1px 1px 1px -2px #232323;
+    font-size: 16px;
+    opacity: 1;
+}
 
 img#fake-image,
 .jcrop-holder,
 .jcrop-holder img,
 .jcrop-tracker {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  min-width: 100% !important;
-  min-height: 100% !important; }
+  width: 100% !important; height: 100% !important;
+  max-width: 100% !important; max-height: 100% !important;
+  min-width: 100% !important; min-height: 100% !important;
+}
 
 img#fake-image {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1; }
+  position: fixed; top: 0; left: 0; z-index: 1;
+}
 
 .jcrop-holder {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 2147483647 !important; }
+  position: fixed !important; top: 0 !important; left: 0 !important;
+  z-index: 2147483647 !important;
+}
 
 @keyframes kp-secure-img {
-  0% {
-    right: 40%;
-    top: 40%; }
-  25% {
-    right: 40%;
-    top: 40%;
-    -webkit-transform: scale(1.5); }
-  75% {
-    right: 40%;
-    top: 40%;
-    -webkit-transform: scale(1.5); }
-  100% {
-    top: 10px;
-    right: 10px; } }
+    0%   { right: 40%; top: 40%;}
+    25%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
+    75%   { right: 40%; top: 40%; -webkit-transform: scale(1.5);}
+    100%   { top:10px; right: 10px;  }
+}
+
 /* POPUP Confirmbox */
 .kp-popup {
   position: fixed;
@@ -73,14 +62,15 @@ img#fake-image {
   background-color: rgba(94, 110, 141, 0.9);
   opacity: 0;
   visibility: hidden;
-  z-index: 99999; }
-
+  z-index:99999;
+}
 .kp-popup.kp-is-visible {
   opacity: 1;
   visibility: visible;
   -webkit-transition: opacity 0.3s 0s, visibility 0s 0s;
   -moz-transition: opacity 0.3s 0s, visibility 0s 0s;
-  transition: opacity 0.3s 0s, visibility 0s 0s; }
+  transition: opacity 0.3s 0s, visibility 0s 0s;
+}
 
 .kp-popup-container {
   position: relative;
@@ -90,17 +80,17 @@ img#fake-image {
   background: #FFF;
   border-radius: .25em .25em .4em .4em;
   text-align: center;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); }
-
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
 .kp-popup-container p {
   font-weight: 300;
-  padding: 3em 1em; }
-
+  padding: 3em 1em;
+}
 .kp-popup-container .kp-buttons:after {
   content: "";
   display: table;
-  clear: both; }
-
+  clear: both;
+}
 .kp-popup-container .kp-buttons a {
   display: block;
   height: 40px;
@@ -108,35 +98,34 @@ img#fake-image {
   text-transform: uppercase;
   color: #FFF;
   float: left;
-  width: 50%; }
-
+  width: 50%;
+}
 .kp-popup-container .kp-no {
   background: #fc7169;
-  border-radius: 0 0 0 .25em; }
-
+  border-radius: 0 0 0 .25em;
+}
 .kp-popup-container .kp-no:hover {
-  background-color: #fc8982; }
-
+  background-color: #fc8982;
+}
 .kp-popup-container .kp-yes {
   background: #4CAF50;
-  border-radius: 0 0 .25em 0; }
-
+  border-radius: 0 0 .25em 0;
+}
 .kp-popup-container .kp-buttons .kp-yes:hover {
-  background-color: #66BB6A; }
-
+  background-color: #66BB6A;
+}
 .kp-popup-container .kp-popup-close {
   position: absolute;
   top: 8px;
   right: 8px;
   width: 30px;
-  height: 30px; }
-
+  height: 30px;
+}
 .kp-popup-container .kp-popup-close::before, .kp-popup-container .kp-popup-close::after {
   content: '';
   position: absolute;
   top: 12px;
   width: 14px;
   height: 3px;
-  background-color: red; }
-
-/*# sourceMappingURL=content.css.map */
+  background-color: red;
+}
