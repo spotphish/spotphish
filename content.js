@@ -26,7 +26,7 @@ function main() {
 }
 
 function do_init() {
-    const init = {op: "init", top: false};
+    const init = { op: "init", top: false };
     if (window === top) {
         init.top = true;
         init.dpr = devicePixelRatio;
@@ -43,6 +43,7 @@ function do_init() {
 }
 
 let npolls = 0;
+
 function startChecking() {
     npolls++;
     //const visible = $("input[type=\"password\"]").filter(":visible").length;
@@ -50,7 +51,7 @@ function startChecking() {
     console.log("Started checking in content script");
     if (visible.length > 0) {
         console.log("password field found");
-        rpc({op: "checkdata", data: visible});
+        rpc({ op: "checkdata", data: visible });
     } else {
         if (npolls < MAX_POLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
@@ -77,7 +78,7 @@ function appendSecureImg() {
     $("body").prepend(prepend);
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
-        console.log("Data received : ", data );
+        console.log("Data received : ", data);
         if (data === undefined) {
             data = {};
             data.type = "default";
@@ -95,7 +96,7 @@ function appendSecureImg() {
 
         $(".kp-img-close").on("click", function(e) {
             e.preventDefault();
-            $(".kp-img-container").css("display","none");
+            $(".kp-img-container").css("display", "none");
 
         });
     });
@@ -104,7 +105,7 @@ function appendSecureImg() {
 function rpc(msg) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(msg, res => {
-            return (res === undefined) ? reject({error: chrome.runtime.lastError}) : resolve(res);
+            return (res === undefined) ? reject({ error: chrome.runtime.lastError }) : resolve(res);
         });
     });
 }
@@ -114,7 +115,7 @@ var overlay = ((active) => (state) => {
     active = (typeof state === "boolean") ? state : (state === null) ? active : !active;
     $(".jcrop-holder")[active ? "show" : "hide"]();
     //chrome.runtime.sendMessage({message: "active", active})
-    $(document).keyup(function(event){
+    $(document).keyup(function(event) {
         if (event.which === "27") {
             $(".jcrop-holder").hide();
         }
@@ -135,6 +136,7 @@ var init = (done) => {
     console.log("Inside init");
     $("#fake-image").Jcrop({
         bgColor: "none",
+        maxSize: [500, 300],
         onSelect: (e) => {
             console.log("Jcrop fakeimg");
             selection = e;
@@ -148,14 +150,14 @@ var init = (done) => {
                 selection = null;
             }, 100);
         }
-    }, function ready () {
+    }, function ready() {
         console.log("jcrop initialized");
         jcrop = this;
-  
+
         $(".jcrop-hline, .jcrop-vline").css({
             backgroundImage: "url(" + chrome.runtime.getURL("/assets/img/Jcrop.gif") + ")"
         });
-  
+
         if (selection) {
             jcrop.setSelect([
                 selection.x, selection.y,
@@ -167,18 +169,51 @@ var init = (done) => {
 };
 
 var capture = (force) => {
+    console.log(selection);
     if (selection) {
-        jcrop.release();
-        setTimeout(() => {
+        // jcrop.release();
+        const screenshotTemplate = `<div class="kp-template-page" style="position: absolute; top:${selection.y - 2 }px; left: ${selection.x - 2 }px; z-index: 9999; ">
+                <div style="width: ${selection.w + 2}px; height: ${selection.h + 2}px;">
+                </div>
+                <div style="z-index: 99999">
+                    <button  class="kp-screenshot-confirum">Confirum </button>
+                    <button class="kp-screenshot-cancel">Cancel </button>
+                </div>
+            </div>`;
+        $(".jcrop-holder").append(screenshotTemplate);
+        $(".kp-screenshot-confirum").on("click", function(event) {
+            console.log("Inside screenshot confirum");
+            overlay(false);
+            $("body").removeClass("jcrop-holder");
+            console.log(selection);
             chrome.runtime.sendMessage({
-                op: "crop_capture", area: selection, dpr: devicePixelRatio
+                op: "crop_capture",
+                area: selection,
+                dpr: devicePixelRatio
             }, (res) => {
-                overlay(false);
                 selection = null;
-                console.log(res);
-            //save(res.image)
             });
-        }, 50);
+        });
+
+        $(".kp-screenshot-cancel").on("click", function(event) {
+            console.log("screenshot cancel");
+            overlay(false);
+            selection = null;
+            jcrop.destroy();
+            $("body").removeClass("jcrop-holder");
+        });
+
+
+        // setTimeout(() => {
+        //     chrome.runtime.sendMessage({
+        //         op: "crop_capture", area: selection, dpr: devicePixelRatio
+        //     }, (res) => {
+        //         overlay(false);
+        //         selection = null;
+        //         console.log(res);
+        //     //save(res.image)
+        //     });
+        // }, 50);
     }
 };
 
@@ -234,7 +269,7 @@ chrome.runtime.onMessage.addListener((req, sender, res) => {
 
 function injectConfirmBox(text, url) {
     const append =
-`<div class="kp-popup kp-is-visible" role="alert">
+        `<div class="kp-popup kp-is-visible" role="alert">
     <div class="kp-popup-container">
     <p>${text}</p>
     <div class="kp-buttons">
@@ -266,7 +301,8 @@ function injectConfirmBox(text, url) {
             event.preventDefault();
             $(this).removeClass("kp-is-visible");
             chrome.runtime.sendMessage({
-                op: "add_wh"});
+                op: "add_wh"
+            });
         }
     });
     //close popup when clicking the esc keyboard button

@@ -129,3 +129,26 @@ img#fake-image {
   height: 3px;
   background-color: red;
 }
+
+.kp-template-page {
+
+  .kp-screenshot-confirum {
+    background-color: green;
+    color: white;
+    font-weight: 400;
+    padding: 5px 0px;
+    float: right;
+    border: 0px;
+    width: 50%;
+  }
+
+  .kp-screenshot-cancel {
+    background-color: red;
+    color: white;
+    font-weight: 400;
+    padding: 5px 0px;
+    float: left;
+    border: 0px;
+    width: 50%;
+  }
+}
