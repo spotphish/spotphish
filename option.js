@@ -25,9 +25,9 @@ function templateSkipDomain(index, data) {
     ${data}
     </div>
     <div class="wl-actions">
-        <div class="wl-active">
+        <!--div class="wl-active">
         <input id="checkbox0" type="checkbox">
-        </div>
+        </div-->
         <div class="wl-delete" data-id=${index}>
             <span class="glyphicon glyphicon-remove"></span>
         </div>
@@ -154,7 +154,7 @@ function renderWhiteListTable(data) {
             $(".white-list-scroll").append(template3(x));
         }
     });
-
+    $(".wl-add-btn").addClass("hide");
     $(".white-list-row").on("click", function(e) {
         e.preventDefault();
         var id = $(this).data("id");
@@ -241,10 +241,8 @@ function addData(val) {
     if (!val || val === "") {
         return;
     }
-    if (tab === "whitelist") {
-        bkg.addToWhiteList({url: val, enabled: true, type: "custom"});
-        renderTable();
-    } else if (tab === "safedomain") {
+
+    if (tab === "safedomain") {
         if (KPSkipList.indexOf(val) === -1) {
             KPSkipList.push(val);
             saveSkipListData();
@@ -311,7 +309,7 @@ $(document).ready(function() {
         $(".wl-tab-item").removeClass("wl-active-tab");
         $(this).addClass("wl-active-tab");
         tab = $(this).data("list");
-        if (tab === "redflag") {
+        if (tab === "whitelist") {
             $(".wl-add-btn").addClass("hide");
         } else {
             $(".wl-add-btn").removeClass("hide");
@@ -324,9 +322,22 @@ $(document).ready(function() {
         $(".wl-input-wrapper").removeClass("hide");
     });
     $(".wl-fa-save").on("click", function(e) {
-        var val = $(".wl-input").val();
-        console.log("Value : ", val);
+        var input = $(".wl-input").val();
+        var val;
+        let domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+        let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/;
+        if (domainRegex.test(input)) {
+            val = input;
+        } else if (urlPattern.test(input)) {
+            val = bkg.getPathInfo(input).host;
+        }
+        else {
+            alert("Invalid URL or domain name, please retry with a porper value");
+            return;
+        }
+        console.log("Value : ", input);
         //TODO: Save to the appropriate list
+        $(".wl-input").val("");
         $(".wl-input-wrapper").addClass("hide");
         addData(val);
 
