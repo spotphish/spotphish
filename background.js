@@ -63,7 +63,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         removeFromWhiteList(msg.site);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
-        console.log("Inside crop capture");
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
                 crop(image, msg.area, msg.dpr, true, (cropped) => {
@@ -285,6 +284,21 @@ function syncWhiteList(cb){
 function removeFromWhiteListById(id) {
     objWhitelist.remove(id);
 }
+
+function toggleWhitelistItems(id, state, cb) {
+    var onSuccess = function(data) {
+        data.enabled = state;
+        objWhitelist.put(data, syncWhiteList);
+        if (cb) {
+            cb();
+        }
+    };
+    var onError = function(error) {
+        console.log("Error updating field : ", error);
+        return;
+    };
+    objWhitelist.get(id, onSuccess, onError);
+} 
 
 function addToWhiteList(data, tab) {
     if (data.logo) {

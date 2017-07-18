@@ -3,7 +3,7 @@
 var redFlagSites = [
     {"templateName":"Facebook", "site": "Facebook", "logo": "assets/img/fb-logo_lnx.png", "diagDist": 202, "enabled":true, "type": "default", "url": "https://www.facebook.com" },
     { "templateName":"Facebook old","site": "Facebook", "logo": "assets/img/fb-old.png", "diagDist": 121 , "enabled":true, "type": "default", "url": "https://www.facebook.com"},
-    { "templateName":"Paypal","site": "Paypal", "logo": "assets/img/paypal-linux.png", "diagDist":156 , "enabled":true, "type": "default", "url": "https://www.paypal.com/signin"},
+    { "templateName":"Paypal","site": "Paypal", "logo": "assets/img/paypal-linux.png", "diagDist":156 , "enabled":true, "type": "default", "url": "https://www.paypal.com/in/signin"},
     { "templateName":"ICICI Bank","site": "ICICI", "logo": "assets/img/icici-shot.png", "diagDist": 195 , "enabled":true, "type": "default", "url": "https://infinity.icicibank.com/corp/AuthenticationController"},
     { "templateName":"HDFC bank","site": "HDFC", "logo": "assets/img/hdfc-screen.png", "diagDist":158 , "enabled":true, "type": "default", "url": "https://netbanking.hdfcbank.com/netbanking"},
     { "templateName":"IDBI Bank","site": "IDBI", "logo": "assets/img/idbi-linux.png", "diagDist":217 , "enabled":true, "type": "default"},

@@ -3,6 +3,8 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 const whitelist_msg = "Login pages on which you will see your personal secure image.";
 const safesite_msg = "Trusted domains which are highly unlikely to host phishing pages. We skip checking pages on these sites as a performance optimization.";
 const redflag_msg = "We have snapshots of the login pages of these sites. If any page you browse looks very similar to one of these snapshots, it is flagged as a possible phishing attempt.";
+const whitelistTitle = "Manage Whitelist";
+const safeSitesTitle = "Manage Safe Sites";
 var KPWhiteList,
     KPSkipList,
     KPRedFlagList;
@@ -38,11 +40,20 @@ function templateSkipDomain(index, data) {
     return template;
 }
 
+function hello() {
+    alert("hello");
+}
+
 function template3(data) {
     var name = data.url;
     var logo = "";
+    var inc = Math.random();
+    var checkbox = `<input class="op-check" id=${inc} name=${inc}  type="checkbox">`;
     if (data.logo) {
         logo = `<img src="${data.logo}"></img>`;
+    }
+    if (data.enabled) {
+        checkbox = `<input class="op-check" name=${inc} id=${inc} type="checkbox" checked>`;
     }
     var template = `
 <div class="white-list-row" data-id=${data.id} data-name=${data.site}>
@@ -52,7 +63,7 @@ function template3(data) {
     ${logo}
     <div class="wl-actions">
         <div class="wl-active">
-            <input id="checkbox0" type="checkbox">
+            ${checkbox}
         </div>
         <div class="wl-delete">
             <span class="glyphicon glyphicon-remove wl-delete-icon"></span>
@@ -60,7 +71,6 @@ function template3(data) {
         <div class="clr"></div>
     </div>
 </div>`;
-
     return template;
 }
 
@@ -135,6 +145,7 @@ function renderTable() {
     $(".wl-desc p").empty();
     if (tab === "whitelist") {
         $(".wl-desc p").append(whitelist_msg);
+        $(".sub-title p").text(whitelistTitle);
         bkg.syncWhiteList(renderWhiteListTable);
         //renderWhiteListTable();
     } /*else if (tab === "redflag") {
@@ -142,6 +153,7 @@ function renderTable() {
         renderRedFlagTable();
     } */else if (tab === "safedomain") {
         $(".wl-desc p").append(safesite_msg);
+        $(".sub-title p").text(safeSitesTitle);
         renderSafeDomainTable();
     }
 }
@@ -159,8 +171,6 @@ function renderWhiteListTable(data) {
         e.preventDefault();
         var id = $(this).data("id");
         var name = $(this).data("name");
-        console.log("Clicked : ", name);
-        console.log(e.target);
         if ($(e.target).is(".wl-delete-icon")) {
             var res = confirm("Do you want to delete " + name + " from whitelist");
             if (res) {
@@ -168,7 +178,21 @@ function renderWhiteListTable(data) {
                 bkg.removeFromWhiteListById(id);
             }
         }
+        if ($(e.target).is(".op-check")) {
+            console.log($(e.target)[0].id);
+            if ($(e.target).is(":checked")) {
+                bkg.toggleWhitelistItems(id, true, renderTable);
+            } else {
+                bkg.toggleWhitelistItems(id, false, renderTable);
+            }
+        }
     });
+    $(".op-check").click(function() {
+        console.log("onclick called", this.id);
+        //var checkBoxes = $("input[nam)
+        console.log($(this.id));//.prop("checked"));
+        $(this.id).prop("checked", !$(this.id).prop("checked"));
+    });  
 }
 
 function renderSafeDomainTable() {
@@ -248,6 +272,9 @@ function addData(val) {
             saveSkipListData();
             renderSafeDomainTable();
         }
+        else {
+            alert("Value entered already saved as a safe domain");
+        }
     }
 }
 
@@ -325,7 +352,7 @@ $(document).ready(function() {
         var input = $(".wl-input").val();
         var val;
         let domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
-        let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/;
+        let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
         if (domainRegex.test(input)) {
             val = input;
         } else if (urlPattern.test(input)) {
