@@ -18,8 +18,8 @@ function main() {
                 showRedflag(msg);
             } else if (msg.op === "crop_template") {
                 injectCropModal();
-            } else if(msg.op === "crop_duplicate") {
-               alert("This site already added to whitelist");
+            } else if (msg.op === "crop_duplicate") {
+                alert("This site already added to whitelist");
             } else {
                 console.log("KP: unknown op", msg);
             }

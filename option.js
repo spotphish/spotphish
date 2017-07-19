@@ -56,7 +56,7 @@ function template3(data) {
         checkbox = `<input class="op-check" name=${inc} id=${inc} type="checkbox" checked>`;
     }
     var template = `
-<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url}>
+<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url} >
     <div class="site-name">
         ${name}
     </div>
@@ -196,7 +196,7 @@ function renderWhiteListTable(data) {
         $(this.id).prop("checked", !$(this.id).prop("checked"));
     });  
 }
-
+ 
 function renderSafeDomainTable() {
     var length = KPSkipList.length;
     for (let i = 0; i < length; i++) {

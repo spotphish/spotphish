@@ -15,7 +15,7 @@
         } else if (response.status === "watching" || response.status === "red_done") {
             var protocol = getPathInfo(curTab.url).protocol;
             console.log(protocol);
-            if (protocol === 'https:') {
+            if (protocol === "https:") {
                 document.getElementById("kp-add-to-whitelist").style.display = "block";
             } else {
                 document.getElementById("kp-add-to-whitelist").style.display = "none";

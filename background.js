@@ -192,19 +192,19 @@ function checkSkip(url) {
 function checkWhitelist(tab) {
     let urlData = getPathInfo(tab.url);
     if (urlData.protocol === "https:") {
-        let site = urlData.protocol +"//" + urlData.host;
+        var site = urlData.protocol +"//" + urlData.host;
         if (urlData.port) {
             site = site + ":" + urlData.port;
         }
         site = site + urlData.path;
         for (var i = 0; i < KPWhiteList.length; i++ ) {
-            if (site === KPWhiteList[i].url) {
+            if (site === KPWhiteList[i].url && KPWhiteList[i].enabled) {
                 console.log("WHITE LISTED : ", KPWhiteList[i]);
                 return true;
             }
         }
     }
-    console.log(" NOT WHITE LISTED : ", tab.url);
+    console.log(" NOT WHITE LISTED : ", site);
     return false;
 }
 
