@@ -18,8 +18,8 @@ function main() {
                 showRedflag(msg);
             } else if (msg.op === "crop_template") {
                 injectCropModal();
-            } else if(msg.op === "crop_duplicate") {
-               alert("This site already added to whitelist");
+            } else if (msg.op === "crop_duplicate") {
+                alert("This site already added to whitelist");
             } else {
                 console.log("KP: unknown op", msg);
             }
@@ -117,11 +117,15 @@ function rpc(msg) {
 var jcrop, selection;
 var overlay = ((active) => (state) => {
     active = (typeof state === "boolean") ? state : (state === null) ? active : !active;
-    $(".jcrop-holder")[active ? "show" : "hide"]();
+    if (!active) {
+        $(".jcrop-holder").show();
+    }
     //chrome.runtime.sendMessage({message: "active", active})
     $(document).keyup(function(event) {
-        if (event.which === "27") {
+        if (event.which === 27 || event.which === "27") {
             $(".jcrop-holder").hide();
+            $(".jcrop-holder .kp-template-page").remove();
+            $(".kp-popup").remove();
         }
     });
 })(false);
@@ -189,7 +193,9 @@ var capture = (force) => {
         $(".kp-screenshot-confirum").on("click", function(event) {
             console.log("Inside screenshot confirum");
             overlay(false);
-            $("body").removeClass("jcrop-holder");
+            $(".jcrop-holder").hide();
+            $(".jcrop-holder .kp-template-page").remove();
+            $("body").removeClass("kp-popup");
             console.log(selection);
             chrome.runtime.sendMessage({
                 op: "crop_capture",
@@ -201,11 +207,12 @@ var capture = (force) => {
         });
 
         $(".kp-screenshot-cancel").on("click", function(event) {
-            console.log("screenshot cancel");
             overlay(false);
             selection = null;
             jcrop.destroy();
-            $("body").removeClass("jcrop-holder");
+            $(".jcrop-holder").hide();
+            $(".jcrop-holder .kp-template-page").remove();
+            $(".kp-popup").remove();
         });
 
 
@@ -249,19 +256,23 @@ window.addEventListener("resize", ((timeout) => () => {
 */
 
 function injectCropModal() {
-    var doCrop = function () {
+    console.log("inside inject");
+    var doCrop = function() {
         if (!jcrop) {
             image(() => init(() => {
                 overlay();
                 capture();
             }));
         } else {
-            overlay();
-            capture(true);
+            $("#fake-image").remove();
+            image(() => init(() => {
+                overlay();
+                capture();
+            }));
         }
     };
 
-    var noCrop = function () {
+    var noCrop = function() {
         chrome.runtime.sendMessage({
             op: "add_wh"
         });
@@ -284,6 +295,7 @@ function injectConfirmBox(text, yesCb, noCb) {
     </div>
 </div>`;
 
+    $("body .kp-popup").remove();
     $("body").append(append);
     $(".kp-popup").on("click", function(event) {
         if ($(event.target).is(".kp-popup-close") || $(event.target).is(".kp-popup")) {
