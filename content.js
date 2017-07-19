@@ -16,6 +16,10 @@ function main() {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
                 showRedflag(msg);
+            } else if (msg.op === "crop_template") {
+                injectCropModal();
+            } else if(msg.op === "crop_duplicate") {
+               alert("This site already added to whitelist");
             } else {
                 console.log("KP: unknown op", msg);
             }
@@ -243,31 +247,30 @@ window.addEventListener("resize", ((timeout) => () => {
 })())
 */
 
-chrome.runtime.onMessage.addListener((req, sender, res) => {
-    if (req.message === "init") {
-        //res({}) // prevent re-injecting
-        console.log("Message received");
-        /*var isTemplate = confirm("Do you want to upload a template?");
-        if (isTemplate) {
-            if (!jcrop) {
-                image(() => init(() => {
-                    overlay();
-                    capture();
-                }));
-            } else {
+function injectCropModal() {
+    var doCrop = function () {
+        if (!jcrop) {
+            image(() => init(() => {
                 overlay();
-                capture(true);
-            }
+                capture();
+            }));
         } else {
-            chrome.runtime.sendMessage({
-                op: 'add_wh', url: req.url});
-        }*/
-        injectConfirmBox("Do you want to upload a template?", req.url);
-    }
-    return true;
-});
+            overlay();
+            capture(true);
+        }
+    };
 
-function injectConfirmBox(text, url) {
+    var noCrop = function () {
+        chrome.runtime.sendMessage({
+            op: "add_wh"
+        });
+    };
+
+    injectConfirmBox("Do you want to upload a template?", doCrop, noCrop);
+    return true;
+}
+
+function injectConfirmBox(text, yesCb, noCb) {
     const append =
         `<div class="kp-popup kp-is-visible" role="alert">
     <div class="kp-popup-container">
@@ -288,21 +291,15 @@ function injectConfirmBox(text, url) {
         } else if ($(event.target).is(".kp-yes")) {
             event.preventDefault();
             $(this).removeClass("kp-is-visible");
-            if (!jcrop) {
-                image(() => init(() => {
-                    overlay();
-                    capture();
-                }));
-            } else {
-                overlay();
-                capture(true);
+            if (yesCb) {
+                yesCb();
             }
         } else if ($(event.target).is(".kp-no")) {
             event.preventDefault();
+            if (noCb) {
+                noCb();
+            }
             $(this).removeClass("kp-is-visible");
-            chrome.runtime.sendMessage({
-                op: "add_wh"
-            });
         }
     });
     //close popup when clicking the esc keyboard button

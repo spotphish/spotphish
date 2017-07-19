@@ -57,6 +57,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         }
 
     } else if (msg.op === "addToWhitelist") {
+        console.log("addToWhitelist handled");
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
@@ -83,8 +84,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 });
 
 function inject (tab, site) {
-    chrome.tabs.sendMessage(tab.id, {message: "init", url: site});
+    let found = searchInKPWhitelist(site);
+    let ti = tabinfo[tab.id];
+    if (found == -1) {
+        ti.port.postMessage({op: "crop_template", data: {}});
+    } else {
+        ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
+    }
 }
+
 
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
@@ -326,29 +334,29 @@ function addToWhiteList(data, tab) {
     addToKPSkipList(urlInfo.host);
 }
 
-function removeFromWhiteList(site) {
-    console.log("removeFromWhiteList called for : ", site);
-    let index = 0;
-    let found = false;
-    for (index; index < KPWhiteList.length; index++) {
+function searchInKPWhitelist (site) {
+    let found = -1;
+    for (var index = 0; index < KPWhiteList.length; index++) {
         if (KPWhiteList[index].url === site && KPWhiteList[index].type === "custom") {
-            found = true;
+            found = index;
             break;
         }
     }
-    if (found) {
+    return found;
+}
+
+
+function removeFromWhiteList(site) {
+    console.log("removeFromWhiteList called for : ", site);
+    let found = searchInKPWhitelist(site);
+    if (found > -1) {
         removeFromKPSkipList(getPathInfo(site).host);
-        objWhitelist.remove(KPWhiteList[index].id, syncWhiteList);
+        objWhitelist.remove(KPWhiteList[found].id, syncWhiteList);
     } else {
         console.log("site not Whitelisted : ", site);
     }
 }
 
-function saveKPWhiteList() {
-    chrome.storage.local.set({whitelist : KPWhiteList}, () => {
-        console.log("whitelist : ", KPWhiteList);
-    });
-}
 
 function saveKPSkipList() {
     chrome.storage.local.set({skiplist : KPSkipList}, () => {
@@ -393,16 +401,9 @@ function loadDefaults() {
     setTimeout(syncWhiteList, 2000);
 }
 
-function addToKPWhiteList(site) {
-    if (site in KPWhiteList) {
-        return;
-    }
-    KPWhiteList.push(site);
-    saveKPWhiteList();
-}
 
 function addToKPSkipList(domain) {
-    if (domain in KPSkipList) {
+    if (KPSkipList.indexOf(domain !== -1)) {
         return;
     }
     KPSkipList.push(domain);

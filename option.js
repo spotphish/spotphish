@@ -56,7 +56,7 @@ function template3(data) {
         checkbox = `<input class="op-check" name=${inc} id=${inc} type="checkbox" checked>`;
     }
     var template = `
-<div class="white-list-row" data-id=${data.id} data-name=${data.site}>
+<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url}>
     <div class="site-name">
         ${name}
     </div>
@@ -168,22 +168,24 @@ function renderWhiteListTable(data) {
     });
     $(".wl-add-btn").addClass("hide");
     $(".white-list-row").on("click", function(e) {
-        e.preventDefault();
+        //e.preventDefault();
         var id = $(this).data("id");
         var name = $(this).data("name");
+        var url = $(this).data("url"); 
+        console.log(name);
         if ($(e.target).is(".wl-delete-icon")) {
             var res = confirm("Do you want to delete " + name + " from whitelist");
             if (res) {
                 $(this).remove();
-                bkg.removeFromWhiteListById(id);
+                bkg.removeFromWhiteList(url);
             }
         }
         if ($(e.target).is(".op-check")) {
             console.log($(e.target)[0].id);
             if ($(e.target).is(":checked")) {
-                bkg.toggleWhitelistItems(id, true, renderTable);
+                bkg.toggleWhitelistItems(id, true);
             } else {
-                bkg.toggleWhitelistItems(id, false, renderTable);
+                bkg.toggleWhitelistItems(id, false);
             }
         }
     });
