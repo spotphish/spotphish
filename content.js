@@ -176,6 +176,7 @@ var capture = (force) => {
     console.log(selection);
     if (selection) {
         // jcrop.release();
+        $(".jcrop-holder .kp-template-page").remove();
         const screenshotTemplate = `<div class="kp-template-page" style="position: absolute; top:${selection.y - 2 }px; left: ${selection.x - 2 }px; z-index: 9999; ">
                 <div style="width: ${selection.w + 2}px; height: ${selection.h + 2}px;">
                 </div>
