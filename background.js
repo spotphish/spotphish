@@ -403,10 +403,13 @@ function loadDefaults() {
 
 
 function addToKPSkipList(domain) {
-    if (KPSkipList.indexOf(domain !== -1)) {
+    console.log("addToSkipList Callled");
+    if (KPSkipList.indexOf(domain) !== -1) {
+        console.log("Skiplist adding failed");
         return;
     }
     KPSkipList.push(domain);
+    console.log(KPSkipList);
     saveKPSkipList();
 }
 

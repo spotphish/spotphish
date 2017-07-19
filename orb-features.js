@@ -304,8 +304,8 @@ function createPatterns(logo) {
                     sc -= sc_pc;
                     res.patternCorners = patternCorners;
                     res.patternDescriptors = patternDescriptors;
-                    resolve(res);
                 }
+                resolve(res);
             } catch (err) {
                 reject(err);
             }
