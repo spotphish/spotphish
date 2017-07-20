@@ -185,8 +185,8 @@ var capture = (force) => {
                 <div style="width: ${selection.w + 2}px; height: ${selection.h + 2}px;">
                 </div>
                 <div style="z-index: 99999">
-                    <button  class="kp-screenshot-confirum">Confirum </button>
-                    <button class="kp-screenshot-cancel">Cancel </button>
+                    <button  class="kp-screenshot-confirum"> Confirm </button>
+                    <button class="kp-screenshot-cancel"> Cancel </button>
                 </div>
             </div>`;
         $(".jcrop-holder").append(screenshotTemplate);
