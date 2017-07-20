@@ -101,11 +101,11 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
     }
     // viewportwidth1 = (viewportwidth / 2) - 250;
     // viewportheight1 = (viewportheight / 2) - 225;
-    container.find(".modal-container").remove();
+    container.find(".kp-modal-container").remove();
 
     var imgPath = chrome.extension.getURL("assets/icons/icon128.png");
     const modalTemplate = `
-    <div class="modal-container" >
+    <div class="kp-modal-container" >
     <div style="position: relative; width: ${viewportwidth}px; height: ${viewportheight}px; overflow: auto;">
      <div class="kp-modalDialog">
         <div class="kp-modal-dialog">
@@ -114,9 +114,9 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
             <div class="kp-modal-header">
               <button  type="button" class="kp-close close-killphiser" data-dismiss="modal">&times;</button>
               <div class="kp-logo"><img src="${imgPath}" width="40px"></div>
-              <h4 class="kp-modal-title">
+              <div class="kp-modal-title">
                 Are you being phished?
-              </h4>
+              </div>
             </div>
 
             <div class="kp-modal-body">
@@ -142,7 +142,7 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
     container.prepend(modalTemplate).fadeIn();
     // make sure the close button closes the cover
     container.find(".close-killphiser").on("click", function() {
-        container.children(".modal-container").css("visibility", "hidden");
+        container.children(".kp-modal-container").css("visibility", "hidden");
         container.children().css("opacity", 1);
     });
 }
