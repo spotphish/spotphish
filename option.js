@@ -40,9 +40,6 @@ function templateSkipDomain(index, data) {
     return template;
 }
 
-function hello() {
-    alert("hello");
-}
 
 function template3(data) {
     var name = data.url;
@@ -189,12 +186,6 @@ function renderWhiteListTable(data) {
             }
         }
     });
-    $(".op-check").click(function() {
-        console.log("onclick called", this.id);
-        //var checkBoxes = $("input[nam)
-        console.log($(this.id));//.prop("checked"));
-        $(this.id).prop("checked", !$(this.id).prop("checked"));
-    });  
 }
  
 function renderSafeDomainTable() {

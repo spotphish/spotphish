@@ -16,14 +16,18 @@
             var protocol = getPathInfo(curTab.url).protocol;
             console.log(protocol);
             if (protocol === "https:") {
+                console.log("protocol is https");
                 document.getElementById("kp-add-to-whitelist").style.display = "block";
             } else {
                 document.getElementById("kp-add-to-whitelist").style.display = "none";
+                console.log("protocol is http");
             }
         } else if (response.status === "redflagged") {
             document.getElementById("kp-add-to-whitelist").style.display = "none";
+        }else {
+            document.getElementById("kp-remove-from-whitelist").style.display = "none";
+            document.getElementById("kp-add-to-whitelist").style.display = "none";
         }
-
     };
 
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
