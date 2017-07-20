@@ -174,7 +174,7 @@ function renderWhiteListTable(data) {
             var res = confirm("Do you want to delete " + name + " from whitelist");
             if (res) {
                 $(this).remove();
-                bkg.removeFromWhiteList(url);
+                bkg.removeFromWhiteList(url, null);
             }
         }
         if ($(e.target).is(".op-check")) {

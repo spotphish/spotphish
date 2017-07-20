@@ -13,15 +13,7 @@
             document.getElementById("kp-add-to-whitelist").style.display = "none";
             //document.getElementsByClassName("optsCurrent")[0].style.display = "block";
         } else if (response.status === "watching" || response.status === "red_done") {
-            var protocol = getPathInfo(curTab.url).protocol;
-            console.log(protocol);
-            if (protocol === "https:") {
-                console.log("protocol is https");
-                document.getElementById("kp-add-to-whitelist").style.display = "block";
-            } else {
-                document.getElementById("kp-add-to-whitelist").style.display = "none";
-                console.log("protocol is http");
-            }
+            document.getElementById("kp-add-to-whitelist").style.display = "block";
         } else if (response.status === "redflagged") {
             document.getElementById("kp-add-to-whitelist").style.display = "none";
         }else {
@@ -55,6 +47,7 @@
             var site = stripQueryParams(curTab.url);
             chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
                 if (res.message === "removed") {
+                    isRemoved = true;
                     document.getElementById("kp-remove-from-whitelist").style.display = "none";
                     document.getElementById("kp-add-to-whitelist").style.display = "block";
                 }

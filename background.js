@@ -61,7 +61,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
-        removeFromWhiteList(msg.site);
+        removeFromWhiteList(msg.site, sender.tab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
         chrome.tabs.getSelected(null, (tab) => {
@@ -84,9 +84,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 });
 
 function inject (tab, site) {
-    let found = searchInKPWhitelist(site);
+    let found = KPWhiteList.filter((x) => {
+        return x.url === site;
+    });
     let ti = tabinfo[tab.id];
-    if (found == -1) {
+    if (found.length == 0) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
         ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
@@ -177,13 +179,13 @@ function redflag(ti) {
 function checkSkip(url) {
     let length = KPSkipList.length;
     let urlInfo = getPathInfo(url);
-    if (urlInfo.protocol === "https:") {
-        for (let i = 0; i < length; i++ ) {
-            if (urlInfo.host.endsWith(KPSkipList[i])) {
-                console.log("SKIP LISTED : ", KPSkipList[i]);
-                return true;
-            }
-        }
+    let found = KPSkipList.filter((x) => {
+        return urlInfo.host.endsWith(x);
+    });
+
+    if (found.length > 0) {
+        console.log("SKIP LISTED : ", found[0]);
+        return true;
     }
     console.log(" NOT SKIP LISTED : ", url);
     return false;
@@ -191,7 +193,7 @@ function checkSkip(url) {
 
 function checkWhitelist(tab) {
     let urlData = getPathInfo(tab.url);
-    if (urlData.protocol === "https:") {
+    //if (urlData.protocol === "https:") {
         var site = urlData.protocol +"//" + urlData.host;
         if (urlData.port) {
             site = site + ":" + urlData.port;
@@ -203,7 +205,7 @@ function checkWhitelist(tab) {
                 return true;
             }
         }
-    }
+    //}
     console.log(" NOT WHITE LISTED : ", site);
     return false;
 }
@@ -334,24 +336,15 @@ function addToWhiteList(data, tab) {
     addToKPSkipList(urlInfo.host);
 }
 
-function searchInKPWhitelist (site) {
-    let found = -1;
-    for (var index = 0; index < KPWhiteList.length; index++) {
-        if (KPWhiteList[index].url === site && KPWhiteList[index].type === "custom") {
-            found = index;
-            break;
-        }
-    }
-    return found;
-}
 
-
-function removeFromWhiteList(site) {
-    console.log("removeFromWhiteList called for : ", site);
-    let found = searchInKPWhitelist(site);
-    if (found > -1) {
+function removeFromWhiteList(site, tab) {
+    let found = KPWhiteList.filter((x) => {
+        return x.url === site && x.type === "custom";
+    });
+    if (found.lenght > 0) {
         removeFromKPSkipList(getPathInfo(site).host);
-        objWhitelist.remove(KPWhiteList[found].id, syncWhiteList);
+        objWhitelist.remove(found[0].id, syncWhiteList);
+        console.log("Removed from whitelist : ", site);
     } else {
         console.log("site not Whitelisted : ", site);
     }
