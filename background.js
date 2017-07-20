@@ -416,3 +416,10 @@ function removeFromKPSkipList(domain) {
         console.log("Domain not in skip list : ", domain);
     }
 }
+
+function cleanDB() {
+    chrome.storage.local.remove("skiplist", () => {
+        console.log("skiplist cleaned up");
+    });
+    objWhitelist.clear(loadDefaults);
+}

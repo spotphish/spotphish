@@ -301,6 +301,15 @@ ul.rig.columns-4 li {
   padding: 5px 15px;
   position: absolute; }
 
+.wl-restore-btn {
+  background: #4fc3f7;
+  right: 30px;
+  font-weight: 400;
+  font-size: 20px;
+  color: #FFF;
+  padding: 5px 15px;
+  position: relative; }
+
 .white-list {
   min-height: 250px;
   padding: 2px 20px;

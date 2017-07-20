@@ -338,9 +338,17 @@ $(document).ready(function() {
         console.log("Tab : ", tab);
     });
 
+    $("#restore").on("click", function(e) {
+        if (confirm("This will delete all the templates added by you, Are you sure you want to proceed")) {
+            bkg.cleanDB();
+            setTimeout(renderTable, 500);
+        }
+    });
+    
     $(".wl-add-btn").on("click", function(e) {
         $(".wl-input-wrapper").removeClass("hide");
     });
+    
     $(".wl-fa-save").on("click", function(e) {
         var input = $(".wl-input").val();
         var val;
