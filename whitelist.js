@@ -12,8 +12,6 @@ var redFlagSites = [
     { "templateName":"Google 2016","site": "Google", "logo": "assets/img/google-old.png", "diagDist":129 , "enabled":true, "type": "default", "url": "https://accounts.google.com/ServiceLogin"}
 ];
 
-//Sites that are used for greenflag approach. Can be modified by a user
-var whiteListedURLs = [ "https://accounts.google.com/ServiceLogin", "https://www.facebook.com/", "https://www.paypal.com/signin", "https://infinity.icicibank.com/corp/AuthenticationController", "https://netbanking.hdfcbank.com/netbanking", "https://dropbox.com/"];
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ "google.com", "facebook.com", "google.co.in", "paypal.com", "icicibank.com", "hdfcbank.com", "dropbox.com", "inet.idbibank.co.in"];

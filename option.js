@@ -345,6 +345,12 @@ $(document).ready(function() {
         $(".wl-input-wrapper").removeClass("hide");
     });
     
+    $("#about").on("click", function(e) {
+        chrome.tabs.create({
+            url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
+        });
+    });
+    
     $(".wl-fa-save").on("click", function(e) {
         var input = $(".wl-input").val();
         var val;

@@ -308,7 +308,7 @@ ul.rig.columns-4 li {
   font-size: 20px;
   color: #FFF;
   padding: 5px 15px;
-  position: relative; }
+  position: absolute; }
 
 .white-list {
   min-height: 250px;
@@ -364,5 +364,8 @@ ul.rig.columns-4 li {
 
 .clr {
   clear: both; }
+
+span.about {
+  cursor: pointer; }
 
 /*# sourceMappingURL=option.css.map */

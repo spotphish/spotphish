@@ -59,6 +59,12 @@
             });
             window.close();
         });
+        document.getElementById("aboutLink").addEventListener("click", function (e) {
+            chrome.tabs.create({
+                url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
+            });
+            window.close();
+        });
 
     });
 }());
