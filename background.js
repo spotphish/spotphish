@@ -418,7 +418,7 @@ function removeFromKPSkipList(domain) {
 }
 
 function cleanDB() {
-    chrome.storage.local.remove("skiplist", () => {
+    chrome.storage.local.remove(["skiplist", "secure_img"], () => {
         console.log("skiplist cleaned up");
     });
     objWhitelist.clear(loadDefaults);

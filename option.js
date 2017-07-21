@@ -121,17 +121,12 @@ function updateImage(data) {
 }
 
 function updateTableData() {
-    chrome.storage.local.get(["skiplist","redflaglist"], function(result) {
+    chrome.storage.local.get(["skiplist"], function(result) {
         console.log("Data received : ", result );
         if (result.skiplist) {
             KPSkipList = result.skiplist;
         } else {
             KPSkipList = skipDomains;
-        }
-        if (result && result.redflaglist) {
-            KPRedFlagList = result.redflaglist;
-        } else {
-            KPRedFlagList = redFlagSites;
         }
         renderTable();
     });
@@ -341,7 +336,8 @@ $(document).ready(function() {
     $("#restore").on("click", function(e) {
         if (confirm("This will delete all the templates added by you, Are you sure you want to proceed")) {
             bkg.cleanDB();
-            setTimeout(renderTable, 500);
+            setTimeout(updateTableData, 500);
+            updateImage();
         }
     });
     
