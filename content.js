@@ -50,8 +50,8 @@ let npolls = 0;
 
 function startChecking() {
     npolls++;
-    //const visible = $("input[type=\"password\"]").filter(":visible").length;
-    const visible = document.querySelectorAll("input[type=\"password\"]");
+    const visible = $("input[type=\"password\"]").filter(":visible").length;
+    //const visible = document.querySelectorAll("input[type=\"password\"]");
     console.log("Started checking in content script");
     if (visible.length > 0) {
         console.log("password field found");
