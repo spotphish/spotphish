@@ -16,7 +16,7 @@
             document.getElementById("kp-add-to-whitelist").style.display = "block";
         } else if (response.status === "redflagged") {
             document.getElementById("kp-add-to-whitelist").style.display = "none";
-        }else {
+        } else {
             document.getElementById("kp-remove-from-whitelist").style.display = "none";
             document.getElementById("kp-add-to-whitelist").style.display = "none";
         }
@@ -47,7 +47,6 @@
             var site = stripQueryParams(curTab.url);
             chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
                 if (res.message === "removed") {
-                    isRemoved = true;
                     document.getElementById("kp-remove-from-whitelist").style.display = "none";
                     document.getElementById("kp-add-to-whitelist").style.display = "block";
                 }

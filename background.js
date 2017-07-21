@@ -177,7 +177,6 @@ function redflag(ti) {
 }
 
 function checkSkip(url) {
-    let length = KPSkipList.length;
     let urlInfo = getPathInfo(url);
     let found = KPSkipList.filter((x) => {
         return urlInfo.host.endsWith(x);
@@ -193,19 +192,17 @@ function checkSkip(url) {
 
 function checkWhitelist(tab) {
     let urlData = getPathInfo(tab.url);
-    //if (urlData.protocol === "https:") {
-        var site = urlData.protocol +"//" + urlData.host;
-        if (urlData.port) {
-            site = site + ":" + urlData.port;
+    var site = urlData.protocol +"//" + urlData.host;
+    if (urlData.port) {
+        site = site + ":" + urlData.port;
+    }
+    site = site + urlData.path;
+    for (var i = 0; i < KPWhiteList.length; i++ ) {
+        if (site === KPWhiteList[i].url && KPWhiteList[i].enabled) {
+            console.log("WHITE LISTED : ", KPWhiteList[i]);
+            return true;
         }
-        site = site + urlData.path;
-        for (var i = 0; i < KPWhiteList.length; i++ ) {
-            if (site === KPWhiteList[i].url && KPWhiteList[i].enabled) {
-                console.log("WHITE LISTED : ", KPWhiteList[i]);
-                return true;
-            }
-        }
-    //}
+    }
     console.log(" NOT WHITE LISTED : ", site);
     return false;
 }
@@ -339,9 +336,9 @@ function addToWhiteList(data, tab) {
 
 function removeFromWhiteList(site, tab) {
     let found = KPWhiteList.filter((x) => {
-        return x.url === site && x.type === "custom";
+        return x.url === site;
     });
-    if (found.lenght > 0) {
+    if (found.length > 0) {
         removeFromKPSkipList(getPathInfo(site).host);
         objWhitelist.remove(found[0].id, syncWhiteList);
         console.log("Removed from whitelist : ", site);
@@ -408,12 +405,16 @@ function addToKPSkipList(domain) {
 
 
 function removeFromKPSkipList(domain) {
-    var index = KPSkipList.indexOf(domain);
-    if (index !== -1) {
-        KPSkipList.splice(index,1);
-        saveKPSkipList();
-    } else {
+    let found = KPSkipList.filter((x) => {
+        return !domain.endsWith(x);
+    });
+    console.log("Found : ", found);
+    if (found.length === KPSkipList.length) {
         console.log("Domain not in skip list : ", domain);
+    } else {
+        KPSkipList = found;
+        console.log("Removed from skiplist : ", domain);
+        saveKPSkipList();
     }
 }
 
