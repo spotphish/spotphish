@@ -9,12 +9,22 @@
   padding: 5px;
   box-shadow: 4px 4px 4px -2px #232323;
   animation-name: kp-secure-img;
-  animation-duration: 4s; }
+  animation-duration: 4s;
+  background: #4fc3f7;
+  border: 1px solid #e7e7e7;
+  padding: 10px;
+  border-radius: 2px; }
+  .kp-img-container #kp-secure-img {
+    box-shadow: 0px 2px 2px 1px #000; }
+  .kp-img-container .kp-logo {
+    position: absolute;
+    top: 12px;
+    left: 9px; }
 
 .kp-img-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 20px;
   cursor: pointer;
   font-size: 14px;
   color: #eb431e;
@@ -74,6 +84,16 @@ img#fake-image {
   opacity: 0;
   visibility: hidden;
   z-index: 99999; }
+
+.kp-green-popup {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #1564bf;
+  opacity: 0.5;
+  z-index: 999; }
 
 .kp-popup.kp-is-visible {
   opacity: 1;

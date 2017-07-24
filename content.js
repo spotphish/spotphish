@@ -94,14 +94,26 @@ function showRedflag(msg) {
 }
 
 function appendSecureImg() {
+    const prepend1 = `
+    <div class="kp-green-popup">
+    </div>`;
+
+    $("body").prepend(prepend1);
+    var imgPath = chrome.extension.getURL("assets/icons/icon128.png");
     const prepend = `
-<div class="kp-img-container">
-    <div class="FAH_closeButton kp-img-close">
-        <strong> X </strong>
-    </div>
-</div>`;
+        <div class="kp-img-container">
+            <div class="FAH_closeButton kp-img-close">
+                <strong> X </strong>
+            </div>
+            <div class="kp-logo"><img src="${imgPath}" width="30px"></div>
+        </div>`;
 
     $("body").prepend(prepend);
+
+    setTimeout( function(){
+        $(".kp-green-popup").hide();
+    }, 3550);
+
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
         console.log("Data received : ", data);
@@ -118,8 +130,7 @@ function appendSecureImg() {
         img.id = "kp-secure-img";
         img.src = data.src;
         //$(".image").empty();
-        $(".kp-img-container").append(img);
-
+        $(".kp-popup, .kp-img-container").append(img);
         $(".kp-img-close").on("click", function(e) {
             e.preventDefault();
             $(".kp-img-container").css("display", "none");
