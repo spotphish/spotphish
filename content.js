@@ -1,7 +1,11 @@
 const POLL_INTERVAL = 2000; /* Periodicity of redflag candidate check */
 const MAX_POLLS = 30; /* Give up after polling x times */
 
+const URL_POLL_INTERVAL = 500; /* Periodicity of URL change check */
+const MAX_UPOLLS = 30;
+
 let port;
+let topUrl;
 
 main();
 
@@ -35,6 +39,8 @@ function do_init() {
         init.top = true;
         init.dpr = devicePixelRatio;
     }
+    topUrl = stripQueryParams(window.location.href);
+
     rpc(init).then(x => {
         if (x.action === "check") {
             startChecking();
@@ -44,10 +50,26 @@ function do_init() {
             console.log("KP: unknown action", x);
         }
     });
+    if (window === top) {
+        startUrlPoll();
+    }
+}
+
+let upolls = 0;
+function startUrlPoll() {
+    const url = stripQueryParams(window.location.href);
+
+    upolls++;
+    if (url !== topUrl) {
+        topUrl = url;
+        rpc({op: "url_change"});
+    }
+    if (npolls < MAX_POLLS) {
+        return setTimeout(startUrlPoll, URL_POLL_INTERVAL);
+    }
 }
 
 let npolls = 0;
-
 function startChecking() {
     npolls++;
     const visible = $("input[type=\"password\"]").filter(":visible").length;
@@ -57,7 +79,7 @@ function startChecking() {
         console.log("password field found");
         rpc({ op: "checkdata", data: visible });
     } else {
-        if (npolls < MAX_POLLS) {
+        if (npolls < MAX_UPOLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
         }
     }

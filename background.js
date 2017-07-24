@@ -48,6 +48,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
         checkdata(msg, sender, respond);
+    } else if (msg.op === "url_change") {
+        url_change(msg, sender, respond);
     } else if (msg.op === "get_tabinfo") {
         var tab = msg.curtab;
         if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
@@ -99,7 +101,7 @@ function inject (tab, site) {
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
         tab = ti.tab;
-    console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", Date());
+    console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
     if (END_STATES.indexOf(ti.state) !== -1) {
         return respond({action: "nop"});
@@ -138,6 +140,19 @@ function checkdata(msg, sender, respond) {
         const now = Date.now();
         ti.watches = watches.map(x => now + x);
         console.log("WATCHING", Date());
+    }
+}
+
+function url_change(msg, sender, respond) {
+    const ti = tabinfo[sender.tab.id],
+        tab = ti.tab;
+
+    console.log("url change", tab.url);
+
+    respond({action: "nop"});
+    if (ti.state !== "greenflagged" && checkWhitelist(tab)) {
+        ti.state = "greenflagged";
+        ti.port.postMessage({op: "greenflag", data: {}});
     }
 }
 
@@ -424,3 +439,8 @@ function cleanDB() {
     });
     objWhitelist.clear(loadDefaults);
 }
+
+chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab) {
+  //  console.log("UPDATE", tabid, tab.url, changeInfo);
+});
+
