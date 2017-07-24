@@ -46,9 +46,6 @@
     "activeTab",
     "storage",
     "tabs",
-    "notifications",
-    "webRequest",
-    "webRequestBlocking",
     "*://*/*",
     "<all_urls>",
     "unlimitedStorage"
