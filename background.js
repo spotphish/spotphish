@@ -4,7 +4,7 @@ const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 
-let debug = false, 
+let DEBUG = false, 
     globalCurrentTabId,
     tabInfoList = {},
     KPWhiteList,
@@ -158,7 +158,7 @@ function url_change(msg, sender, respond) {
 
 function watchdog() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-        if (debug) {
+        if (DEBUG) {
             for (const x in tabinfo) {
                 const ti = tabinfo[x];
                 assert("watchdog.1", STATES.indexOf(ti.state) !== -1, ti.state);
@@ -193,32 +193,24 @@ function redflag(ti) {
 
 function checkSkip(url) {
     let urlInfo = getPathInfo(url);
-    let found = KPSkipList.filter((x) => {
-        return urlInfo.host.endsWith(x);
-    });
+    let found = KPSkipList.filter(x => urlInfo.host.endsWith(x));
 
     if (found.length > 0) {
-        console.log("SKIP LISTED : ", found[0]);
+        debug("SKIP LISTED:", found[0]);
         return true;
     }
-    console.log(" NOT SKIP LISTED : ", url);
+    debug(" NOT SKIP LISTED:", url);
     return false;
 }
 
 function checkWhitelist(tab) {
-    let urlData = getPathInfo(tab.url);
-    var site = urlData.protocol +"//" + urlData.host;
-    if (urlData.port) {
-        site = site + ":" + urlData.port;
+    const site = stripQueryParams(tab.url);
+    const wl = KPWhiteList.filter(x => x.enabled && x.url === site);
+    if (wl.length) {
+        debug("WHITE LISTED:", wl[0]);
+        return true;
     }
-    site = site + urlData.path;
-    for (var i = 0; i < KPWhiteList.length; i++ ) {
-        if (site === KPWhiteList[i].url && KPWhiteList[i].enabled) {
-            console.log("WHITE LISTED : ", KPWhiteList[i]);
-            return true;
-        }
-    }
-    console.log(" NOT WHITE LISTED : ", site);
+    debug("NOT WHITE LISTED:", site);
     return false;
 }
 
@@ -439,8 +431,3 @@ function cleanDB() {
     });
     objWhitelist.clear(loadDefaults);
 }
-
-chrome.tabs.onUpdated.addListener(function(tabid, changeInfo, tab) {
-  //  console.log("UPDATE", tabid, tab.url, changeInfo);
-});
-

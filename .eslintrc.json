@@ -48,6 +48,7 @@
         "redFlagSites": true,
         "isSpecialTab": false,
         "jsfeat": false,
-        "defPatterns": false
+        "defPatterns": false,
+        "debug": false
     }
 }

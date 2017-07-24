@@ -173,6 +173,12 @@ function assert() {
     }
 }
 
+function debug(...args) {
+    if (DEBUG) {
+        console.log(...args);
+    }
+}
+
 /* parseUri, MIT license
  * http://blog.stevenlevithan.com/archives/parseuri
  * Copyright 2007, Steven Levithan
