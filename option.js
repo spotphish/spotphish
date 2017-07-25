@@ -42,7 +42,7 @@ function templateSkipDomain(index, data) {
 
 
 function template3(data) {
-    var name = data.url;
+    var name = data.url[0];
     var logo = "";
     var inc = Math.random();
     var checkbox = `<input class="op-check" id=${inc} name=${inc}  type="checkbox">`;
@@ -53,7 +53,7 @@ function template3(data) {
         checkbox = `<input class="op-check" name=${inc} id=${inc} type="checkbox" checked>`;
     }
     var template = `
-<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url} >
+<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url[0]} >
     <div class="site-name">
         ${name}
     </div>

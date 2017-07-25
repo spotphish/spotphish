@@ -12,6 +12,29 @@ var redFlagSites = [
     { "templateName":"Google 2016","site": "Google", "logo": "assets/img/google-old.png", "diagDist":129 , "enabled":true, "type": "default", "url": "https://accounts.google.com/ServiceLogin"}
 ];
 
+var greenFlagUrls = {
+                        
+                        "Paypal":[
+                                "https://www.paypal.com/in/signin",
+                                "https://www.paypal.com/us/cgi-bin",
+                                "https://www.paypal.com/signin",
+                                "https://www.paypal.com/jp/signin"],
+
+                        "Facebook":[
+                                "https://www.facebook.com/",
+                                "https://www.facebook.com/login/"],
+                        "ICICI":[
+                                "https://infinity.icicibank.com/corp/AuthenticationController"],
+                        "HDFC":[
+                                "https://netbanking.hdfcbank.com/netbanking"],
+                        "IDBI":[
+                                "https://inet.idbibank.co.in/corp/BANKAWAY"],
+                        "Dropbox":[
+                                "https://www.dropbox.com/"],
+                        "Google":[
+                                "https://accounts.google.com/signin/v2/identifier"]
+};
+
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ "google.com", "facebook.com", "google.co.in", "paypal.com", "icicibank.com", "hdfcbank.com", "dropbox.com", "inet.idbibank.co.in"];

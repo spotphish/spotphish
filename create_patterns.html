@@ -120,6 +120,7 @@
     }
     Promise.all(templates).then((results) => {
         for (var i = 0; i<results.length; i++) {
+            redFlagSites[i].url = greenFlagUrls[redFlagSites[i].site];
             redFlagSites[i].patternCorners = results[i].patternCorners;
             redFlagSites[i].patternDescriptors = results[i].patternDescriptors;
         }

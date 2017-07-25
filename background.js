@@ -4,7 +4,7 @@ const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 
-let DEBUG = false, 
+let DEBUG = true, 
     globalCurrentTabId,
     tabInfoList = {},
     KPWhiteList,
@@ -72,7 +72,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                     respond({message: "image", image: cropped});
                     var url = stripQueryParams(sender.tab.url);
                     console.log ("URL: ", url, " tab: ", sender.tab);
-                    addToWhiteList({ url: url, type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
+                    addToWhiteList({ url: [url], type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
                 });
             });
         });
@@ -205,7 +205,7 @@ function checkSkip(url) {
 
 function checkWhitelist(tab) {
     const site = stripQueryParams(tab.url);
-    const wl = KPWhiteList.filter(x => x.enabled && x.url === site);
+    const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y === site).length > 0);
     if (wl.length) {
         debug("WHITE LISTED:", wl[0]);
         return true;
@@ -343,7 +343,7 @@ function addToWhiteList(data, tab) {
 
 function removeFromWhiteList(site, tab) {
     let found = KPWhiteList.filter((x) => {
-        return x.url === site;
+        return (x.url.filter(y => y === site)).length > 0;
     });
     if (found.length > 0) {
         removeFromKPSkipList(getPathInfo(site).host);
