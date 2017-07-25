@@ -125,7 +125,7 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
 
 
           <div class="kp-modal-footer">
-            <button type="button" class="kp-btn kp-btn-default" >Report Phishing</button>
+            <!--button type="button" class="kp-btn kp-btn-default" >Report Phishing</button-->
             <button type="button" id = "kp-btn-skip" class="kp-btn kp-btn-default">Add to skiplist</button>
             <button type="button" class="kp-btn kp-btn-default close-killphiser kp-pull-right">Close</button>
             <div class="kp-clr"></div>
