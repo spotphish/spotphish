@@ -349,7 +349,7 @@ $(document).ready(function() {
     });
 
     $("#about").on("click", function(e) {
-        chrome.tabs.create({
+       chrome.tabs.create({
             url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
         });
     });
@@ -359,14 +359,11 @@ $(document).ready(function() {
         var val;
         let domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
         let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
-        if (domainRegex.test(input)) {
-            val = input;
-        } else if (urlPattern.test(input)) {
+        if (urlPattern.test(input)) {
             val = bkg.getPathInfo(input).host;
         }
         else {
-            alert("Invalid URL or domain name, please retry with a porper value");
-            return;
+            val = input;
         }
         console.log("Value : ", input);
         //TODO: Save to the appropriate list
