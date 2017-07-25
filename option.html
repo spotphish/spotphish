@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!--
  This page is shown when the extension button is clicked, because the
@@ -6,7 +5,8 @@
  value "popup.html".
  -->
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <!--<meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,13 +18,13 @@
     <script type="text/javascript" src="externalCode/jquery/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="whitelist.js"></script>
     <script type="text/javascript" src="option.js"></script>
-
     <title>KillPhisher</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <header>
         <div class="logo">
-        KILLPHISHER
+            KILLPHISHER
         </div>
     </header>
     <div class="wrapper">
@@ -36,36 +36,40 @@
             <div class="image">
             </div>
         </div>
-
-     <div id="container" class="whitelist-container">
-        <div class="w3-bar wl-tab-bar">
-        <button class="w3-bar-item w3-button tablink wl-tab-item wl-active-tab" data-list="whitelist" >Whitelist URLs</button>
-        <button class="w3-bar-item w3-button tablink wl-tab-item" data-list="safedomain">Safe Domains</button>
-        </div>
-
+        <div id="container" class="whitelist-container">
+            <div class="w3-bar wl-tab-bar">
+                <button class="w3-bar-item w3-button tablink wl-tab-item wl-active-tab" data-list="whitelist">Whitelist URLs</button>
+                <button class="w3-bar-item w3-button tablink wl-tab-item" data-list="safedomain">Safe Domains</button>
+                <button class="w3-bar-item w3-button tablink wl-tab-item" data-list="advanced-settings"> Advanced settings</button>
+            </div>
             <div class="white-list">
-                <div class="sub-title"><p></p></div>
-              <div class="wl-desc"><p></p> </div>
-                <button class="w3-button w3-circle wl-add-btn">+</button>
-              <div class="clr"></div>
-              <hr />
-              <div class="white-list-scroll">
+                <div class="sub-title">
+                    <p></p>
                 </div>
-            <hr />
-              <div class="wl-input-wrapper hide">
-                <input class="w3-input w3-border wl-input" placeholder="Add safe/trusted domain or URL" type="text">
-                <i class="fa fa-check wl-fa-save" ></i>
-                <i class="fa fa-close wl-fa-cancel"></i>
-              </div>
+                <div class="wl-desc">
+                    <p></p>
+                </div>
+                <div class="advanced-settings">
+                    <button class="w3-button wl-restore-btn" id="restore">Restore default settings</button>
+                </div>
+                <button class="w3-button w3-circle wl-add-btn">+</button>
+                <div class="clr"></div>
+                <hr />
+                <div class="white-list-scroll">
+                </div>
+                <hr />
+                <div class="wl-input-wrapper hide">
+                    <input class="w3-input w3-border wl-input" placeholder="Add safe/trusted domain or URL" type="text">
+                    <i class="fa fa-check wl-fa-save"></i>
+                    <i class="fa fa-close wl-fa-cancel"></i>
+                </div>
             </div>
-            <div>
-                <button class="w3-button wl-restore-btn" id="restore">Restore default settings</button> 
-            </div>
-          </div>
+
+        </div>
         <div class="clear"> </div>
         <div class="img-uploader-container hide">
-            <div class="sub-title"> Choose Secure Image 
-            <i class='fa fa-close' id='img-uploader-close'> </i>
+            <div class="sub-title"> Choose Secure Image
+                <i class='fa fa-close' id='img-uploader-close'> </i>
             </div>
             <hr />
             <div id="four-columns" class="grid-container" style="display:block;">
@@ -102,8 +106,8 @@
         <!--/.img-uploader-container-->
     </div>
     <footer>
-        <div>© 2017 | <span id = "about" class="about"> About</span></div>
+        <div>© 2017 | <span id="about" class="about"> About</span></div>
     </footer>
-  </body>
-</html>
+</body>
 
+</html>

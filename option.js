@@ -4,7 +4,8 @@ const whitelist_msg = "Login pages on which you will see your personal secure im
 const safesite_msg = "Trusted domains which are highly unlikely to host phishing pages. We skip checking pages on these sites as a performance optimization.";
 const redflag_msg = "We have snapshots of the login pages of these sites. If any page you browse looks very similar to one of these snapshots, it is flagged as a possible phishing attempt.";
 const whitelistTitle = "Manage Whitelist";
-const safeSitesTitle = "Manage Safe Sites";
+const advancedSettingsTitle = "Advanced settings";
+const safeSitesTitle = "Manage Safe Site";
 var KPWhiteList,
     KPSkipList,
     KPRedFlagList;
@@ -135,15 +136,16 @@ function updateTableData() {
 function renderTable() {
     $(".white-list-scroll").empty();
     $(".wl-desc p").empty();
+    $("#restore").hide();
     if (tab === "whitelist") {
         $(".wl-desc p").append(whitelist_msg);
         $(".sub-title p").text(whitelistTitle);
         bkg.syncWhiteList(renderWhiteListTable);
         //renderWhiteListTable();
-    } /*else if (tab === "redflag") {
-        $(".wl-desc p").append(redflag_msg);
-        renderRedFlagTable();
-    } */else if (tab === "safedomain") {
+    } else if (tab === "advanced-settings") {
+        $("#restore").show();
+        $(".sub-title p").text(advancedSettingsTitle);
+    } else if (tab === "safedomain") {
         $(".wl-desc p").append(safesite_msg);
         $(".sub-title p").text(safeSitesTitle);
         renderSafeDomainTable();
@@ -163,7 +165,7 @@ function renderWhiteListTable(data) {
         //e.preventDefault();
         var id = $(this).data("id");
         var name = $(this).data("name");
-        var url = $(this).data("url"); 
+        var url = $(this).data("url");
         console.log(name);
         if ($(e.target).is(".wl-delete-icon")) {
             var res = confirm("Do you want to delete " + name + " from whitelist");
@@ -182,7 +184,7 @@ function renderWhiteListTable(data) {
         }
     });
 }
- 
+
 function renderSafeDomainTable() {
     var length = KPSkipList.length;
     for (let i = 0; i < length; i++) {
@@ -324,11 +326,12 @@ $(document).ready(function() {
         $(".wl-tab-item").removeClass("wl-active-tab");
         $(this).addClass("wl-active-tab");
         tab = $(this).data("list");
-        if (tab === "whitelist") {
+        if (tab === "whitelist" || tab === "advanced-settings") {
             $(".wl-add-btn").addClass("hide");
         } else {
             $(".wl-add-btn").removeClass("hide");
         }
+
         renderTable();
         console.log("Tab : ", tab);
     });
@@ -340,17 +343,17 @@ $(document).ready(function() {
             updateImage();
         }
     });
-    
+
     $(".wl-add-btn").on("click", function(e) {
         $(".wl-input-wrapper").removeClass("hide");
     });
-    
+
     $("#about").on("click", function(e) {
         chrome.tabs.create({
             url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
         });
     });
-    
+
     $(".wl-fa-save").on("click", function(e) {
         var input = $(".wl-input").val();
         var val;

@@ -7,6 +7,8 @@ const MAX_UPOLLS = 30;
 let port;
 let topUrl;
 
+let DEBUG = true;
+
 main();
 
 function main() {
@@ -56,30 +58,31 @@ function do_init() {
 }
 
 let upolls = 0;
+
 function startUrlPoll() {
     const url = stripQueryParams(window.location.href);
 
     upolls++;
     if (url !== topUrl) {
         topUrl = url;
-        rpc({op: "url_change"});
+        rpc({ op: "url_change" });
     }
-    if (npolls < MAX_POLLS) {
+    if (upolls < MAX_UPOLLS) {
         return setTimeout(startUrlPoll, URL_POLL_INTERVAL);
     }
 }
 
 let npolls = 0;
+
 function startChecking() {
     npolls++;
     const visible = $("input[type=\"password\"]").filter(":visible");
     //const visible = document.querySelectorAll("input[type=\"password\"]");
-    console.log("Started checking in content script");
     if (visible.length > 0) {
-        console.log("password field found");
+        debug("KP: password field found");
         rpc({ op: "checkdata", data: visible });
     } else {
-        if (npolls < MAX_UPOLLS) {
+        if (npolls < MAX_POLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
         }
     }
@@ -110,13 +113,12 @@ function appendSecureImg() {
 
     $("body").prepend(prepend);
 
-    setTimeout( function(){
+    setTimeout(function() {
         $(".kp-green-popup").hide();
     }, 3550);
 
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
-        console.log("Data received : ", data);
         if (data === undefined) {
             data = {};
             data.type = "default";
@@ -174,12 +176,12 @@ var image = (done) => {
 };
 
 var init = (done) => {
-    console.log("Inside init");
+    debug("Inside init");
     $("#fake-image").Jcrop({
         bgColor: "none",
         maxSize: [500, 300],
         onSelect: (e) => {
-            console.log("Jcrop fakeimg");
+            debug("Jcrop fakeimg");
             selection = e;
             capture();
         },
@@ -192,7 +194,7 @@ var init = (done) => {
             }, 100);
         }
     }, function ready() {
-        console.log("jcrop initialized");
+        debug("jcrop initialized");
         jcrop = this;
 
         $(".jcrop-hline, .jcrop-vline").css({
@@ -210,7 +212,7 @@ var init = (done) => {
 };
 
 var capture = (force) => {
-    console.log(selection);
+    debug("capture", selection);
     if (selection) {
         // jcrop.release();
         $(".jcrop-holder .kp-template-page").remove();
@@ -224,23 +226,24 @@ var capture = (force) => {
             </div>`;
         $(".jcrop-holder").append(screenshotTemplate);
         $(".kp-screenshot-confirum").on("click", function(event) {
-            console.log("Inside screenshot confirum");
-            overlay(false);
-            $(".jcrop-holder").hide();
+            debug("Inside screenshot confirum");
             $(".jcrop-holder .kp-template-page").remove();
+            $(".jcrop-holder").hide();
             $("body").removeClass("kp-popup");
-            console.log(selection);
-            chrome.runtime.sendMessage({
-                op: "crop_capture",
-                area: selection,
-                dpr: devicePixelRatio
-            }, (res) => {
-                selection = null;
-            });
+            setTimeout(function() {
+                chrome.runtime.sendMessage({
+                    op: "crop_capture",
+                    area: selection,
+                    dpr: devicePixelRatio
+                }, (res) => {
+                    selection = null;
+                });
+            }, 2000);
+            debug(selection);
         });
 
         $(".kp-screenshot-cancel").on("click", function(event) {
-            overlay(false);
+            $(".jcrop-holder").hide();
             selection = null;
             jcrop.destroy();
             $(".jcrop-holder").hide();
@@ -289,7 +292,7 @@ window.addEventListener("resize", ((timeout) => () => {
 */
 
 function injectCropModal() {
-    console.log("inside inject");
+    debug("inside inject");
     var doCrop = function() {
         if (!jcrop) {
             image(() => init(() => {

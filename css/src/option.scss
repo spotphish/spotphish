@@ -335,12 +335,14 @@ ul.rig.columns-4 li {
 }
 .wl-restore-btn {
     background: $kp-light-color;
-    right: 30px;
+    margin-top: 25px;
+    border-radius: 2px;
     font-weight: 400;
-    font-size: 20px;
+    font-size: 12px;
     color: #FFF;
     padding: 5px 15px;
     position: absolute;
+    display: none;
 
 }
 .white-list{

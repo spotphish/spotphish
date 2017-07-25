@@ -110,14 +110,13 @@ function init(msg, sender, respond) {
     if (msg.top) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
-    }
-    if (checkWhitelist(tab)) {
-        respond({action: "nop"});
-        if (msg.top) {
+        if (checkWhitelist(tab)) {
+            respond({action: "nop"});
+            debug("greenflagging", tab.id, tab.url);
             ti.state = "greenflagged";
             ti.port.postMessage({op: "greenflag", data: {}});
+            return;
         }
-        return;
     }
 
     if (checkSkip(tab.url)) {
@@ -151,20 +150,21 @@ function url_change(msg, sender, respond) {
 
     respond({action: "nop"});
     if (ti.state !== "greenflagged" && checkWhitelist(tab)) {
+        debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
         ti.port.postMessage({op: "greenflag", data: {}});
     }
 }
 
+function showTabinfo() {
+    for (const x in tabinfo) {
+        const ti = tabinfo[x];
+        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
+    }
+}
+
 function watchdog() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-        if (DEBUG) {
-            for (const x in tabinfo) {
-                const ti = tabinfo[x];
-                assert("watchdog.1", STATES.indexOf(ti.state) !== -1, ti.state);
-                console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
-            }
-        }
         if (!tabs.length) return;
         const id = tabs[0].id,
             ti = tabinfo[id] || {};
@@ -199,7 +199,6 @@ function checkSkip(url) {
         debug("SKIP LISTED:", found[0]);
         return true;
     }
-    debug(" NOT SKIP LISTED:", url);
     return false;
 }
 
@@ -210,7 +209,6 @@ function checkWhitelist(tab) {
         debug("WHITE LISTED:", wl[0]);
         return true;
     }
-    debug("NOT WHITE LISTED:", site);
     return false;
 }
 
