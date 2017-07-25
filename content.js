@@ -58,13 +58,14 @@ function do_init() {
 }
 
 let upolls = 0;
+
 function startUrlPoll() {
     const url = stripQueryParams(window.location.href);
 
     upolls++;
     if (url !== topUrl) {
         topUrl = url;
-        rpc({op: "url_change"});
+        rpc({ op: "url_change" });
     }
     if (upolls < MAX_UPOLLS) {
         return setTimeout(startUrlPoll, URL_POLL_INTERVAL);
@@ -72,6 +73,7 @@ function startUrlPoll() {
 }
 
 let npolls = 0;
+
 function startChecking() {
     npolls++;
     const visible = $("input[type=\"password\"]").filter(":visible");
@@ -111,7 +113,7 @@ function appendSecureImg() {
 
     $("body").prepend(prepend);
 
-    setTimeout( function(){
+    setTimeout(function() {
         $(".kp-green-popup").hide();
     }, 3550);
 
@@ -225,22 +227,23 @@ var capture = (force) => {
         $(".jcrop-holder").append(screenshotTemplate);
         $(".kp-screenshot-confirum").on("click", function(event) {
             debug("Inside screenshot confirum");
-            overlay(false);
-            $(".jcrop-holder").hide();
             $(".jcrop-holder .kp-template-page").remove();
+            $(".jcrop-holder").hide();
             $("body").removeClass("kp-popup");
+            setTimeout(function() {
+                chrome.runtime.sendMessage({
+                    op: "crop_capture",
+                    area: selection,
+                    dpr: devicePixelRatio
+                }, (res) => {
+                    selection = null;
+                });
+            }, 2000);
             debug(selection);
-            chrome.runtime.sendMessage({
-                op: "crop_capture",
-                area: selection,
-                dpr: devicePixelRatio
-            }, (res) => {
-                selection = null;
-            });
         });
 
         $(".kp-screenshot-cancel").on("click", function(event) {
-            overlay(false);
+            $(".jcrop-holder").hide();
             selection = null;
             jcrop.destroy();
             $(".jcrop-holder").hide();
