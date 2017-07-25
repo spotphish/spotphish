@@ -78,12 +78,11 @@ function alreadyCoveredSameType(container, newCoverIsAd) {
 }
 
 
-function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInterval, intervalID) {
+function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInterval, intervalID, cb) {
     // if we aren't doing anything to non-ads and this isn't an ad, do nothing.
     if (!isAd && !showNonAd) {
         return false;
     }
-
 
     var viewportwidth;
     var viewportheight;
@@ -127,7 +126,7 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
 
           <div class="kp-modal-footer">
             <button type="button" class="kp-btn kp-btn-default" >Report Phishing</button>
-            <button type="button" class="kp-btn kp-btn-default">Report false alarm</button>
+            <button type="button" id = "kp-btn-skip" class="kp-btn kp-btn-default">Add to skiplist</button>
             <button type="button" class="kp-btn kp-btn-default close-killphiser kp-pull-right">Close</button>
             <div class="kp-clr"></div>
           </div>
@@ -142,6 +141,11 @@ function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInte
     container.prepend(modalTemplate).fadeIn();
     // make sure the close button closes the cover
     container.find(".close-killphiser").on("click", function() {
+        container.children(".kp-modal-container").css("visibility", "hidden");
+        container.children().css("opacity", 1);
+    });
+    container.find("#kp-btn-skip").on("click", function() {
+        cb();
         container.children(".kp-modal-container").css("visibility", "hidden");
         container.children().css("opacity", 1);
     });

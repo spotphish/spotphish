@@ -35,7 +35,6 @@ function initTabinfo(id, tab) {
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-     
 function updateTabinfo(id, tab) {
     tabinfo[id].tab = tab;
 }
@@ -80,6 +79,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         var url = stripQueryParams(sender.tab.url);
         console.log ("URL: ", url, " tab: ", sender.tab);
         addToWhiteList({ url: url, type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
+    } else if (msg.op === "add_skip") {
+        let domain = getPathInfo(sender.tab.url).host;
+        addToKPSkipList(domain);
+        respond({message: "added"});
     } else {
         console.log("KPBG: Unknown message", msg);
     }

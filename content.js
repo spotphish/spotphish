@@ -93,7 +93,10 @@ function showGreenflag(msg) {
 }
 
 function showRedflag(msg) {
-    coverContainer($("body"), msg.site, "", false, true, true, 0);
+    var skipCb = function() {
+        rpc({op: "add_skip"});
+    };
+    coverContainer($("body"), msg.site, "", false, true, true, 0, skipCb);
 }
 
 function appendSecureImg() {
@@ -290,6 +293,8 @@ window.addEventListener("resize", ((timeout) => () => {
   }, 100)
 })())
 */
+
+
 
 function injectCropModal() {
     debug("inside inject");
