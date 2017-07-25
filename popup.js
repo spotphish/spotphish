@@ -12,7 +12,7 @@
             document.getElementById("kp-remove-from-whitelist").style.display = "block";
             document.getElementById("kp-add-to-whitelist").style.display = "none";
             //document.getElementsByClassName("optsCurrent")[0].style.display = "block";
-        } else if (response.status === "watching" || response.status === "red_done") {
+        } else if (response.status === "watching" || response.status === "red_done" || response.status === "safe") {
             document.getElementById("kp-add-to-whitelist").style.display = "block";
         } else if (response.status === "redflagged") {
             document.getElementById("kp-add-to-whitelist").style.display = "none";
