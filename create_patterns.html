@@ -32,7 +32,7 @@
   </div>
   <script>
   window.onload = function() {
-    const populatePatterns = (img) => {
+    const populatePatterns = (img, templateName) => {
         return new Promise((resolve, reject) => {
             var image = new Image();
             image.src = img;
@@ -108,6 +108,7 @@
                     sc -= sc_pc;
                 }
                 var pattern = {};
+                pattern.templateName = templateName;
                 pattern.patternCorners = pattern_corners;
                 pattern.patternDescriptors = pattern_descriptors;
                 resolve(pattern);
@@ -116,13 +117,20 @@
     }
     var templates = [];
     for (var j = 0; j < redFlagSites.length; j++) {
-        templates.push(populatePatterns(redFlagSites[j].logo));
+        for (var i = 0; i < redFlagSites[j].templates.length; i++) {
+            templates.push(populatePatterns(redFlagSites[j].templates[i].logo, redFlagSites[j].templates[i].templateName));
+        }
     }
     Promise.all(templates).then((results) => {
-        for (var i = 0; i<results.length; i++) {
-            redFlagSites[i].url = greenFlagUrls[redFlagSites[i].site];
-            redFlagSites[i].patternCorners = results[i].patternCorners;
-            redFlagSites[i].patternDescriptors = results[i].patternDescriptors;
+        for (var i = 0; i<redFlagSites.length; i++) {
+            for (var j = 0; j < redFlagSites[i].templates.length; j++) {
+                var pattern = results.filter(x => x.templateName === redFlagSites[i].templates[j].templateName);
+                if (pattern.length > 0) {
+                    redFlagSites[i].templates[j].patternDescriptors = pattern[0].patternDescriptors;
+                    redFlagSites[i].templates[j].patternCorners = pattern[0].patternCorners;
+                    continue;
+                }
+            }
         }
 		var a = window.document.createElement('a');
 		a.href = window.URL.createObjectURL(new Blob(["var defPatterns = " + JSON.stringify(redFlagSites)], {type: 'text/plain;charset=utf-8;'}));

@@ -349,7 +349,7 @@ $(document).ready(function() {
     });
 
     $("#about").on("click", function(e) {
-       chrome.tabs.create({
+        chrome.tabs.create({
             url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
         });
     });
@@ -357,7 +357,7 @@ $(document).ready(function() {
     $(".wl-fa-save").on("click", function(e) {
         var input = $(".wl-input").val();
         var val;
-        let domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+        //let domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
         let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
         if (urlPattern.test(input)) {
             val = bkg.getPathInfo(input).host;

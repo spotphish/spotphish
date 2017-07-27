@@ -274,14 +274,26 @@ function initWhitelist() {
 function syncWhiteList(cb){
     objWhitelist.getAll((data) => {
         var data1 = data.map((x) => {
-            return {id: x.id, url: x.url, type: x.type, site: x.site, logo: x.logo, enabled: x.enabled};
+            return {id: x.id, url: x.url, type: x.type, site: x.site, templates: x.templates, enabled: x.enabled};
         });
+        console.log("retrieved from index db ", data1);
         if (cb && typeof(cb) === "function") {
             cb(data1);
             return;
         }
-
-        KPTemplates = data.filter((x) => {
+        var res = data.map((x) => {
+            var j = 0;
+            var arr = [];
+            x.templates.forEach((i) => {
+                arr[j] = x;
+                Object.assign(arr[j], i);
+                j++;
+            });
+            return arr;
+        }).reduce(function (a,b) {
+            return  a.concat(b);
+        }, []);
+        KPTemplates = res.filter((x) => {
             return x.logo !== undefined && x.enabled === true;
         }).map((x) => {
             return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
@@ -316,11 +328,16 @@ function toggleWhitelistItems(id, state, cb) {
 } 
 
 function addToWhiteList(data, tab) {
+    var pattern = {};
     if (data.logo) {
         createPatterns(data.logo).then(function(result) {
             console.log("Template promise result : ", result);
-            data.patternCorners = result.patternCorners;
-            data.patternDescriptors = result.patternDescriptors;
+            pattern.logo = data.logo;
+            pattern.patternCorners = result.patternCorners;
+            pattern.patternDescriptors = result.patternDescriptors;
+            pattern.patternName = data.site;
+            data.templates = [];
+            data.templates.push(pattern);
             objWhitelist.put(data, (x) => {
                 syncWhiteList();
                 console.log("Add: ", x);
@@ -330,6 +347,9 @@ function addToWhiteList(data, tab) {
             return;
         });
     } else {
+        pattern.name = data.site;
+        data.templates = [];
+        data.templates.push(pattern);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
             console.log("Add: ", x);
