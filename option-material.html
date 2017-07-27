@@ -39,19 +39,36 @@ img.secure-image {
 img.template-image {
     width: 100%;
     height: auto;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
 .mdl-data-table .kp-wl-table {
     max-height: 12em;
 }
 
+.kp-template-container {
+    margin: 0;
+}
+
 .kp-template-card {
-    min-height: 100px;
+    min-height: 0;
+}
+
+.kp-url-table {
+    width: 100%;
+    margin: 0;
+}
+
+.kp-url-table-container {
+    max-height: 20em;
+    overflow: auto;
 }
 
 .kp-login-url {
-    max-width: 16em;
+    max-width: 20em;
     word-wrap: break-word;
+    white-space: normal;
 }
 
 </style>
@@ -152,8 +169,9 @@ img.template-image {
                 <h3>Manage Whitelist</h3>
                 <p> Login pages on which you will see your personal secure image.</p>
             </div>
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-grid mdl-shadow--4dp">
-                <div class="mdl-card__title mdl-cell mdl-cell--12-col mdl-card--border">
+
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp">
+                <div class="mdl-card__title mdl-card--border">
                     <h2 class="mdl-card__title-text">Google</h2>
                 </div>
                 <div class="mdl-card__menu">
@@ -164,86 +182,65 @@ img.template-image {
                       <i class="material-icons">delete</i>
                     </button>
                  </div>
-                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                    <div class="mdl-card__media">
-                        <img class="template-image" src="img/google-logo.png" border="0" alt="">
+                <div class="mdl-grid kp-template-container">
+                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                        <div class="mdl-card__media">
+                            <img class="template-image" src="img/google-logo.png" border="0" alt="">
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                        Mid 2017
+                        </div>
                     </div>
-                    <div class="mdl-card__supporting-text">
-                    Mid 2017
+                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                        <div class="mdl-card__media">
+                            <img class="template-image" src="img/google-old.png" border="0" alt="">
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                        Older
+                        </div>
                     </div>
                 </div>
-                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                    <div class="mdl-card__media">
-                        <img class="template-image" src="img/google-old.png" border="0" alt="">
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
+                        <table class="mdl-data-table mdl-js-data-table kp-url-table">
+                            <tbody>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifier</td>
+                                  <td><i class="material-icons">check_box</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifiernskdjnskjnskjnksjfnvfkjdnvdkfjnvdkfjnvdkjfnvdkjvndkjfnvdkjvnkfjnvdkfjvndkfjvndkjnvdkfjvndkvndkfjvndfkjnvdfjkvndf</td>
+                                  <td><i class="material-icons">check_box_outline_blank</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifiernskdjnskjnskjnksjfnvfkjdnvdkfjnvdkfjnvdkjfnvdkjvndkjfnvdkjvnkfjnvdkfjvndkfjvndkjnvdkfjvndkvndkfjvndfkjnvdfjkvndf</td>
+                                  <td><i class="material-icons">check_box_outline_blank</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifiernskdjnskjnskjnksjfnvfkjdnvdkfjnvdkfjnvdkjfnvdkjvndkjfnvdkjvnkfjnvdkfjvndkfjvndkjnvdkfjvndkvndkfjvndfkjnvdfjkvndf</td>
+                                  <td><i class="material-icons">check_box_outline_blank</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifiernskdjnskjnskjnksjfnvfkjdnvdkfjnvdkfjnvdkjfnvdkjvndkjfnvdkjvnkfjnvdkfjvndkfjvndkjnvdkfjvndkvndkfjvndfkjnvdfjkvndf</td>
+                                  <td><i class="material-icons">check_box_outline_blank</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifiernskdjnskjnskjnksjfnvfkjdnvdkfjnvdkfjnvdkjfnvdkjvndkjfnvdkjvnkfjnvdkfjvndkfjvndkjnvdkfjvndkvndkfjvndfkjnvdfjkvndf</td>
+                                  <td><i class="material-icons">check_box_outline_blank</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="mdl-card__supporting-text">
-                    Older
-                    </div>
-                </div>
-                <div class="mdl-card__supporting-text mdl-cell--12-col">
-                    <table class="mdl-data-table mdl-js-data-table kp-wl-table">
-                      <tbody>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifier</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://in.facebook.com</td>
-                          <td><i class="material-icons">check_box_outline_blank</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://in.facebook.com</td>
-                          <td><i class="material-icons">check_box_outline_blank</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric kp-login-url">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                      </tbody>
-                    </table>
                 </div>
             </div>
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-grid mdl-shadow--4dp">
-                <div class="mdl-card__title mdl-cell mdl-cell--12-col mdl-card--border">
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp">
+                <div class="mdl-card__title mdl-card--border">
                     <h2 class="mdl-card__title-text">Facebook</h2>
                 </div>
                 <div class="mdl-card__menu">
@@ -254,57 +251,36 @@ img.template-image {
                       <i class="material-icons">delete</i>
                     </button>
                  </div>
-                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                    <div class="mdl-card__media">
-                        <img class="template-image" src="img/fb-logo_lnx.png" border="0" alt="">
+                <div class="mdl-grid kp-template-container">
+                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                        <div class="mdl-card__media">
+                            <img class="template-image" src="img/fb-logo_lnx.png" border="0" alt="">
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                        Mid 2017
+                        </div>
                     </div>
-                    <div class="mdl-card__supporting-text">
-                    Mid 2017
+                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                        <div class="mdl-card__media">
+                            <img class="template-image" src="img/fb-old.png" border="0" alt="">
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                        Older
+                        </div>
                     </div>
                 </div>
-                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                    <div class="mdl-card__media">
-                        <img class="template-image" src="img/fb-old.png" border="0" alt="">
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
+                        <table class="mdl-data-table mdl-js-data-table kp-url-table">
+                            <tbody>
+                                <tr>
+                                  <td class="mdl-data-table__cell--non-numeric kp-login-url">https://accounts.google.com/signin/v2/identifier</td>
+                                  <td><i class="material-icons">check_box</i></td>
+                                  <td><i class="material-icons">delete</i></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="mdl-card__supporting-text">
-                    Older
-                    </div>
-                </div>
-                <div class="mdl-card__supporting-text mdl-cell--12-col">
-                    <table class="mdl-data-table mdl-js-data-table kp-wl-table">
-                      <tbody>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://in.facebook.com</td>
-                          <td><i class="material-icons">check_box_outline_blank</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://in.facebook.com</td>
-                          <td><i class="material-icons">check_box_outline_blank</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://www.facebook.com</td>
-                          <td><i class="material-icons">check_box</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                        <tr>
-                          <td class="mdl-data-table__cell--non-numeric">https://in.facebook.com</td>
-                          <td><i class="material-icons">check_box_outline_blank</i></td>
-                          <td><i class="material-icons">delete</i></td>
-                        </tr>
-                      </tbody>
-                    </table>
                 </div>
         </div>
     </section>
