@@ -122,13 +122,6 @@ function appendSecureImg() {
 
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
-        if (data === undefined) {
-            data = {};
-            data.type = "default";
-            data.src = DEFAULT_IMG;
-            updateImage(data);
-            return;
-        }
         var img = document.createElement("img");
         img.height = data.height || 200;
         img.width = data.width || 200;

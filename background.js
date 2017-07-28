@@ -3,6 +3,7 @@ const watches = [0, 4000, 20000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
+const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 
 let DEBUG = true, 
     globalCurrentTabId,
@@ -403,8 +404,24 @@ function errorfn(err) {
     console.log("error occured");
 }
 
+function setDefaultSecurityImage() {
+    chrome.storage.local.get("secure_img", function(result) {
+        var data = result.secure_img;
+        if (typeof data === "undefined") {
+            data = {};
+            data.type = "default";
+            data.src = DEFAULT_IMG;
+            chrome.storage.local.set({ "secure_img": data });
+        } else {
+            return;
+        }
+    });
+}
+    
+
 function loadDefaults() {
     syncSkipList();
+    setDefaultSecurityImage();
     //TODO
     //Should we allow users to add multiple entries for the same site?
     objWhitelist = new IDBStore({

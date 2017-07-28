@@ -104,15 +104,6 @@ function updateImage(data) {
     } else {
         chrome.storage.local.get("secure_img", function(result) {
             data = result.secure_img;
-            if (typeof data === "undefined") {
-
-                data = {};
-                data.type = "default";
-                data.src = DEFAULT_IMG;
-                updateImage(data);
-                //$(".image").append(img);
-                //return;
-            }
             $("#secureimage").attr("src", data.src);
         });
         //Search for image from local storage
