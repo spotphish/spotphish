@@ -78,7 +78,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "add_wh") {
         var url = stripQueryParams(sender.tab.url);
         console.log ("URL: ", url, " tab: ", sender.tab);
-        addToWhiteList({ url: url, type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
+        addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
     } else if (msg.op === "add_skip") {
         let domain = getPathInfo(sender.tab.url).host;
         addToKPSkipList(domain);
