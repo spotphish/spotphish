@@ -1,4 +1,3 @@
-
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 const whitelist_msg = "Login pages on which you will see your personal secure image.";
 const safesite_msg = "Trusted domains which are highly unlikely to host phishing pages. We skip checking pages on these sites as a performance optimization.";
@@ -6,6 +5,7 @@ const redflag_msg = "We have snapshots of the login pages of these sites. If any
 const whitelistTitle = "Manage Whitelist";
 const advancedSettingsTitle = "Advanced settings";
 const safeSitesTitle = "Manage Safe Site";
+const defaultImages = ["kp1.jpg", "kp2.jpg", "kp3.jpg", "kp4.jpg", "kp5.jpg", "kp6.jpg", "kp7.jpg"];
 var KPWhiteList,
     KPSkipList,
     KPRedFlagList;
@@ -20,6 +20,24 @@ var cb = function (data) {
 var bkg = chrome.extension.getBackgroundPage();
 bkg.initWhitelist("IDBI", cb);
 */
+
+
+function templateImage(src, favorite) {
+    const temp = `
+    <div class="mdl-cell mdl-cell--4-col mdl-card set-image">
+      <div class="mdl-card__media ">
+          <img class="secure-image" src="${src}" border="0" alt="">
+      </div>
+      <div class="mdl-card__menu">
+          <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent">
+            <i class="material-icons kp-active-icons">${favorite}</i>
+          </button>
+      </div>
+    </div>
+  `;
+    return temp;
+}
+
 
 function templateSkipDomain(index, data) {
     const template = `
@@ -73,26 +91,14 @@ function template3(data) {
 }
 
 function updateImage(data) {
-    var img = document.createElement("img");
-    img.id = "display-img";
 
     if (data) {
-        console.log("Data found");
-        img.height = data.height || 200;
-        img.width = data.width || 200;
-        chrome.storage.local.set({"secure_img": data}, function() {
+        chrome.storage.local.set({ "secure_img": data }, function() {
             console.log("Data Saved : ", data);
-            if (data.type === "suggested" || data.type === "default") {
-                img.src = data.src;
-            } else if (data.type === "custom") {
-                //img.src = "data:image/jpeg;base64," + data.src;
-                img.src = data.src;
-                console.log(img.src);
-            }
             //img.height = data.height || 200;
             //img.width = data.width || 200;
-            $(".image").empty();
-            $(".image").append(img);
+            // alert(data.src);
+            $("#secureimage").attr("src", data.src);
         });
         // For Selected Image
     } else {
@@ -107,13 +113,7 @@ function updateImage(data) {
                 //$(".image").append(img);
                 //return;
             }
-            console.log("Data received : ", data);
-            img.src = data.src;
-            img.height = data.height || 200;
-            img.width = data.width || 200;
-            console.log("Image : ", img);
-            $(".image").empty();
-            $(".image").append(img);
+            $("#secureimage").attr("src", data.src);
         });
         //Search for image from local storage
         //If no data stored in local storage use default img
@@ -123,7 +123,7 @@ function updateImage(data) {
 
 function updateTableData() {
     chrome.storage.local.get(["skiplist"], function(result) {
-        console.log("Data received : ", result );
+        console.log("Data received : ", result);
         if (result.skiplist) {
             KPSkipList = result.skiplist;
         } else {
@@ -155,7 +155,7 @@ function renderTable() {
 function renderWhiteListTable(data) {
 
     console.log("IDB-data", data);
-    data.forEach((x)=> {
+    data.forEach((x) => {
         if (x.url) {
             $(".white-list-scroll").append(template3(x));
         }
@@ -231,7 +231,7 @@ function renderRedFlagTable() {
 }*/
 
 function saveSkipListData() {
-    chrome.storage.local.set({skiplist : KPSkipList}, () => {
+    chrome.storage.local.set({ skiplist: KPSkipList }, () => {
         var bkg = chrome.extension.getBackgroundPage();
         bkg.syncSkipList();
         console.log("skiplist : ", KPSkipList);
@@ -239,7 +239,7 @@ function saveSkipListData() {
 }
 
 function saveRedFlagData() {
-    chrome.storage.local.set({ redflaglist : KPRedFlagList}, () => {
+    chrome.storage.local.set({ redflaglist: KPRedFlagList }, () => {
         var bkg = chrome.extension.getBackgroundPage();
         bkg.syncRedFlagList();
         console.log("redflaglist : ", KPRedFlagList);
@@ -261,8 +261,7 @@ function addData(val) {
             KPSkipList.push(val);
             saveSkipListData();
             renderSafeDomainTable();
-        }
-        else {
+        } else {
             alert("Value entered already saved as a safe domain");
         }
     }
@@ -271,20 +270,30 @@ function addData(val) {
 $(document).ready(function() {
     updateImage();
     updateTableData();
-    $(".rig li").on("click", function(event) {
+
+    defaultImages.forEach(function(img) {
+        let imagePath = "assets/img/secure_img/" + img;
+        $("#imagegallery .mdl-cell:last").before(templateImage(imagePath, "favorite_border"));
+    });
+
+    //}
+    $(".set-image").on("click", function(event) {
         event.preventDefault();
-        $(".rig li").removeClass("active");
-        $(this).addClass("active");
+        // $(".rig li").removeClass("active");
+        // $(this).addClass("active");
         var data = {};
         data.type = "suggested";
-        var img = $(this).children("img")[0];
+        var img = $(this).find("img")[0];
         var scaleFactor = Math.min(200 / img.width, 200 / img.height);
         data.width = scaleFactor * img.width;
         data.height = scaleFactor * img.height;
         data.src = img.src;
         updateImage(data);
-        closeImgUploader();
 
+        $(".kp-active-icons").text("favorite_border");
+        var icon = $(this).find("i")[0];
+        $(icon).text("favorite");
+        // closeImgUploader();
         //$("#display-img")[0].src = $(this).children("img")[0].src;
     });
 
@@ -292,8 +301,15 @@ $(document).ready(function() {
         $(".whitelist-container").addClass("hide");
         $(".img-uploader-container").removeClass("hide");
     });
+
     $("#img-uploader-close").on("click", function(e) {
         closeImgUploader();
+    });
+
+
+
+    $("#imageUpload").on("click", function(e) {
+        $("#custom-img").click();
     });
 
     $("#custom-img").change(function(e) {
@@ -318,9 +334,31 @@ $(document).ready(function() {
             updateImage(data);
         };
         img.src = url;
-        $(".rig li").removeClass("active");
-        $("#canvas-cust").removeClass("hide");
+        $(".kp-active-icons").text("favorite_border");
+        $("#imagegallery .mdl-cell:last").before(templateImage(url, "favorite"));
+
+        $(".set-image").on("click", function(event) {
+            event.preventDefault();
+            // $(".rig li").removeClass("active");
+            // $(this).addClass("active");
+            var data = {};
+            data.type = "suggested";
+            var img = $(this).find("img")[0];
+            var scaleFactor = Math.min(200 / img.width, 200 / img.height);
+            data.width = scaleFactor * img.width;
+            data.height = scaleFactor * img.height;
+            data.src = img.src;
+            updateImage(data);
+
+            $(".kp-active-icons").text("favorite_border");
+            var icon = $(this).find("i")[0];
+            $(icon).text("favorite");
+            // closeImgUploader();
+            //$("#display-img")[0].src = $(this).children("img")[0].src;
+        });
+
     });
+
 
     $(".wl-tab-item").on("click", function(e) {
         $(".wl-tab-item").removeClass("wl-active-tab");
@@ -361,8 +399,7 @@ $(document).ready(function() {
         let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
         if (urlPattern.test(input)) {
             val = bkg.getPathInfo(input).host;
-        }
-        else {
+        } else {
             val = input;
         }
         console.log("Value : ", input);
