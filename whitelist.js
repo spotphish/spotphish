@@ -76,7 +76,59 @@ var redFlagSites =[{
         "templateName":"Google mid 2017",
         "logo":"assets/img/google-logo.png"
     }]
+}, {
+    "site": "Amazon",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        "https://www.amazon.in/ap/signin",
+        "https://www.amazon.com/ap/signin",
+        "https://www.amazon.co.uk/ap/signin",
+        "https://www.amazon.com.au/ap/signin",
+        "https://www.amazon.co.jp/ap/signin",
+        "https://www.amazon.cn/ap/signin",
+        "https://www.amazon.sg/ap/signin",
+        "https://www.amazon.fr/ap/signin",
+        "https://www.amazon.de/ap/signin",
+        "https://www.amazon.it/ap/signin",
+        "https://www.amazon.nl/ap/signin",
+        "https://www.amazon.es/ap/signin",
+        "https://www.amazon.ca/ap/signin",
+        "https://www.amazon.com.mx/ap/signin",
+        "https://www.amazon.com.br/ap/signin"
+    ],
+    "templates": [{
+        "templateName": "Amazon",
+        "logo": "assets/img/amazon-logo.png"
+    }, {
+        "templateName":"AWS",
+        "logo":"assets/img/aws-logo.png"
+    }]
 }]
 
 //Domains/sites that are skipped completely for red flaf approach.
-var skipDomains = [ "google.com", "facebook.com", "google.co.in", "paypal.com", "icicibank.com", "hdfcbank.com", "dropbox.com", "inet.idbibank.co.in"];
+var skipDomains = [ 
+                    "google.com",
+                    "facebook.com",
+                    "google.co.in",
+                    "paypal.com",
+                    "icicibank.com",
+                    "hdfcbank.com",
+                    "dropbox.com",
+                    "inet.idbibank.co.in",
+                    "amazon.com",
+                    "amazon.in",
+                    "amazon.co.uk",
+                    "amazon.com.au",
+                    "amazon.co.jp",
+                    "amazon.cn",
+                    "amazon.sg",
+                    "amazon.fr",
+                    "amazon.de",
+                    "amazon.nl",
+                    "amazon.es",
+                    "amazon.it",
+                    "amazon.ca",
+                    "amazon.com.mx",
+                    "amazon.com.br"
+                    ];
