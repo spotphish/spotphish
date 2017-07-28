@@ -267,6 +267,8 @@ function initWhitelist() {
     objWhitelist.getAll((data) => {
         if (data.length <= 0) {
             objWhitelist.putBatch(defPatterns, syncWhiteList);
+        } else {
+            syncWhiteList();
         }
     });
 }
@@ -397,8 +399,8 @@ function syncSkipList(){
 }
 
 
-function error(err) {
-    console.log(err);
+function errorfn(err) {
+    console.log("error occured");
 }
 
 function loadDefaults() {
@@ -410,13 +412,11 @@ function loadDefaults() {
         keyPath: "id",
         autoIncrement: true,
         onStoreReady: initWhitelist,
-        onError: error,
+        onError: errorfn,
         indexes: [
             { name: "url", keyPath: "url", unique: false, multiEntry: false }
         ]
     });
-    //TODO:This is bad, should be replaced
-    setTimeout(syncWhiteList, 2000);
 }
 
 
