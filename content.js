@@ -89,14 +89,12 @@ function startChecking() {
 }
 
 function showGreenflag(msg) {
-    appendSecureImg();
+    showSecureImg();
 }
 
 function showRedflag(msg) {
-    var skipCb = function() {
-        rpc({op: "add_skip"});
-    };
-    coverContainer($("body"), msg.site, "", false, true, true, 0, skipCb);
+    showWarning({text: `<div class="kp-warning kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`});
+    return;
 }
 
 function appendSecureImg() {

@@ -18,13 +18,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css":["css/kp-style.css", "css/content.css", "externalCode/jquery.Jcrop.min.css"],
+      "css":["css/content.css", "css/dialog.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "externalCode/jquery.Jcrop.min.js",
         "whitelist.js",
         "utils.js",
-        "content.js"
+        "content.js",
+        "dialog.js"
       ],
       "run_at": "document_start",
       "all_frames": true
@@ -51,14 +52,11 @@
     "unlimitedStorage"
   ],
   "web_accessible_resources": [
-    "actual_icons/*.png",
-    "bootstrap.css"
-  ],
-  "web_accessible_resources": [
     "assets/img/*",
     "assets/icons/*",
     "assets/fonts/*",
     "images/*",
+    "css/iconfont/*",
     "assets/defaults/*"
   ]
 }

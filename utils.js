@@ -6,33 +6,6 @@ const tab_status = {
     NOT_WHITELISTED: 2
 };
 
-function ajax_get(url, cb) {
-    var request = new XMLHttpRequest(),
-        callback = cb || function() {};
-    request.open('GET', url, true);
-    request.onload = function() {
-        if (request.status >= 200 && request.status < 400) {
-            var data;
-            try {
-                data = JSON.parse(request.responseText);
-            } catch (e) {
-                data = null;
-            }
-            return callback(null, data);
-        } else {
-            callback('ajax_get error');
-        }
-    };
-    request.onerror = function() {
-        return callback('ajax_get error');
-    };
-    request.send();
-}
-
-if (typeof NON_ENGLISH_LOCALE === 'undefined') {
-    var NON_ENGLISH_LOCALE = false;
-}
-
 function getPathInfo(path) {
     //  create a link in the DOM and set its href
     var link = document.createElement('a');
@@ -63,98 +36,6 @@ function isSpecialTab(url) {
     }
     return false;
 }
-// return whether the container is already covered
-function alreadyCovered(container) {
-    return (container.find(".FAH_adBlockerCover").length > 0);
-}
-
-// true if we want to overlay non-ads as well
-var showNonAd = false;
-
-function alreadyCoveredSameType(container, newCoverIsAd) {
-    var alreadyCovered = (container.find(".kp-modalDialog").length > 0);
-    var alreadyAd = (container.find(".CITP_isAnAd").length > 0)
-    return alreadyCovered && (alreadyAd || !newCoverIsAd);
-}
-
-
-function coverContainer(container, url, matchingText, deepestOnly, isAd, hasInterval, intervalID, cb) {
-    // if we aren't doing anything to non-ads and this isn't an ad, do nothing.
-    if (!isAd && !showNonAd) {
-        return false;
-    }
-
-    var viewportwidth;
-    var viewportheight;
-
-    if (typeof window.innerWidth != 'undefined') {
-        viewportwidth = window.innerWidth,
-        viewportheight = window.innerHeight
-    }
-    console.log("width", viewportwidth);
-    console.log("Height", viewportheight);
-
-    // don't cover if this container is already covered;
-    if (alreadyCoveredSameType(container, false)) {
-        return false;
-    }
-    // viewportwidth1 = (viewportwidth / 2) - 250;
-    // viewportheight1 = (viewportheight / 2) - 225;
-    container.find(".kp-modal-container").remove();
-
-    var imgPath = chrome.extension.getURL("assets/icons/icon128.png");
-    const modalTemplate = `
-    <div class="kp-modal-container" >
-    <div style="position: relative; width: ${viewportwidth}px; height: ${viewportheight}px; overflow: auto;">
-     <div class="kp-modalDialog">
-        <div class="kp-modal-dialog">
-          <div class="kp-modal-content">
-
-            <div class="kp-modal-header">
-              <button  type="button" class="kp-close close-killphiser" data-dismiss="modal">&times;</button>
-              <div class="kp-logo"><img src="${imgPath}" width="40px"></div>
-              <div class="kp-modal-title">
-                Are you being phished?
-              </div>
-            </div>
-
-            <div class="kp-modal-body">
-              <span>This looks like <b>  ${url}</b>.</span></br>
-              <span>But it isn't!</span>
-            </div>
-
-
-          <div class="kp-modal-footer">
-            <!--button type="button" class="kp-btn kp-btn-default" >Report Phishing</button-->
-            <button type="button" id = "kp-btn-skip" class="kp-btn kp-btn-default">Add to skiplist</button>
-            <button type="button" class="kp-btn kp-btn-default close-killphiser kp-pull-right">Close</button>
-            <div class="kp-clr"></div>
-          </div>
-
-        </div>
-     </div>
-     </div>
-    </div>
-    </div>
-  `;
-
-    container.prepend(modalTemplate).fadeIn();
-    // make sure the close button closes the cover
-    container.find(".close-killphiser").on("click", function() {
-        container.children(".kp-modal-container").css("visibility", "hidden");
-        container.children().css("opacity", 1);
-    });
-    container.find("#kp-btn-skip").on("click", function() {
-        cb();
-        container.children(".kp-modal-container").css("visibility", "hidden");
-        container.children().css("opacity", 1);
-    });
-}
-
-function addProfile() {
-
-}
-
 
 function assert() {
     var args = [].slice.call(arguments),
