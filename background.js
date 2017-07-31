@@ -392,13 +392,13 @@ function initSkipList() {
     chrome.storage.local.get("skiplist", function(result) {
         var data = result.skiplist;
         console.log("Data received : ", data);
-        var res;
         if (data) {
             KPSkipArray = data;
+            syncSkipList();
         } else {
             KPSkipArray = skipDomains;
+            saveKPSkipList();
         }
-        saveKPSkipList();
     });
 }
 
@@ -407,9 +407,7 @@ function syncSkipList(){
     chrome.storage.local.get("skiplist", function(result) {
         var data = result.skiplist;
         console.log("Data received : ", data);
-        if (data) {
-            KPSkipArray = data;
-        } 
+        KPSkipArray = data;
         KPSkipList = KPSkipArray.map((x) => {
             return x.domains;
         }).reduce(function (a,b) {
@@ -439,7 +437,7 @@ function setDefaultSecurityImage() {
     
 
 function loadDefaults() {
-    syncSkipList();
+    initSkipList();
     setDefaultSecurityImage();
     //TODO
     //Should we allow users to add multiple entries for the same site?
