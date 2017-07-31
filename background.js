@@ -316,6 +316,7 @@ function removeFromWhiteListById(id) {
     objWhitelist.remove(id);
 }
 
+
 function toggleWhitelistItems(id, state, cb) {
     var onSuccess = function(data) {
         data.enabled = state;
@@ -365,6 +366,24 @@ function addToWhiteList(data, tab) {
     addToKPSkipList(urlInfo.host);
 }
 
+function removeUrlFromWhiteList(url, id) {
+    let i = KPTemplates.findIndex((x) => {
+        return x.id === id;
+    });
+    let j = KPTemplates[i].url.findIndex((x) => {
+        return x === url;
+    });
+    KPTemplates[i].url.splice(j, 1);
+    var onSuccess = function(data) {
+        data.url = KPTemplates[i].url;
+        objWhitelist.put(data, syncWhiteList);
+    };
+    var onError = function(error) {
+        console.log("Error updating field : ", error);
+        return;
+    };
+    objWhitelist.get(id, onSuccess, onError);
+}
 
 function removeFromWhiteList(site, tab) {
     let found = KPWhiteList.filter((x) => {
