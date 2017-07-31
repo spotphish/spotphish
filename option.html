@@ -84,15 +84,15 @@ img.template-image {
     </div>
     <!-- Tabs -->
     <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
-      <a href="#scroll-tab-1" class="mdl-layout__tab is-active">Secure Image</a>
-      <a href="#scroll-tab-2" class="mdl-layout__tab">Whitelist</a>
-      <a href="#scroll-tab-3" class="mdl-layout__tab">Safe Domains</a>
-      <a href="#scroll-tab-4" class="mdl-layout__tab">Advanced</a>
-      <a href="#scroll-tab-5" class="mdl-layout__tab">Help</a>
+      <a href="#scroll-tab-secure-img" class="mdl-layout__tab is-active">Secure Image</a>
+      <a href="#scroll-tab-whitelist" class="mdl-layout__tab">Whitelist</a>
+      <a href="#scroll-tab-safedomain" class="mdl-layout__tab">Safe Domains</a>
+      <a href="#scroll-tab-advanced" class="mdl-layout__tab">Advanced</a>
+      <a href="#scroll-tab-help" class="mdl-layout__tab">Help</a>
     </div>
   </header>
   <main class="mdl-layout__content">
-    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-secure-img">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
                 <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet">
@@ -132,7 +132,7 @@ img.template-image {
             </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-2">
+    <section class="mdl-layout__tab-panel" id="scroll-tab-whitelist">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>Manage Whitelist</h3>
@@ -253,7 +253,7 @@ img.template-image {
                 </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-3">
+    <section class="mdl-layout__tab-panel" id="scroll-tab-safedomain">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>Manage Safe Domains</h3>
@@ -263,35 +263,23 @@ img.template-image {
                 <ul class="demo-list-control mdl-list">
                   <li class="mdl-list__item">
                     <span class="mdl-list__item-primary-content">
-                      <i class="material-icons  mdl-list__item-avatar">public</i>
-                      google.com
-                    </span>
-                     <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons">delete</i></a>
-                  </li>
-                  <li class="mdl-list__item">
-                    <span class="mdl-list__item-primary-content">
-                      <i class="material-icons  mdl-list__item-avatar">public</i>
-                      facebook.com
-                    </span>
-                     <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons">delete</i></a>
-                  </li>
-                  <li class="mdl-list__item">
-                    <span class="mdl-list__item-primary-content">
                         <i class="material-icons  mdl-list__item-avatar">add_circle</i>
                         <div class="mdl-textfield mdl-js-textfield">
-                            <input class="mdl-textfield__input" type="text" id="sample1">
-                            <label class="mdl-textfield__label" for="sample1">Add Domain...</label>
+                            <input class="mdl-textfield__input" type="text" id="kp-safelist-input">
+                            <label class="mdl-textfield__label" for="kp-safelist-input">Add Domain...</label>
                         </div>
                     </span>
-                     <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons">check_circle</i></a>
+                     <a class="mdl-list__item-secondary-action kp-safelist-add-btn" href="#"><i class="material-icons">check_circle</i></a>
                   </li>
+                </ul>
+                <ul class="demo-list-control mdl-list kp-safelist">
                 </ul>
             </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-4">
+    <section class="mdl-layout__tab-panel" id="scroll-tab-advanced">
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-5">
+    <section class="mdl-layout__tab-panel" id="scroll-tab-help">
     <p>blank</p>
     <p class="mdl-color--primary">primary</p> 
     <p class="mdl-color--primary-contrast">primary contrast</p> 
