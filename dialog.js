@@ -25,7 +25,7 @@ function showSecureImg(msg={text: "Verified as genuine"}) {
     }
     $("body").prepend(template);
     setTimeout(x => $(".kp-dialog").css({opacity: 1}), 50);
-    //setTimeout(cleanup, 3500);
+    setTimeout(cleanup, 3500);
 
     $(".kp-dialog .kpmdl-button").on("click", function(e) {
         e.preventDefault();
