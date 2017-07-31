@@ -435,7 +435,6 @@ function setDefaultSecurityImage() {
     });
 }
     
-
 function loadDefaults() {
     initSkipList();
     setDefaultSecurityImage();
@@ -462,6 +461,7 @@ function addToKPSkipList(domain) {
     }
     var obj = {};
     obj.site = domain;
+    obj.domains = [];
     obj.domains.push(domain);
     KPSkipArray.push(obj);
     saveKPSkipList();
@@ -482,6 +482,13 @@ function removeFromKPSkipList(domain) {
         saveKPSkipList();
     }
 }
+
+function getKPSkipListSites(cb) {
+    console.log("getSkipListSites Callled");
+    return KPSkipArray.map((x)=> {
+        return x.site; });
+}
+
 
 function cleanDB() {
     chrome.storage.local.remove(["skiplist", "secure_img"], () => {

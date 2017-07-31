@@ -5,7 +5,6 @@ const advancedSettingsTitle = "Advanced settings";
 const safeSitesTitle = "Manage Safe Site";
 const defaultImages = ["kp1.jpg", "kp2.jpg", "kp3.jpg", "kp4.jpg", "kp5.jpg", "kp6.jpg", "kp7.jpg"];
 var KPWhiteList,
-    KPSkipList,
     KPRedFlagList;
 
 var bkg = chrome.extension.getBackgroundPage();
@@ -89,19 +88,6 @@ function updateImage(data) {
 
 }
 
-function updateTableData() {
-    chrome.storage.local.get(["skiplist"], function(result) {
-        console.log("Data received : ", result);
-        if (result.skiplist) {
-            KPSkipList = result.skiplist;
-        } else {
-            KPSkipList = skipDomains;
-        }
-        //renderSafeDomainTable();
-        //renderTable();
-    });
-}
-
 function renderTable() {
     $(".white-list-scroll").empty();
     $(".wl-desc p").empty();
@@ -152,26 +138,25 @@ function renderWhiteListTable(data) {
 
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
-    // var length = KPSkipList.length;
+    let KPSkipList = bkg.getKPSkipListSites();
 
     KPSkipList.forEach((data, index)=> {
         $(".kp-safelist").append(templateSafeDomain(index, data));
     });
 
     $(".kp-safelist-row").on("click", function(e) {
-        console.log("clicked");
         //e.preventDefault();
         if ($(e.target).is(".kp-sl-delete")) {
-            console.log("clicked1");
+            var id = $(this).data("id");
             var domain = $(this).data("name");
-            var id = KPSkipList.indexOf(domain) ;
-            console.log("Clicked : ", KPSkipList[id]);
             var res = confirm("Do you want to delete " + KPSkipList[id] + " from Safe Domain list");
             if (res) {
-                KPSkipList.splice(id, 1);
-                saveSkipListData();
-                $(this).remove();
-                //renderSafeDomainTable();
+                let err = bkg.removeFromKPSkipList(domain);
+                if (err) {
+                    alert(err);
+                } else {
+                    $(this).remove();
+                }
             }
         }
     });
@@ -201,14 +186,6 @@ function renderRedFlagTable() {
     });
 }*/
 
-function saveSkipListData() {
-    chrome.storage.local.set({ skiplist: KPSkipList }, () => {
-        var bkg = chrome.extension.getBackgroundPage();
-        bkg.syncSkipList();
-        //console.log("skiplist : ", KPSkipList);
-    });
-}
-
 function saveRedFlagData() {
     chrome.storage.local.set({ redflaglist: KPRedFlagList }, () => {
         var bkg = chrome.extension.getBackgroundPage();
@@ -222,24 +199,8 @@ function closeImgUploader() {
     $(".whitelist-container").removeClass("hide");
 }
 
-function addToSafeList(val) {
-    if (!val || val === "") {
-        return;
-    }
-    if (KPSkipList.indexOf(val) === -1) {
-        KPSkipList.push(val);
-        saveSkipListData();
-        renderSafeDomainTable();
-    }
-    else {
-        alert("Value entered already saved as a safe domain");
-    }
-}
-
 $(document).ready(function() {
     updateImage();
-    updateTableData();
-
     defaultImages.forEach(function(img) {
         let imagePath = "assets/img/secure_img/" + img;
         $("#imagegallery .mdl-cell:last").before(templateImage(imagePath, "favorite_border"));
@@ -329,7 +290,6 @@ $(document).ready(function() {
     $("#restore").on("click", function(e) {
         if (confirm("This will delete all the templates added by you, Are you sure you want to proceed")) {
             bkg.cleanDB();
-            setTimeout(updateTableData, 500);
             updateImage();
         }
     });
@@ -351,9 +311,12 @@ $(document).ready(function() {
             else {
                 val = input;
             }
-            console.log("Value : ", input);
-            //TODO: Save to the appropriate list
-            addToSafeList(val);
+            let err = bkg.addToKPSkipList(val);
+            if (err) {
+                alert(err);
+            } else {
+                renderSafeDomainTable();
+            }
         }
         $("#kp-safelist-input").val("");
 
