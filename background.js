@@ -11,6 +11,7 @@ let DEBUG = true,
     KPWhiteList,
     KPSkipList,
     KPTemplates,
+    KPSkipArray,
     objWhitelist;
 
 loadDefaults();
@@ -380,8 +381,24 @@ function removeFromWhiteList(site, tab) {
 
 
 function saveKPSkipList() {
-    chrome.storage.local.set({skiplist : KPSkipList}, () => {
-        console.log("skiplist : ", KPSkipList);
+    chrome.storage.local.set({skiplist : KPSkipArray}, () => {
+        console.log("skiplist : ", KPSkipArray);
+        syncSkipList();
+    });
+}
+
+
+function initSkipList() {
+    chrome.storage.local.get("skiplist", function(result) {
+        var data = result.skiplist;
+        console.log("Data received : ", data);
+        var res;
+        if (data) {
+            KPSkipArray = data;
+        } else {
+            KPSkipArray = skipDomains;
+        }
+        saveKPSkipList();
     });
 }
 
@@ -391,11 +408,13 @@ function syncSkipList(){
         var data = result.skiplist;
         console.log("Data received : ", data);
         if (data) {
-            KPSkipList = data;
-        } else {
-            KPSkipList = skipDomains;
-            saveKPSkipList();
-        }
+            KPSkipArray = data;
+        } 
+        KPSkipList = KPSkipArray.map((x) => {
+            return x.domains;
+        }).reduce(function (a,b) {
+            return a.concat(b);
+        }, []);
     });
 }
 
@@ -441,23 +460,26 @@ function addToKPSkipList(domain) {
     console.log("addToSkipList Callled");
     if (KPSkipList.indexOf(domain) !== -1) {
         console.log("Skiplist adding failed");
-        return;
+        return ("Domain already present in skiplist");
     }
-    KPSkipList.push(domain);
-    console.log(KPSkipList);
+    var obj = {};
+    obj.site = domain;
+    obj.domains.push(domain);
+    KPSkipArray.push(obj);
     saveKPSkipList();
 }
 
 
 function removeFromKPSkipList(domain) {
-    let found = KPSkipList.filter((x) => {
-        return !domain.endsWith(x);
+    let found = KPSkipArray.filter((x) => {
+        return !domain.endsWith(x.site);
     });
     console.log("Found : ", found);
-    if (found.length === KPSkipList.length) {
+    if (found.length === KPSkipArray.length) {
         console.log("Domain not in skip list : ", domain);
+        return ("Domain not present in skip list");
     } else {
-        KPSkipList = found;
+        KPSkipArray = found;
         console.log("Removed from skiplist : ", domain);
         saveKPSkipList();
     }

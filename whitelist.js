@@ -107,28 +107,44 @@ var redFlagSites =[{
 }]
 
 //Domains/sites that are skipped completely for red flaf approach.
-var skipDomains = [ 
-                    "google.com",
-                    "facebook.com",
-                    "google.co.in",
-                    "paypal.com",
-                    "icicibank.com",
-                    "hdfcbank.com",
-                    "dropbox.com",
-                    "inet.idbibank.co.in",
-                    "amazon.com",
-                    "amazon.in",
-                    "amazon.co.uk",
-                    "amazon.com.au",
-                    "amazon.co.jp",
-                    "amazon.cn",
-                    "amazon.sg",
-                    "amazon.fr",
-                    "amazon.de",
-                    "amazon.nl",
-                    "amazon.es",
-                    "amazon.it",
-                    "amazon.ca",
-                    "amazon.com.mx",
-                    "amazon.com.br"
-                    ];
+var skipDomains = [ {
+                        "site": "google.com",
+                        "domains": ["google.com","google.co.in"]
+                    }, {
+                        "site": "facebook.com",
+                        "domains": ["facebook.com"]
+                    }, {
+                        "site": "paypal.com",
+                        "domains": ["paypal.com"]
+                    }, {
+                        "site": "icicibank.com",
+                        "domains": ["icicibank.com"]
+                    }, {
+                        "site": "hdfcbank.com",
+                        "domains": ["hdfcbank.com"]
+                    }, {
+                        "site": "dropbox.com",
+                        "domains": ["dropbox.com"]
+                    }, {
+                        "site": "inet.idbibank.co.in",
+                        "domains": ["inet.idbibank.co.in"]
+                    }, {
+                        "site": "amazon.com",
+                        "domains": [
+                                    "amazon.com",
+                                    "amazon.in",
+                                    "amazon.co.uk",
+                                    "amazon.com.au",
+                                    "amazon.co.jp",
+                                    "amazon.cn",
+                                    "amazon.sg",
+                                    "amazon.fr",
+                                    "amazon.de",
+                                    "amazon.nl",
+                                    "amazon.es",
+                                    "amazon.it",
+                                    "amazon.ca",
+                                    "amazon.com.mx",
+                                    "amazon.com.br"
+                                    ]
+                    }];
