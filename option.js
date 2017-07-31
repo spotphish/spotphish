@@ -152,10 +152,11 @@ function renderWhiteListTable(data) {
 
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
-    var length = KPSkipList.length;
+    // var length = KPSkipList.length;
+
     KPSkipList.forEach((data, index)=> {
         $(".kp-safelist").append(templateSafeDomain(index, data));
-    })
+    });
 
     $(".kp-safelist-row").on("click", function(e) {
         console.log("clicked");
@@ -358,9 +359,9 @@ $(document).ready(function() {
 
     });
     $(".mdl-layout__tab").on("click", function(e){
-        console.log("Tab", $(this).attr('href'));
-        let href = $(this).attr('href');
-        if (href === '#scroll-tab-safedomain') {
+        console.log("Tab", $(this).attr("href"));
+        let href = $(this).attr("href");
+        if (href === "#scroll-tab-safedomain") {
             renderSafeDomainTable();
         }
     });
