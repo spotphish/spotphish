@@ -1,14 +1,7 @@
-const whitelist_msg = "Login pages on which you will see your personal secure image.";
-const redflag_msg = "We have snapshots of the login pages of these sites. If any page you browse looks very similar to one of these snapshots, it is flagged as a possible phishing attempt.";
-const whitelistTitle = "Manage Whitelist";
-const advancedSettingsTitle = "Advanced settings";
-const safeSitesTitle = "Manage Safe Site";
 const defaultImages = ["kp1.jpg", "kp2.jpg", "kp3.jpg", "kp4.jpg", "kp5.jpg", "kp6.jpg", "kp7.jpg"];
 var KPWhiteList,
     KPRedFlagList;
-
 var bkg = chrome.extension.getBackgroundPage();
-var tab = "whitelist";
 
 function templateImage(src, favorite) {
     const temp = `
@@ -36,6 +29,75 @@ function templateSafeDomain(index, data) {
             <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
         </li>
         `;
+    return template;
+}
+
+function templateWhitelist(data) {
+
+    let logos_temp = data.templates.filter((x) => {
+        return x.logo !== undefined;
+    }).reduce((a,b) => {
+        var logo_name = "";
+        if (b.templateName) {
+            logo_name = b.templateName;
+        }
+        var tmp = `
+                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                        <div class="mdl-card__media">
+                            <img class="template-image" src="${b.logo}" border="0" alt="">
+                        </div>
+                        <div class="mdl-card__supporting-text">
+                        ${logo_name}
+                        </div>
+                    </div>`;
+        return a + tmp;
+    }, "");
+
+    let urls = "";
+
+    if (data.url.length === 1) {
+        urls =`
+                <tr>
+                  <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
+                </tr>`;
+    } else {
+        urls = data.url.reduce((a,b) => {
+            var tmp = `
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
+                    <td><i class="material-icons">delete</i></td>
+                </tr>`;
+            return a + tmp;
+        },"");
+    }
+
+    const template = `
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp">
+                <div class="mdl-card__title mdl-card--border">
+                    <h2 class="mdl-card__title-text">${data.site}</h2>
+                </div>
+                <div class="mdl-card__menu">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                      <i class="material-icons">check_box</i>
+                    </button>
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                      <i class="material-icons">delete</i>
+                    </button>
+                 </div>
+                <div class="mdl-grid kp-template-container">
+                ${logos_temp}
+                </div>
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
+                        <table class="mdl-data-table mdl-js-data-table kp-url-table">
+                            <tbody>
+                            ${urls}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            `;
     return template;
 }
 
@@ -88,30 +150,16 @@ function updateImage(data) {
 
 }
 
-function renderTable() {
-    $(".white-list-scroll").empty();
-    $(".wl-desc p").empty();
-    $("#restore").hide();
-    if (tab === "whitelist") {
-        $(".wl-desc p").append(whitelist_msg);
-        $(".sub-title p").text(whitelistTitle);
-        bkg.syncWhiteList(renderWhiteListTable);
-        //renderWhiteListTable();
-    } else if (tab === "advanced-settings") {
-        $("#restore").show();
-        $(".sub-title p").text(advancedSettingsTitle);
-    }
-}
-
-function renderWhiteListTable(data) {
+function renderWhitelistTable(data) {
 
     console.log("IDB-data", data);
     data.forEach((x) => {
         if (x.url) {
-            $(".white-list-scroll").append(template3(x));
+            $(".kp-wl-main").append(templateWhitelist(x));
+            //$(".white-list-scroll").append(template3(x));
         }
     });
-    $(".wl-add-btn").addClass("hide");
+    /*
     $(".white-list-row").on("click", function(e) {
         //e.preventDefault();
         var id = $(this).data("id");
@@ -134,7 +182,9 @@ function renderWhiteListTable(data) {
             }
         }
     });
+    */
 }
+
 
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
@@ -161,43 +211,6 @@ function renderSafeDomainTable() {
         }
     });
 }
-/*
-function renderRedFlagTable() {
-
-    var length = KPRedFlagList.length;
-
-    for (i = 0; i < length; i++) {
-        $(".white-list-scroll").append(template1(i, KPRedFlagList[i].templateName, KPRedFlagList[i].enabled ? "checked" : ""));
-    }
-    //$(".wl-delete").css("display", "none");
-
-    $(".wl-checkbox").change(function(e) {
-        e.preventDefault();
-        var id = $(this).data("id");
-        console.log("Clicked : ", KPRedFlagList[id]);
-        //var res = confirm("Do you want to delete " + KPRedFlagList[id] + " from whitelist");
-        var enabled = $(this).is(":checked");
-        if (enabled !== KPRedFlagList[id].enabled) {
-            $(".white-list-scroll").empty();
-            KPRedFlagList[id].enabled = enabled;
-            saveRedFlagData();
-            renderTable();
-        }
-    });
-}*/
-
-function saveRedFlagData() {
-    chrome.storage.local.set({ redflaglist: KPRedFlagList }, () => {
-        var bkg = chrome.extension.getBackgroundPage();
-        bkg.syncRedFlagList();
-        console.log("redflaglist : ", KPRedFlagList);
-    });
-}
-
-function closeImgUploader() {
-    $(".img-uploader-container").addClass("hide");
-    $(".whitelist-container").removeClass("hide");
-}
 
 $(document).ready(function() {
     updateImage();
@@ -223,17 +236,11 @@ $(document).ready(function() {
         $(".kp-active-icons").text("favorite_border");
         var icon = $(this).find("i")[0];
         $(icon).text("favorite");
-        // closeImgUploader();
-        //$("#display-img")[0].src = $(this).children("img")[0].src;
     });
 
     $(".img-edit").on("click", function(e) {
         $(".whitelist-container").addClass("hide");
         $(".img-uploader-container").removeClass("hide");
-    });
-
-    $("#img-uploader-close").on("click", function(e) {
-        closeImgUploader();
     });
 
     $("#imageUpload").on("click", function(e) {
@@ -281,8 +288,6 @@ $(document).ready(function() {
             $(".kp-active-icons").text("favorite_border");
             var icon = $(this).find("i")[0];
             $(icon).text("favorite");
-            // closeImgUploader();
-            //$("#display-img")[0].src = $(this).children("img")[0].src;
         });
 
     });
@@ -326,9 +331,13 @@ $(document).ready(function() {
         let href = $(this).attr("href");
         if (href === "#scroll-tab-safedomain") {
             renderSafeDomainTable();
+        } else if (href === "#scroll-tab-whitelist") {
+            bkg.syncWhiteList(renderWhitelistTable);
         }
     });
-    $(".wl-fa-cancel").on("click", function(e) {
-        $(".wl-input-wrapper").addClass("hide");
+
+    bkg.syncWhiteList((data)=> {
+        console.log("Whitelist Data : ", data);
+        templateWhitelist(data[0]);
     });
 });
