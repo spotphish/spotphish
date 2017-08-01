@@ -73,14 +73,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                     respond({message: "image", image: cropped});
                     var url = stripQueryParams(sender.tab.url);
                     console.log ("URL: ", url, " tab: ", sender.tab);
-                    addToWhiteList({ url: [url], type: "custom", logo: cropped, site: getPathInfo(url).host, enabled: true}, sender.tab);
+                    addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, cropped);
                 });
             });
         });
     } else if (msg.op === "add_wh") {
         var url = stripQueryParams(sender.tab.url);
         console.log ("URL: ", url, " tab: ", sender.tab);
-        addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab);
+        addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, null);
     } else if (msg.op === "add_skip") {
         let domain = getPathInfo(sender.tab.url).host;
         addToKPSkipList(domain);
@@ -276,39 +276,40 @@ function initWhitelist() {
 }
 
 function syncWhiteList(cb){
-    objWhitelist.getAll((data) => {
-        var data1 = data.map((x) => {
+    objWhitelist.getAll(function (dbObj){
+        debug("Object retrived from indexed DB : ", dbObj);
+        var data1 = dbObj.map((x) => {
             return {id: x.id, url: x.url, type: x.type, site: x.site, templates: x.templates, enabled: x.enabled};
         });
-        console.log("retrieved from index db ", data1);
         if (cb && typeof(cb) === "function") {
             cb(data1);
             return;
         }
-        var res = data.map((x) => {
-            var j = 0;
-            var arr = [];
-            x.templates.forEach((i) => {
-                arr[j] = x;
-                Object.assign(arr[j], i);
-                j++;
+        var res = [];
+        dbObj.forEach((x) => {
+            x.templates.forEach((y) => {
+                let temp = {};
+                temp.id = x.id;
+                temp.url = x.url;
+                temp.type = x.type;
+                temp.site = x.site;
+                temp.enabled = x.enabled;
+                Object.assign(temp, y);
+                res.push(temp);
             });
-            return arr;
-        }).reduce(function (a,b) {
-            return  a.concat(b);
-        }, []);
+        });
         KPTemplates = res.filter((x) => {
             return x.logo !== undefined && x.enabled === true;
         }).map((x) => {
             return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
         });
-        KPWhiteList = data1.filter((x)=> {
+        KPWhiteList = data1.filter((x) => {
             return x.url !== undefined;
         }).map((x) => {
-            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled};
+            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site};
         });
 
-        console.log("syncWhiteList called : ", KPWhiteList, KPTemplates);
+        debug("syncWhiteList called : ", KPWhiteList, KPTemplates);
     });
 }
 
@@ -332,33 +333,61 @@ function toggleWhitelistItems(id, state, cb) {
     objWhitelist.get(id, onSuccess, onError);
 } 
 
-function addToWhiteList(data, tab) {
+function addToWhiteList(data, tab, logo) {
     var pattern = {};
-    if (data.logo) {
-        createPatterns(data.logo).then(function(result) {
+    let addToDb = function(pattern) {
+        pattern.patternName = data.site;
+        data.templates = [];
+        data.templates.push(pattern);
+        objWhitelist.put(data, (x) => {
+            syncWhiteList();
+            debug("Added to DB : ", x);
+        });
+    };
+
+    let appendToDb = function(pattern, index) {
+        let id = KPWhiteList[index].id;
+        pattern.patternName = data.site;
+        var onSuccess = function(obj) {
+            obj.url.push(data.url[0]);
+            obj.templates.push(pattern);
+            objWhitelist.put(obj, syncWhiteList);
+        };
+        var onError = function(error) {
+            console.log("Error updating field : ", error);
+            return;
+        };
+        objWhitelist.get(id, onSuccess, onError);
+    }
+
+
+    var isSiteAdded = KPWhiteList.findIndex((x) => {
+       return x.site === data.site;
+    });
+
+    if (logo) {
+        createPatterns(logo).then(function(result) {
             console.log("Template promise result : ", result);
-            pattern.logo = data.logo;
+            pattern.logo = logo;
             pattern.patternCorners = result.patternCorners;
             pattern.patternDescriptors = result.patternDescriptors;
-            pattern.patternName = data.site;
-            data.templates = [];
-            data.templates.push(pattern);
-            objWhitelist.put(data, (x) => {
-                syncWhiteList();
-                console.log("Add: ", x);
-            });
+            pattern.url = tab.url;
+            if (isSiteAdded !== -1) {
+                appendToDb(pattern, isSiteAdded);
+            } else {
+                addToDb(pattern);
+            }
         }).catch((e) => {
             console.log(e);//promise rejected.
             return;
         });
     } else {
-        pattern.name = data.site;
-        data.templates = [];
-        data.templates.push(pattern);
-        objWhitelist.put(data, (x) => {
-            syncWhiteList();
-            console.log("Add: ", x);
-        });
+        pattern.url = tab.url;
+        if (isSiteAdded !== -1) {
+            appendToDb(pattern, isSiteAdded);
+        } else {
+            addToDb(pattern);
+        }
     }
 
     tabinfo[tab.id].state = "greenflagged";
@@ -367,15 +396,25 @@ function addToWhiteList(data, tab) {
 }
 
 function removeUrlFromWhiteList(url, id) {
-    let i = KPTemplates.findIndex((x) => {
+    let i = KPWhiteList.findIndex((x) => {
         return x.id === id;
     });
-    let j = KPTemplates[i].url.findIndex((x) => {
-        return x === url;
-    });
-    KPTemplates[i].url.splice(j, 1);
+
     var onSuccess = function(data) {
-        data.url = KPTemplates[i].url;
+        let j = data.url.indexOf(url);
+        if (data.type === "custom" && data.url.length > 1) {
+            data.url.splice(j, 1);
+            let ti = data.templates.findIndex((x) => {
+                return x.url === url;
+            });
+            console.log("template found : ", ti);
+            if (ti !== -1) {
+                data.templates.splice(ti, 1);
+            }
+        } else {
+            data.url.splice(j, 1);
+        }
+
         objWhitelist.put(data, syncWhiteList);
     };
     var onError = function(error) {
@@ -386,15 +425,39 @@ function removeUrlFromWhiteList(url, id) {
 }
 
 function removeFromWhiteList(site, tab) {
+    let upsertInDb = function(id) {
+        var onSuccess = function(obj) {
+            console.log(tab);
+            let i = obj.url.indexOf(site);
+            obj.url.splice(i, 1);
+            let ti = obj.templates.findIndex((x) => {
+                return x.url === site;
+            });
+            if (ti !== -1) {
+                obj.templates.splice(ti, 1);
+            }
+            objWhitelist.put(obj, syncWhiteList);
+        };
+        var onError = function(error) {
+            console.log("Error updating field : ", error);
+            return;
+        };
+        objWhitelist.get(id, onSuccess, onError);
+    }
+
     let found = KPWhiteList.filter((x) => {
         return (x.url.filter(y => y === site)).length > 0;
     });
     if (found.length > 0) {
-        removeFromKPSkipList(getPathInfo(site).host);
-        objWhitelist.remove(found[0].id, syncWhiteList);
-        console.log("Removed from whitelist : ", site);
+        if (found[0].type === "custom" && found[0].url.length > 1) {
+            upsertInDb(found[0].id);
+        } else {
+            removeFromKPSkipList(getPathInfo(site).host);
+            objWhitelist.remove(found[0].id, syncWhiteList);
+            debug("Removed from whitelist : ", site);
+        }
     } else {
-        console.log("site not Whitelisted : ", site);
+        debug("site not Whitelisted : ", site);
     }
 }
 
@@ -410,7 +473,7 @@ function saveKPSkipList() {
 function initSkipList() {
     chrome.storage.local.get("skiplist", function(result) {
         var data = result.skiplist;
-        console.log("Data received : ", data);
+        debug("Data received : ", data);
         if (data) {
             KPSkipArray = data;
             syncSkipList();
