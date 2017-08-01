@@ -89,50 +89,35 @@ function startChecking() {
 }
 
 function showGreenflag(msg) {
-    showSecureImg();
-}
-
-function showRedflag(msg) {
-    showWarning({text: `<div class="kp-warning kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`});
-    return;
-}
-
-function appendSecureImg() {
-    const prepend1 = `
-    <div class="kp-green-popup">
-    </div>`;
-
-    $("body").prepend(prepend1);
-    var imgPath = chrome.extension.getURL("assets/icons/icon128.png");
-    const prepend = `
-        <div class="kp-img-container">
-            <div class="FAH_closeButton kp-img-close">
-                <strong> X </strong>
-            </div>
-            <div class="kp-logo"><img src="${imgPath}" width="30px"></div>
-        </div>`;
-
-    $("body").prepend(prepend);
-
-    setTimeout(function() {
-        $(".kp-green-popup").hide();
-    }, 3550);
-
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
         var img = document.createElement("img");
-        img.height = data.height || 200;
-        img.width = data.width || 200;
         img.id = "kp-secure-img";
         img.src = data.src;
-        //$(".image").empty();
-        $(".kp-popup, .kp-img-container").append(img);
-        $(".kp-img-close").on("click", function(e) {
-            e.preventDefault();
-            $(".kp-img-container").css("display", "none");
 
-        });
+        const greenflag = {
+            title: "Security Image",
+            type: "info",
+            img: img,
+            extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
+            buttons: [],
+            dismiss_after: 3500
+        };
+        dialog(greenflag);
     });
+}
+
+function showRedflag(msg) {
+    const warn = {
+        title: "Are you being phished?",
+        type: "warning",
+        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
+        extra: "In case of frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
+            {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=1>Report Phishing</button>`, onclick: null}]
+    };
+
+    dialog(warn);
 }
 
 function rpc(msg) {
@@ -310,47 +295,15 @@ function injectCropModal() {
         });
     };
 
-    injectConfirmBox("Do you want to upload a template?", doCrop, noCrop);
+    const cropDialog = {
+        title: "Protect Page",
+        type: "info",
+        main: "Basic protection enabled",
+        extra: "<div>Your personal security image will be displayed time you visit this page.</div><br><div>For enhanced protection, select the part of the page by which you identify this site. The logo is usually a good choice. You will be alerted if any other page looks like this one - it may be a phishing attempt!</div>",
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Enhance!</button>`, onclick: doCrop},
+            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Stick with basic</button>`, onclick: noCrop}]
+    };
+
+    dialog(cropDialog);
     return true;
-}
-
-function injectConfirmBox(text, yesCb, noCb) {
-    const append =
-        `<div class="kp-popup kp-is-visible" role="alert">
-    <div class="kp-popup-container">
-    <p>${text}</p>
-    <div class="kp-buttons">
-    <div><a href="#0" class="kp-yes">Yes</a></div>
-    <div><a href="#0" class="kp-no">No</a></div>
-    </div>
-    <div="#0" class="kp-popup-close"><div>
-    </div>
-</div>`;
-
-    $("body .kp-popup").remove();
-    $("body").append(append);
-    $(".kp-popup").on("click", function(event) {
-        if ($(event.target).is(".kp-popup-close") || $(event.target).is(".kp-popup")) {
-            event.preventDefault();
-            $(this).removeClass("kp-is-visible");
-        } else if ($(event.target).is(".kp-yes")) {
-            event.preventDefault();
-            $(this).removeClass("kp-is-visible");
-            if (yesCb) {
-                yesCb();
-            }
-        } else if ($(event.target).is(".kp-no")) {
-            event.preventDefault();
-            if (noCb) {
-                noCb();
-            }
-            $(this).removeClass("kp-is-visible");
-        }
-    });
-    //close popup when clicking the esc keyboard button
-    $(document).keyup(function(event) {
-        if (event.which === "27") {
-            $(".kp-popup").removeClass("kp-is-visible");
-        }
-    });
 }

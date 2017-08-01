@@ -24,11 +24,11 @@
   background-color: rgba(255,82,82, 0.4);
 }
 
-.kp-dialog-warning > .kpmdl-card {
+.kp-dialog.kp-dialog-warning > .kpmdl-card {
     min-width: 400px;
 }
 
-.kp-dialog-warning .kp-warning {
+.kp-dialog .kp-main {
   font-size: 20px;
   font-weight: 500;
   line-height: 1.3;
@@ -55,6 +55,7 @@
     width: auto;
     margin: 5vh auto auto auto;
     max-width: 500px;
+    min-width: 300px;
 }
 
 .kp-dialog .kpmdl-card__menu {

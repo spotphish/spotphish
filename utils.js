@@ -101,3 +101,4 @@ function isnumber(n) {
 function isstring(obj) {
     return obj instanceof String || typeof obj === 'string';
 }
+

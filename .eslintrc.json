@@ -15,7 +15,8 @@
         ],
         "quotes": [
             "warn",
-            "double"
+            "double",
+            {"allowTemplateLiterals": true}
         ],
         "semi": [
             "error",
@@ -49,6 +50,7 @@
         "isSpecialTab": false,
         "jsfeat": false,
         "defPatterns": false,
-        "debug": false
+        "debug": false,
+        "dialog": false
     }
 }
