@@ -33,7 +33,7 @@ function templateSafeDomain(index, data) {
 }
 
 function templateWhitelist(data) {
-
+    const checked = "check_box", unchecked ="check_box_outline_blank";
     let logos_temp = data.templates.filter((x) => {
         return x.logo !== undefined;
     }).reduce((a,b) => {
@@ -42,18 +42,19 @@ function templateWhitelist(data) {
             logo_name = b.templateName;
         }
         var tmp = `
-                    <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                        <div class="mdl-card__media">
-                            <img class="template-image" src="${b.logo}" border="0" alt="">
-                        </div>
-                        <div class="mdl-card__supporting-text">
-                        ${logo_name}
-                        </div>
-                    </div>`;
+            <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                <div class="mdl-card__media">
+                    <img class="template-image" src="${b.logo}" border="0" alt="">
+                </div>
+                <div class="mdl-card__supporting-text">
+                ${logo_name}
+                </div>
+            </div>`;
         return a + tmp;
     }, "");
 
     let urls = "";
+    let enabled = data.enabled ? checked : unchecked;
 
     if (data.url.length === 1) {
         urls =`
@@ -72,16 +73,16 @@ function templateWhitelist(data) {
     }
 
     const template = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp">
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-id=${data.id} data-site=${data.site}>
                 <div class="mdl-card__title mdl-card--border">
                     <h2 class="mdl-card__title-text">${data.site}</h2>
                 </div>
                 <div class="mdl-card__menu">
                     <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                      <i class="material-icons">check_box</i>
+                      <i class="material-icons kp-wl-site-check">${enabled}</i>
                     </button>
                     <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                      <i class="material-icons">delete</i>
+                      <i class="material-icons kp-wl-site-delete">delete</i>
                     </button>
                  </div>
                 <div class="mdl-grid kp-template-container">
@@ -144,8 +145,6 @@ function updateImage(data) {
             data = result.secure_img;
             $("#secureimage").attr("src", data.src);
         });
-        //Search for image from local storage
-        //If no data stored in local storage use default img
     }
 
 }
@@ -156,33 +155,30 @@ function renderWhitelistTable(data) {
     data.forEach((x) => {
         if (x.url) {
             $(".kp-wl-main").append(templateWhitelist(x));
-            //$(".white-list-scroll").append(template3(x));
         }
     });
-    /*
-    $(".white-list-row").on("click", function(e) {
-        //e.preventDefault();
+    $(".kp-wl-site").on("click", function(e) {
         var id = $(this).data("id");
-        var name = $(this).data("name");
-        var url = $(this).data("url");
-        console.log(name);
-        if ($(e.target).is(".wl-delete-icon")) {
-            var res = confirm("Do you want to delete " + name + " from whitelist");
+        var site = $(this).data("site");
+        if ($(e.target).is(".kp-wl-site-delete")) {
+            var res = confirm("Do you want to delete " + site + " from whitelist");
             if (res) {
+                bkg.removeFromWhiteListById(id);
                 $(this).remove();
-                bkg.removeFromWhiteList(url, null);
             }
         }
-        if ($(e.target).is(".op-check")) {
-            console.log($(e.target)[0].id);
-            if ($(e.target).is(":checked")) {
-                bkg.toggleWhitelistItems(id, true);
-            } else {
+        if ($(e.target).is(".kp-wl-site-check")) {
+            const checked = "check_box", unchecked ="check_box_outline_blank";
+            var value = $(e.target)[0].innerHTML.trim();
+            if (value === checked) {
                 bkg.toggleWhitelistItems(id, false);
+                $(e.target)[0].innerHTML = unchecked;
+            } else {
+                bkg.toggleWhitelistItems(id, true);
+                $(e.target)[0].innerHTML = checked;
             }
         }
     });
-    */
 }
 
 
@@ -334,10 +330,5 @@ $(document).ready(function() {
         } else if (href === "#scroll-tab-whitelist") {
             bkg.syncWhiteList(renderWhitelistTable);
         }
-    });
-
-    bkg.syncWhiteList((data)=> {
-        console.log("Whitelist Data : ", data);
-        templateWhitelist(data[0]);
     });
 });
