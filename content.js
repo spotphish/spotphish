@@ -232,7 +232,7 @@ var capture = (force) => {
                 }, (res) => {
                     selection = null;
                 });
-            }, 2000);
+            }, 100);
             debug(selection);
         });
 

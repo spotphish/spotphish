@@ -63,7 +63,7 @@ var redFlagSites =[{
         "logo":"assets/img/idbi-linux.png"
     }],
 },{ 
-    "site": "Goole",
+    "site": "Google",
     "enabled": true,
     "type": "default",
     "url": [

@@ -314,7 +314,7 @@ function syncWhiteList(cb){
 }
 
 function removeFromWhiteListById(id) {
-    objWhitelist.remove(id);
+    objWhitelist.remove(id, syncWhiteList);
 }
 
 
