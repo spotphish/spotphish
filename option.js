@@ -58,15 +58,19 @@ function templateWhitelist(data) {
 
     if (data.url.length === 1) {
         urls =`
-                <tr>
-                  <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
-                </tr>`;
+            <tr class="kp-wl-url-row" data-id=${data.id}>
+                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
+            </tr>`;
     } else {
         urls = data.url.reduce((a,b) => {
             var tmp = `
-                <tr>
+                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b}>
                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
-                    <td><i class="material-icons">delete</i></td>
+                    <td>
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                            <i class="material-icons kp-wl-url-delete">delete</i>
+                        </button>
+                    </td>
                 </tr>`;
             return a + tmp;
         },"");
@@ -100,35 +104,6 @@ function templateWhitelist(data) {
     return template;
 }
 
-function template3(data) {
-    var name = data.url[0];
-    var logo = "";
-    var inc = Math.random();
-    var checkbox = `<input class="op-check" id=${inc} name=${inc}  type="checkbox">`;
-    if (data.logo) {
-        logo = `<img src="${data.logo}"></img>`;
-    }
-    if (data.enabled) {
-        checkbox = `<input class="op-check" name=${inc} id=${inc} type="checkbox" checked>`;
-    }
-    var template = `
-<div class="white-list-row" data-id=${data.id} data-name=${data.site} data-url=${data.url[0]} >
-    <div class="site-name">
-        ${name}
-    </div>
-    ${logo}
-    <div class="wl-actions">
-        <div class="wl-active">
-            ${checkbox}
-        </div>
-        <div class="wl-delete">
-            <span class="glyphicon glyphicon-remove wl-delete-icon"></span>
-        </div>
-        <div class="clr"></div>
-    </div>
-</div>`;
-    return template;
-}
 
 function updateImage(data) {
 
@@ -164,8 +139,7 @@ function renderWhitelistTable(data) {
                 bkg.removeFromWhiteListById(id);
                 $(this).remove();
             }
-        }
-        if ($(e.target).is(".kp-wl-site-check")) {
+        } else if ($(e.target).is(".kp-wl-site-check")) {
             const checked = "check_box", unchecked ="check_box_outline_blank";
             var value = $(e.target)[0].innerHTML.trim();
             if (value === checked) {
@@ -175,6 +149,17 @@ function renderWhitelistTable(data) {
                 bkg.toggleWhitelistItems(id, true);
                 $(e.target)[0].innerHTML = checked;
             }
+        } else if ($(e.target).is(".kp-wl-url-delete")) {
+            $(e.target)[0].remove();
+        }
+    });
+    $(".kp-wl-url-row").on("click", function(e){
+        e.stopPropagation();
+        if ($(e.target).is(".kp-wl-url-delete")) {
+            let id = $(this).data("id");
+            let url = $(this).data("url");
+            bkg.removeUrlFromWhiteList(url, id);
+            $(this).remove();
         }
     });
 }
