@@ -88,14 +88,12 @@ function templateWhitelist(data) {
                 <div class="mdl-grid kp-template-container">
                 ${logos_temp}
                 </div>
-                <div class="mdl-grid">
-                    <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
-                        <table class="mdl-data-table mdl-js-data-table kp-url-table">
-                            <tbody>
-                            ${urls}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
+                    <table class="mdl-data-table mdl-js-data-table kp-url-table">
+                        <tbody>
+                        ${urls}
+                        </tbody>
+                    </table>
                 </div>
             </div>
             `;

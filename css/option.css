@@ -16,16 +16,36 @@ img.secure-image {
 
 img.template-image {
   width: 100%;
-  height: auto; }
+  height: auto;
+  border: 1px solid #ccc;
+  box-sizing: border-box; }
 
 .mdl-data-table .kp-wl-table {
   max-height: 12em; }
 
+.kp-template-container {
+  margin: 0; }
+
 .kp-template-card {
-  min-height: 100px; }
+  min-height: 0; }
+
+.kp-url-table {
+  width: 100%;
+  margin: 0; }
+
+.kp-seetings-table {
+  width: 100%;
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 5px 10px; }
+
+.kp-url-table-container {
+  max-height: 20em;
+  overflow: auto; }
 
 .kp-login-url {
-  max-width: 16em;
-  word-wrap: break-word; }
+  max-width: 20em;
+  word-wrap: break-word;
+  white-space: normal; }
 
 /*# sourceMappingURL=option.css.map */
