@@ -293,11 +293,14 @@ $(document).ready(function() {
         var val;
         if (input.length > 0) {
             let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
+            let continousString = /^\S*$/;
             if (urlPattern.test(input)) {
                 val = bkg.getPathInfo(input).host;
-            }
-            else {
+            } else if (continousString.test(input)) {
                 val = input;
+            } else {
+                alert("Incorrect domain entered, please try again");
+                return;
             }
             let err = bkg.addToKPSkipList(val);
             if (err) {

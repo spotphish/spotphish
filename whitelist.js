@@ -6,7 +6,9 @@ var redFlagSites =[{
     "type": "default",
     "url": [
         "https://www.facebook.com/",
-        "https://www.facebook.com/login/"
+        "https://www.facebook.com/login/",
+        "https://www.facebook.com/reg/",
+        "https://www.facebook.com/login.php"
     ],
     "templates": [{
         "templateName": "Facebook",
@@ -67,7 +69,8 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://accounts.google.com/signin/v2/identifier"
+        "https://accounts.google.com/signin/v2/identifier",
+        "https://accounts.google.com/signin/oauth/identifier"
     ],
     "templates": [{
         "templateName": "Google 2016",
