@@ -270,7 +270,9 @@ $(document).ready(function() {
     $("#restore").on("click", function(e) {
         if (confirm("This will delete all the templates added by you, Are you sure you want to proceed")) {
             bkg.cleanDB();
-            updateImage();
+            bkg.setDefaultSecurityImage(function () {
+                updateImage();
+            });
         }
     });
 

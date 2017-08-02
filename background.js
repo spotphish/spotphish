@@ -507,14 +507,14 @@ function errorfn(err) {
     console.log("error occured");
 }
 
-function setDefaultSecurityImage() {
+function setDefaultSecurityImage(cb) {
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
         if (typeof data === "undefined") {
             data = {};
             data.type = "default";
             data.src = DEFAULT_IMG;
-            chrome.storage.local.set({ "secure_img": data });
+            chrome.storage.local.set({ "secure_img": data }, cb);
         } else {
             return;
         }
