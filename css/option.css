@@ -77,4 +77,8 @@ img.template-image {
     margin-left: 0;
     padding-left: 0;
 }
+
+.kp-safelist-textfield {
+    max-width: 15em;
+}
 /*# sourceMappingURL=option.css.map */

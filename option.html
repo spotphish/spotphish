@@ -8,10 +8,10 @@
 
     <!--<link rel="shortcut icon" href="images/favicon.png">-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-red.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/iconfont/material-icons.css"/>
+    <link rel="stylesheet" type="text/css" href="css/material.blue-red.min.css" />
     <link type="text/css" href="css/option.css" rel="stylesheet">
-    <link type="text/css" href="css/dialog.css" rel="stylesheet">
+    <link type="text/css" href="css/content.css" rel="stylesheet">
     <script type="text/javascript" src="externalCode/jquery/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="externalCode/code.getmdl.io/1.3.0/material.min.js"></script>
     <script type="text/javascript" src="whitelist.js"></script>
@@ -93,19 +93,21 @@
                 <p class="kp-hero-text">For example, if we add <em>google.com</em> to the list, all pages hosted by <em>google.com</em>, <em>mail.google.com</em> and other subdomains are exempt from scanning. This reduces performance overhead for 90% browsing activity, while still protecting the 10% which really needs it.</p>
             </div>
             <div class="mdl-cell mdl-cell--6-col">
-                <ul class="demo-list-control mdl-list">
+                <ul class="mdl-list">
                   <li class="mdl-list__item">
                     <span class="mdl-list__item-primary-content">
                         <i class="material-icons  mdl-list__item-avatar">add_circle</i>
-                        <div class="mdl-textfield mdl-js-textfield">
+                        <div class="mdl-textfield mdl-js-textfield kp-safelist-textfield">
                             <input class="mdl-textfield__input" type="text" id="kp-safelist-input">
                             <label class="mdl-textfield__label" for="kp-safelist-input">Add Domain...</label>
                         </div>
                     </span>
-                     <a class="mdl-list__item-secondary-action kp-safelist-add-btn" href="#"><i class="material-icons">check_circle</i></a>
+                    <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                    <i class="material-icons kp-sl-delete">check_circle</i>
+                    </button>
                   </li>
                 </ul>
-                <ul class="demo-list-control mdl-list kp-safelist">
+                <ul class="mdl-list kp-safelist">
                 </ul>
             </div>
         </div>

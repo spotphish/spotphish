@@ -26,12 +26,16 @@ function templateSafeDomain(index, data) {
                 <i class="material-icons  mdl-list__item-avatar">public</i>
                 ${data}
             </span>
-            <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
+            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+            <i class="material-icons kp-sl-delete">delete</i>
+            </button>
+    
         </li>
         `;
     return template;
 }
 
+         //   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
 function templateWhitelist(data) {
     const checked = "check_box", unchecked ="check_box_outline_blank";
     let logos_temp = data.templates.filter((x) => {
@@ -67,7 +71,7 @@ function templateWhitelist(data) {
                 <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b} >
                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
                     <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
                             <i class="material-icons kp-wl-url-delete">delete</i>
                         </button>
                     </td>
@@ -82,10 +86,10 @@ function templateWhitelist(data) {
                     <h2 class="mdl-card__title-text">${data.site}</h2>
                 </div>
                 <div class="mdl-card__menu">
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
                       <i class="material-icons kp-wl-site-check">${enabled}</i>
                     </button>
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
                       <i class="material-icons kp-wl-site-delete">delete</i>
                     </button>
                  </div>
