@@ -115,11 +115,12 @@ function init(msg, sender, respond) {
     if (msg.top) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
-        if (checkWhitelist(tab)) {
+        let res = checkWhitelist(tab);
+        if (res) {
             respond({action: "nop"});
             debug("greenflagging", tab.id, tab.url);
             ti.state = "greenflagged";
-            ti.port.postMessage({op: "greenflag", data: {}});
+            ti.port.postMessage({op: "greenflag", site: res.site});
             return;
         }
     }
@@ -154,10 +155,11 @@ function url_change(msg, sender, respond) {
     console.log("url change", tab.url);
 
     respond({action: "nop"});
-    if (ti.state !== "greenflagged" && checkWhitelist(tab)) {
+    let res = checkWhitelist(tab);
+    if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
-        ti.port.postMessage({op: "greenflag", data: {}});
+        ti.port.postMessage({op: "greenflag", site: res.site});
     }
 }
 
@@ -212,7 +214,7 @@ function checkWhitelist(tab) {
     const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y === site).length > 0);
     if (wl.length) {
         debug("WHITE LISTED:", wl[0]);
-        return true;
+        return {"site":wl[0].site};
     }
     return false;
 }
