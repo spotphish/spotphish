@@ -66,3 +66,105 @@ function dialog(obj={}) {
         }
     }
 }
+
+function loadPixel() {
+    return new Promise(resolve => {
+        var image = new Image();
+        image.id = "kp-one-px";
+        image.onload = () => {
+            $("body").append(image);
+            return resolve(null);
+        };
+        image.src = chrome.runtime.getURL("/assets/img/pixel.png");
+    });
+}
+
+function startCrop() {
+    let jc,
+        sel = null,
+        menuShown = false;
+
+    return new Promise(resolve => {
+        function esc(e) {
+            if (e.which === 27) {
+                sel = null;
+                cleanup();
+            }
+        }
+
+        function cleanup() {
+            $("#kp-one-px").remove();
+            $(".kp-crop-container").remove();
+            $(".jcrop-container").remove();
+            $(document).off("keyup", esc);
+            jc && jc.destroy();
+            return resolve(sel);
+        }
+
+        function showMenu() {
+            const menu = `
+            <div class="kp-crop-container" style="position: absolute; top:${sel.y + sel.h + 2}px; left: ${sel.x}px; width: ${sel.w}px;">
+                <div class="kp-crop-menu">
+                <button class="kpmdl-button kpmdl-button--accent kpmdl-button--raised kpmdl-button--icon kp-crop-clear"><i class="material-icons">clear</i></button>
+                <button class="kpmdl-button kpmdl-button--accent kpmdl-button--raised kpmdl-button--icon kp-crop-done"><i class="material-icons">done</i></button>
+                </div>
+            </div>`;
+            $(".jcrop-holder").append(menu);
+            menuShown = true;
+            $(".kp-crop-clear").on("click", x => {
+                sel = null;
+                cleanup();
+            });
+            $(".kp-crop-done").on("click", cleanup);
+        }
+
+        function hideMenu() {
+            if (!menuShown) return;
+            $(".kp-crop-menu").remove();
+            menuShown = false;
+        }
+
+        $("#kp-one-px").Jcrop({
+            bgColor: "none",
+            maxSize: [500, 300],
+            minSize: [30, 30],
+            keySupport: false,
+            onSelect: e => {
+                sel = e;
+                showMenu();
+            },
+            onChange: e => {
+                sel = e;
+                hideMenu(); 
+            },
+            onRelease: e => {
+                sel = null;
+                hideMenu(); 
+            }
+        }, function() {
+            jc = this;
+            $(".jcrop-hline, .jcrop-vline").css({
+                backgroundImage: "url(" + chrome.runtime.getURL("/assets/img/Jcrop.gif") + ")"
+            });
+            $(document).on("keyup", esc);
+        });
+    });
+}
+
+function crop() {
+    loadPixel()
+        .then(startCrop)
+        .then(sel => {
+            if (sel) {
+                chrome.runtime.sendMessage({
+                    op: "crop_capture",
+                    area: sel,
+                    dpr: devicePixelRatio
+                }, res => {
+                    /* Display done notification */
+                });
+            } else {
+                /* Display cancel notification */
+            }
+        });
+}
