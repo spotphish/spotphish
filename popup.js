@@ -7,64 +7,46 @@
         if (!response) {
             return;
         }
-        console.log(response);
         if (response.status === "greenflagged") {
-            document.getElementById("kp-remove-from-whitelist").style.display = "block";
-            document.getElementById("kp-add-to-whitelist").style.display = "none";
-            //document.getElementsByClassName("optsCurrent")[0].style.display = "block";
+            $("#kp-remove-from-whitelist").css({display: "flex"});
         } else if (response.status === "watching" || response.status === "red_done" || response.status === "safe") {
-            document.getElementById("kp-add-to-whitelist").style.display = "block";
-        } else if (response.status === "redflagged") {
-            document.getElementById("kp-add-to-whitelist").style.display = "none";
-        } else {
-            document.getElementById("kp-remove-from-whitelist").style.display = "none";
-            document.getElementById("kp-add-to-whitelist").style.display = "none";
+            $("#kp-add-to-whitelist").css({display: "flex"});
         }
     };
 
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         curTab = tabs[0];
-        console.log("Current tab : ", curTab);
-        if (isSpecialTab(curTab.url)) {
-            document.getElementById("kp-add-to-whitelist").style.display = "none";
-        } else {
+
+        $(document).ready(function() {
+            $("#kp-add-to-whitelist").on("click", e => {
+                var site = stripQueryParams(curTab.url);
+                chrome.runtime.sendMessage({ op: "addToWhitelist", currentTab: curTab, site: site}, res => {
+                    if (res.message === "whitelisted") {
+                        /* notify */
+                    }
+                });
+                window.close();
+            });
+            $("#kp-remove-from-whitelist").on("click", e => {
+                var site = stripQueryParams(curTab.url);
+                chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
+                    if (res.message === "removed") {
+                        /* notify */
+                    }
+                });
+                window.close();
+            });
+            $("#settingsLink").on("click", e => {
+                chrome.tabs.create({
+                    url: chrome.extension.getURL("option.html")
+                });
+                window.close();
+            });
+        });
+
+        if (!isSpecialTab(curTab.url)) {
             chrome.runtime.sendMessage({op: "get_tabinfo", curtab: curTab}, handleTabInfo);
         }
     });
 
-    document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("kp-add-to-whitelist").addEventListener("click", function (e) {
-            var site = stripQueryParams(curTab.url);
-            chrome.runtime.sendMessage({ op: "addToWhitelist", currentTab: curTab, site: site}, res => {
-                if (res.message === "whitelisted") {
-                    document.getElementById("kp-remove-from-whitelist").style.display = "block";
-                    document.getElementById("kp-add-to-whitelist").style.display = "none";
-                }
-            });
-            window.close();
-        });
-        document.getElementById("kp-remove-from-whitelist").addEventListener("click", function (e) {
-            var site = stripQueryParams(curTab.url);
-            chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
-                if (res.message === "removed") {
-                    document.getElementById("kp-remove-from-whitelist").style.display = "none";
-                    document.getElementById("kp-add-to-whitelist").style.display = "block";
-                }
-            });
-            window.close();
-        });
-        document.getElementById("settingsLink").addEventListener("click", function (e) {
-            chrome.tabs.create({
-                url: chrome.extension.getURL("option.html")
-            });
-            window.close();
-        });
-        document.getElementById("aboutLink").addEventListener("click", function (e) {
-            chrome.tabs.create({
-                url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
-            });
-            window.close();
-        });
-
-    });
 }());
