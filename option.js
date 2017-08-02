@@ -64,7 +64,7 @@ function templateWhitelist(data) {
     } else {
         urls = data.url.reduce((a,b) => {
             var tmp = `
-                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b}>
+                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b} >
                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
                     <td>
                         <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
@@ -106,7 +106,6 @@ function templateWhitelist(data) {
 
 
 function updateImage(data) {
-
     if (data) {
         chrome.storage.local.set({ "secure_img": data }, function() {
             console.log("Data Saved : ", data);
@@ -119,16 +118,13 @@ function updateImage(data) {
             $("#secureimage").attr("src", data.src);
         });
     }
-
 }
 
 function renderWhitelistTable(data) {
-
+    $(".kp-wl-site").remove();
     console.log("IDB-data", data);
     data.forEach((x) => {
-        if (x.url) {
             $(".kp-wl-main").append(templateWhitelist(x));
-        }
     });
     $(".kp-wl-site").on("click", function(e) {
         var id = $(this).data("id");
