@@ -130,7 +130,7 @@ function renderWhitelistTable(data) {
         var id = $(this).data("id");
         var site = $(this).data("site");
         if ($(e.target).is(".kp-wl-site-delete")) {
-            var res = confirm("Do you want to delete " + site + " from whitelist");
+            var res = confirm("Do you want to delete " + site + " from the list of protected pages?");
             if (res) {
                 bkg.removeFromWhiteListById(id);
                 $(this).remove();
@@ -174,7 +174,7 @@ function renderSafeDomainTable() {
         if ($(e.target).is(".kp-sl-delete")) {
             var id = $(this).data("id");
             var domain = $(this).data("name");
-            var res = confirm("Do you want to delete " + KPSkipList[id] + " from Safe Domain list");
+            var res = confirm("Do you want to delete " + KPSkipList[id] + " from the list of safe domains?");
             if (res) {
                 let err = bkg.removeFromKPSkipList(domain);
                 if (err) {
@@ -268,7 +268,7 @@ $(document).ready(function() {
     });
 
     $("#restore").on("click", function(e) {
-        if (confirm("This will delete all the templates added by you, Are you sure you want to proceed")) {
+        if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
             bkg.cleanDB();
             bkg.setDefaultSecurityImage(function () {
                 updateImage();

@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css":["css/content.css", "css/dialog.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
+      "css":["css/content.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "externalCode/jquery.Jcrop.min.js",
