@@ -267,7 +267,7 @@ $(document).ready(function() {
 
     });
 
-    $("#restore").on("click", function(e) {
+    $("#kp-restore-factory").on("click", function(e) {
         if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
             bkg.cleanDB();
             bkg.setDefaultSecurityImage(function () {
