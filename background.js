@@ -367,7 +367,7 @@ function addToWhiteList(data, tab, logo) {
         let y = x.domains.filter((z) => {
             return data.site.endsWith(z);
         });
-        if (y !== -1) {
+        if (y.length > 0) {
             return true;
         }
         return false;
