@@ -131,6 +131,10 @@
                     continue;
                 }
             }
+            let it = skipDomains.findIndex((x) => {
+                return x.name === redFlagSites[i].site;
+            });
+            redFlagSites[i].domains = skipDomains[it].domains;
         }
 		var a = window.document.createElement('a');
 		a.href = window.URL.createObjectURL(new Blob(["var defPatterns = " + JSON.stringify(redFlagSites)], {type: 'text/plain;charset=utf-8;'}));

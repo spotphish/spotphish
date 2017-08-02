@@ -303,10 +303,10 @@ function syncWhiteList(cb){
         }).map((x) => {
             return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
         });
-        KPWhiteList = data1.filter((x) => {
+        KPWhiteList = dbObj.filter((x) => {
             return x.url !== undefined;
         }).map((x) => {
-            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site};
+            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site, domains:x.domains};
         });
 
         debug("syncWhiteList called : ", KPWhiteList, KPTemplates);
@@ -339,6 +339,8 @@ function addToWhiteList(data, tab, logo) {
         pattern.patternName = data.site;
         data.templates = [];
         data.templates.push(pattern);
+        data.domains = [];
+        data.domains.push(data.site);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
             debug("Added to DB : ", x);
@@ -358,11 +360,17 @@ function addToWhiteList(data, tab, logo) {
             return;
         };
         objWhitelist.get(id, onSuccess, onError);
-    }
+    };
 
 
     var isSiteAdded = KPWhiteList.findIndex((x) => {
-       return x.site === data.site;
+        let y = x.domains.filter((z) => {
+            return data.site.endsWith(z);
+        });
+        if (y !== -1) {
+            return true;
+        }
+        return false;
     });
 
     if (logo) {
@@ -396,10 +404,6 @@ function addToWhiteList(data, tab, logo) {
 }
 
 function removeUrlFromWhiteList(url, id) {
-    let i = KPWhiteList.findIndex((x) => {
-        return x.id === id;
-    });
-
     var onSuccess = function(data) {
         let j = data.url.indexOf(url);
         if (data.type === "custom" && data.url.length > 1) {
@@ -443,13 +447,13 @@ function removeFromWhiteList(site, tab) {
             return;
         };
         objWhitelist.get(id, onSuccess, onError);
-    }
+    };
 
     let found = KPWhiteList.filter((x) => {
         return (x.url.filter(y => y === site)).length > 0;
     });
     if (found.length > 0) {
-        if (found[0].type === "custom" && found[0].url.length > 1) {
+        if (found[0].url.length > 1) {
             upsertInDb(found[0].id);
         } else {
             removeFromKPSkipList(getPathInfo(site).host);

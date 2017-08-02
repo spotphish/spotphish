@@ -108,27 +108,35 @@ var redFlagSites =[{
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ {
+                        "name": "Google",
                         "site": "google.com",
                         "domains": ["google.com","google.co.in"]
                     }, {
+                        "name": "Facebook",
                         "site": "facebook.com",
                         "domains": ["facebook.com"]
                     }, {
+                        "name": "Paypal",
                         "site": "paypal.com",
                         "domains": ["paypal.com"]
                     }, {
+                        "name": "ICICI Bank",
                         "site": "icicibank.com",
                         "domains": ["icicibank.com"]
                     }, {
+                        "name": "HDFC Bank",
                         "site": "hdfcbank.com",
                         "domains": ["hdfcbank.com"]
                     }, {
+                        "name": "Dropbox",
                         "site": "dropbox.com",
                         "domains": ["dropbox.com"]
                     }, {
+                        "name" : "IDBI Bank",
                         "site": "inet.idbibank.co.in",
-                        "domains": ["inet.idbibank.co.in"]
+                        "domains": ["inet.idbibank.co.in", "www.idbi.com"]
                     }, {
+                        "name" : "Amazon",
                         "site": "amazon.com",
                         "domains": [
                                     "amazon.com",
