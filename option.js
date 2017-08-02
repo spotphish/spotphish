@@ -3,9 +3,9 @@ var KPWhiteList,
     KPRedFlagList;
 var bkg = chrome.extension.getBackgroundPage();
 
-function templateImage(src, favorite) {
+function templateImage(src, favorite, imageClass) {
     const temp = `
-    <div class="mdl-cell mdl-cell--4-col mdl-card set-image">
+    <div class="mdl-cell mdl-cell--4-col mdl-card set-image ${imageClass === undefined ? "" :  imageClass }">
       <div class="mdl-card__media ">
           <img class="secure-image" src="${src}" border="0" alt="">
       </div>
@@ -29,13 +29,13 @@ function templateSafeDomain(index, data) {
             <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
             <i class="material-icons kp-sl-delete">delete</i>
             </button>
-    
+
         </li>
         `;
     return template;
 }
 
-         //   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
+//   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
 function templateWhitelist(data) {
     const checked = "check_box", unchecked ="check_box_outline_blank";
     let logos_temp = data.templates.filter((x) => {
@@ -128,7 +128,7 @@ function renderWhitelistTable(data) {
     $(".kp-wl-site").remove();
     console.log("IDB-data", data);
     data.forEach((x) => {
-            $(".kp-wl-main").append(templateWhitelist(x));
+        $(".kp-wl-main").append(templateWhitelist(x));
     });
     $(".kp-wl-site").on("click", function(e) {
         var id = $(this).data("id");
@@ -249,7 +249,8 @@ $(document).ready(function() {
         };
         img.src = url;
         $(".kp-active-icons").text("favorite_border");
-        $("#imagegallery .mdl-cell:last").before(templateImage(url, "favorite"));
+        $("#imagegallery .cutsom-image").remove();
+        $("#imagegallery .mdl-cell:last").before(templateImage(url, "favorite", "cutsom-image"));
 
         $(".set-image").on("click", function(event) {
             event.preventDefault();
@@ -275,6 +276,7 @@ $(document).ready(function() {
         if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
             bkg.cleanDB();
             bkg.setDefaultSecurityImage(function () {
+                $("#imagegallery .cutsom-image").remove();
                 updateImage();
             });
         }
