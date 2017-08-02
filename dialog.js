@@ -94,11 +94,10 @@ function startCrop() {
 
         function cleanup() {
             $("#kp-one-px").remove();
-            $(".kp-crop-container").remove();
-            $(".jcrop-container").remove();
+            $(".jcrop-holder").remove();
             $(document).off("keyup", esc);
             jc && jc.destroy();
-            return resolve(sel);
+            return requestAnimationFrame(x => requestAnimationFrame(x => resolve(sel)));
         }
 
         function showMenu() {
