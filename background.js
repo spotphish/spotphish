@@ -5,7 +5,7 @@ const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_d
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 
-let DEBUG = true, 
+let DEBUG = false, basic_mode = false,
     globalCurrentTabId,
     tabInfoList = {},
     KPWhiteList,
@@ -522,6 +522,7 @@ function setDefaultSecurityImage(cb) {
 }
     
 function loadDefaults() {
+    initAdvConfigs();
     initSkipList();
     setDefaultSecurityImage();
     //TODO
@@ -581,4 +582,42 @@ function cleanDB() {
         console.log("skiplist cleaned up");
     });
     objWhitelist.clear(loadDefaults);
+}
+
+function initAdvConfigs() {
+    chrome.storage.local.get("adv_config", function(result) {
+        var data = result.adv_config;
+        debug("Data received : ", data);
+        if (data) {
+            DEBUG = data.debug? true : false;
+            basic_mode = data.basic_mode ? true : false;
+        } else {
+            DEBUG = false;
+            basic_mode = false;
+            saveAdvConfig();
+        }
+    });
+}
+
+function saveAdvConfig() {
+    chrome.storage.local.set({adv_config : {debug: DEBUG, basic_mode: basic_mode}});
+}
+
+function setDebugFlag(enable) {
+    DEBUG = enable;
+    saveAdvConfig();
+}
+
+function getDebugFlag() {
+    return DEBUG;
+}
+
+function setBsicMode(enable) {
+    basic_mode = enable;
+    saveAdvConfig();
+}
+
+function getBsicMode() {
+    basic_mode = enable;
+    saveAdvConfig();
 }

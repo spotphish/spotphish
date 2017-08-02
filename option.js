@@ -191,7 +191,14 @@ function renderSafeDomainTable() {
     });
 }
 
+function initAdvanceTab() {
+    if (bkg.getDebugFlag()) {
+        $("#kp-debug-switch").click();
+    }
+}
+
 $(document).ready(function() {
+    initAdvanceTab();
     updateImage();
     defaultImages.forEach(function(img) {
         let imagePath = "assets/img/secure_img/" + img;
@@ -282,12 +289,6 @@ $(document).ready(function() {
         }
     });
 
-    $("#about").on("click", function(e) {
-        chrome.tabs.create({
-            url: "https://github.com/coriolis/killphisher/blob/master/doc/rationale.md"
-        });
-    });
-
     $(".kp-safelist-add-btn").on("click", function(e) {
         var input = $("#kp-safelist-input").val().trim();
         var val;
@@ -319,6 +320,14 @@ $(document).ready(function() {
             renderSafeDomainTable();
         } else if (href === "#scroll-tab-whitelist") {
             bkg.syncWhiteList(renderWhitelistTable);
+        }
+    });
+    $("#kp-debug-switch").on("click", function(e) {
+        var val = $(this).is(":checked");
+        if (val) {
+            bkg.setDebugFlag(true);
+        } else {
+            bkg.setDebugFlag(false);
         }
     });
 });
