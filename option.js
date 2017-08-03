@@ -1,6 +1,4 @@
-const defaultImages = ["kp1.jpg", "kp2.jpg", "kp3.jpg", "kp4.jpg", "kp5.jpg", "kp6.jpg", "kp7.jpg"];
-var KPWhiteList,
-    KPRedFlagList;
+const defaultImages = ["kp1.jpg", "kp2.jpg", "kp3.jpg", "kp4.jpg", "kp5.jpg", "kp6.jpg", "kp7.jpg", "kp8.gif"];
 var bkg = chrome.extension.getBackgroundPage();
 
 function templateImage(src, favorite, imageClass) {
@@ -213,9 +211,6 @@ $(document).ready(function() {
         var data = {};
         data.type = "suggested";
         var img = $(this).find("img")[0];
-        var scaleFactor = Math.min(200 / img.width, 200 / img.height);
-        data.width = scaleFactor * img.width;
-        data.height = scaleFactor * img.height;
         data.src = img.src;
         updateImage(data);
 
@@ -234,48 +229,25 @@ $(document).ready(function() {
     });
 
     $("#custom-img").change(function(e) {
-        var canvas = document.getElementById("canvas-cust");
-        console.log("Canvas : ", canvas);
-        var ctx = canvas.getContext("2d");
-        console.log("File : ", e.target.files);
-        var url = URL.createObjectURL(e.target.files[0]);
-        console.log("url");
-        var img = new Image();
-        img.onload = function() {
-            console.log("Inside Img");
-            var scaleFactor = Math.min(200 / img.width, 200 / img.height);
-            canvas.width = img.width * scaleFactor;
-            canvas.height = img.height * scaleFactor;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        var file = e.target.files[0];
+        console.log("File type : ", file);
+        if (!file.type.startsWith("image")) {
+            //let alert_text = 
+            alert("You have uploaded a file of type : " + file.type + ".\n Please upload a valid image file.");
+            return;
+        }
+        var reader = new FileReader();
+        reader.onloadend = function() {
+            //console.log('RESULT', reader.result)
             var data = {};
             data.type = "custom";
-            data.width = canvas.width;
-            data.height = canvas.height;
-            data.src = canvas.toDataURL("image/jpeg");
+            data.src = reader.result;
             updateImage(data);
-        };
-        img.src = url;
-        $(".kp-active-icons").text("favorite_border");
-        $("#imagegallery .cutsom-image").remove();
-        $("#imagegallery .mdl-cell:last").before(templateImage(url, "favorite", "cutsom-image"));
-
-        $(".set-image").on("click", function(event) {
-            event.preventDefault();
-            // $(".rig li").removeClass("active");
-            // $(this).addClass("active");
-            var data = {};
-            data.type = "suggested";
-            var img = $(this).find("img")[0];
-            var scaleFactor = Math.min(200 / img.width, 200 / img.height);
-            data.width = scaleFactor * img.width;
-            data.height = scaleFactor * img.height;
-            data.src = img.src;
-            updateImage(data);
-
-            $(".kp-active-icons").text("favorite_border");
-            var icon = $(this).find("i")[0];
-            $(icon).text("favorite");
-        });
+            $("#imagegallery .cutsom-image").remove();
+            $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
+        }
+        reader.readAsDataURL(file);
 
     });
 
@@ -314,7 +286,6 @@ $(document).ready(function() {
 
     });
     $(".mdl-layout__tab").on("click", function(e){
-        console.log("Tab", $(this).attr("href"));
         let href = $(this).attr("href");
         if (href === "#scroll-tab-safedomain") {
             renderSafeDomainTable();
