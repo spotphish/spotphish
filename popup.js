@@ -29,7 +29,7 @@
             });
             $("#kp-remove-from-whitelist").on("click", e => {
                 var site = stripQueryParams(curTab.url);
-                chrome.runtime.sendMessage({ op: "removeFromWhitelist", site: site}, res => {
+                chrome.runtime.sendMessage({ op: "removeFromWhitelist", currentTab: curTab, site: site}, res => {
                     if (res.message === "removed") {
                         /* notify */
                     }

@@ -5,7 +5,7 @@ const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_d
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
 
-let DEBUG = false, basic_mode = false,
+let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
     tabInfoList = {},
     KPWhiteList,
@@ -64,7 +64,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
-        removeFromWhiteList(msg.site, sender.tab);
+        removeFromWhiteList(msg.site, msg.currentTab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
         chrome.tabs.getSelected(null, (tab) => {
@@ -437,7 +437,6 @@ function removeUrlFromWhiteList(url, id) {
 function removeFromWhiteList(site, tab) {
     let upsertInDb = function(id) {
         var onSuccess = function(obj) {
-            console.log(tab);
             let i = obj.url.indexOf(site);
             obj.url.splice(i, 1);
             let ti = obj.templates.findIndex((x) => {
@@ -466,6 +465,8 @@ function removeFromWhiteList(site, tab) {
             objWhitelist.remove(found[0].id, syncWhiteList);
             debug("Removed from whitelist : ", site);
         }
+        tabinfo[tab.id].state = "red_done";
+        tabinfo[tab.id].checkState = false;
     } else {
         debug("site not Whitelisted : ", site);
     }
