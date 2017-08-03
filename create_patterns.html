@@ -37,9 +37,10 @@
             var image = new Image();
             image.src = img;
             image.onload = () => {
+                console.log(image);
                 var canvas = document.createElement('canvas');
-                canvas.width = image.width + image.width;
-                canvas.height = image.height + image.height;
+                canvas.width = image.width;
+                canvas.height = image.height;
                 var ctx = canvas.getContext('2d');
                 ctx.drawImage(image, 0, 0, image.width, image.height);
                 var imageData1 = ctx.getImageData(0, 0, image.width, image.height);

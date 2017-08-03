@@ -219,6 +219,7 @@ function checkWhitelist(tab) {
     return false;
 }
 
+
 function snapcheck(ti) {
     const tab = ti.tab;
     chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, image => {
@@ -243,6 +244,9 @@ function snapcheck(ti) {
                             let t1 = performance.now();
                             console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
                             ti.state = "redflagged";
+                            if (DEBUG) {
+                                findCorrespondence(normalizedImage, template.logo);
+                            }
                             ti.port.postMessage({op: "redflag", site: template.site});
                             break;
                         }
