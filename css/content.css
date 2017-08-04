@@ -20,6 +20,12 @@
   background: rgba(33,150,243, 0.4);
 }
 
+.kp-redflag-match-image {
+  padding: 10px;
+  border: solid 1px #e7e7e7;
+  margin-bottom: 15px;
+}
+
 .kp-dialog-warning {
   background-color: rgba(255,82,82, 0.4);
 }
