@@ -328,9 +328,9 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     var good_matches = 0;
     num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
     good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
-    let match_ratio = num_matches > 0? good_matches/num_matches:0;
+    let match_ratio = patternCorners[0].length > 0 ? good_matches/patternCorners[0].length : 0;
     console.log("Matches:" + num_matches + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
-    if (good_matches > 15) {
+    if (match_ratio > 0.3) {
         return true;
     }
     return false;
@@ -404,6 +404,7 @@ function findCorrespondence(scrShot, template, cb) {
             var img = canvas.toDataURL("image/png");
             if (cb !== undefined) {
                 cb(img);
+                return;
             }
         }
 
@@ -461,7 +462,8 @@ function findCorrespondence(scrShot, template, cb) {
         num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrShot_corners, 3);
         jsfeat.orb.describe(scrShot_u8_smooth, scrShot_corners, num_scrShot_corners, scrShot_descriptors);
         var num_matches = match_pattern(scrShot_descriptors, pattern_descriptors, matches);
-        find_transform(scrShot_corners, pattern_corners,matches, num_matches, homo3x3, match_mask);
+        var good_matches = find_transform(scrShot_corners, pattern_corners,matches, num_matches, homo3x3, match_mask);
+        console.log(num_matches, good_matches);
         if (num_matches) {
             render_matches(ctx, matches, num_matches);
         }
