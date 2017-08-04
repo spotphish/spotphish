@@ -108,10 +108,13 @@ function showGreenflag(msg) {
 }
 
 function showRedflag(msg) {
+    var img = document.createElement("img");
+    img.src = msg.img;
     const warn = {
         title: "Are you being phished?",
         type: "warning",
-        main: `<div class="kp-redflag-match-image"> <img src=${msg.img} width="98%"> </div> <div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
+        img: img,
+        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
         extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
             {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=1>Report Phishing</button>`, onclick: null}]
