@@ -392,7 +392,7 @@ function addToWhiteList(data, tab, logo) {
             }
         }).catch((e) => {
             console.log(e);//promise rejected.
-            return;
+            return false;
         });
     } else {
         pattern.url = tab.url;

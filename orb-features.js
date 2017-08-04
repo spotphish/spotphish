@@ -328,8 +328,9 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     var good_matches = 0;
     num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
     good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
-    let match_ratio = patternCorners[0].length > 0 ? good_matches/patternCorners[0].length : 0;
-    console.log("Matches:" + num_matches + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
+    const ncorners = patternCorners[0].length;
+    let match_ratio = good_matches/ncorners;
+    console.log("Corners:" + ncorners + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
     if (match_ratio > 0.3) {
         return true;
     }
