@@ -340,7 +340,7 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     return false;
 }
 
-function findCorrespondence(scrShot, template) {
+function findCorrespondence(scrShot, template, cb) {
 
     let p1 = loadImage(scrShot);
     let p2 = loadImage(template);
@@ -408,7 +408,9 @@ function findCorrespondence(scrShot, template) {
                 }
             }
             var img = canvas.toDataURL("image/png");
-            chrome.tabs.create({ url: img });
+            if (cb !== undefined) {
+                cb(img);
+            }
         }
 
         function stripCorners(corners) {

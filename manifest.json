@@ -25,7 +25,8 @@
         "whitelist.js",
         "utils.js",
         "content.js",
-        "dialog.js"
+        "dialog.js",
+        "orb-features.js"
       ],
       "run_at": "document_start",
       "all_frames": true
@@ -48,8 +49,7 @@
     "storage",
     "tabs",
     "*://*/*",
-    "<all_urls>",
-    "unlimitedStorage"
+    "<all_urls>"
   ],
   "web_accessible_resources": [
     "assets/img/*",

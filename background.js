@@ -244,10 +244,9 @@ function snapcheck(ti) {
                             let t1 = performance.now();
                             console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
                             ti.state = "redflagged";
-                            if (DEBUG) {
-                                findCorrespondence(normalizedImage, template.logo);
-                            }
-                            ti.port.postMessage({op: "redflag", site: template.site});
+                            findCorrespondence(normalizedImage, template.logo, function (img) {
+                                ti.port.postMessage({op: "redflag", site: template.site, img:img});
+                            });
                             break;
                         }
                     }

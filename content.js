@@ -108,6 +108,7 @@ function showGreenflag(msg) {
 }
 
 function showRedflag(msg) {
+    console.log(msg.img);
     const warn = {
         title: "Are you being phished?",
         type: "warning",
