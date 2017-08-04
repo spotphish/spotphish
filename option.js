@@ -196,6 +196,20 @@ function initAdvanceTab() {
 }
 
 $(document).ready(function() {
+    $(".mdl-layout__tab").on("click", function(e){
+        let href = $(this).attr("href");
+        if (href === "#scroll-tab-safedomain") {
+            renderSafeDomainTable();
+        } else if (href === "#scroll-tab-whitelist") {
+            bkg.syncWhiteList(renderWhitelistTable);
+        }
+    });
+  
+    let hash = $.trim( window.location.hash );
+    if (hash === "#safedomain") {
+        $("#safedomain")[0].click();
+    }
+  
     initAdvanceTab();
     updateImage();
     defaultImages.forEach(function(img) {
@@ -203,11 +217,8 @@ $(document).ready(function() {
         $("#imagegallery .mdl-cell:last").before(templateImage(imagePath, "favorite_border"));
     });
 
-    //}
     $(".set-image").on("click", function(event) {
         event.preventDefault();
-        // $(".rig li").removeClass("active");
-        // $(this).addClass("active");
         var data = {};
         data.type = "suggested";
         var img = $(this).find("img")[0];
@@ -231,15 +242,16 @@ $(document).ready(function() {
     $("#custom-img").change(function(e) {
 
         var file = e.target.files[0];
-        console.log("File type : ", file);
         if (!file.type.startsWith("image")) {
-            //let alert_text = 
             alert("You have uploaded a file of type : " + file.type + ".\n Please upload a valid image file.");
+            return;
+        }
+        if (file.size > 2097154) {
+            alert("The image size size should not be nore than 2MB");
             return;
         }
         var reader = new FileReader();
         reader.onloadend = function() {
-            //console.log('RESULT', reader.result)
             var data = {};
             data.type = "custom";
             data.src = reader.result;
@@ -284,14 +296,6 @@ $(document).ready(function() {
         }
         $("#kp-safelist-input").val("");
 
-    });
-    $(".mdl-layout__tab").on("click", function(e){
-        let href = $(this).attr("href");
-        if (href === "#scroll-tab-safedomain") {
-            renderSafeDomainTable();
-        } else if (href === "#scroll-tab-whitelist") {
-            bkg.syncWhiteList(renderWhitelistTable);
-        }
     });
     $("#kp-debug-switch").on("click", function(e) {
         var val = $(this).is(":checked");
