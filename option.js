@@ -246,7 +246,7 @@ $(document).ready(function() {
             updateImage(data);
             $("#imagegallery .cutsom-image").remove();
             $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
-        }
+        };
         reader.readAsDataURL(file);
 
     });

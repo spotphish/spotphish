@@ -319,7 +319,6 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     //data strs for the screenshot
     var  matches, homo3x3, match_mask;
     
-    var t0 = performance.now();
 
     // transform matrix
     homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
@@ -328,13 +327,10 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     var num_matches = 0;
     var good_matches = 0;
     num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
-    console.log("Matches count : " + num_matches);
     good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
-    var t1 = performance.now();
-    console.log("Good matches count : " + good_matches);
-    console.log("Time taken : " + (t1 - t0));
+    let match_ratio = num_matches > 0? good_matches/num_matches:0;
+    console.log("Matches:" + num_matches + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
     if (good_matches > 15) {
-        console.log("Match found for : " + site);
         return true;
     }
     return false;
@@ -348,21 +344,21 @@ function findCorrespondence(scrShot, template, cb) {
         let image1 = res[1];
         let image2 = res[0];
  
-        var canvas = document.createElement('canvas');
-        canvas.width = image1.width + image2.width + 200;
-        canvas.height = image1.height + image2.height + 200;
-        var ctx = canvas.getContext('2d');
+        var canvas = document.createElement("canvas");
+        canvas.width = image1.width + image2.width + image1.width/2;
+        canvas.height = image2.height;
+        var ctx = canvas.getContext("2d");
         ctx.drawImage(image1, 0, 0, image1.width, image1.height);
         ctx.drawImage(image2, 200, 0, image2.width, image2.height);
         var imageData1 = ctx.getImageData(0, 0, image1.width, image1.height);
         var imageData2 = ctx.getImageData(200, 0, image2.width, image2.height);
         var blur_size = 5;
-        var match_threshold = 48;//increasing this increases the number of points found. hence increases noise.
         var num_train_levels = 4; // no. of stages in the pyramid
         jsfeat.yape06.laplacian_threshold = 30; //not really sure what influence this has
         jsfeat.yape06.min_eigen_value_threshold = 25;// ditto
         var threshold = 10;
         jsfeat.fast_corners.set_threshold(threshold);
+        var max_per_level = 128;
 
         //data strs for the screenshot
         var scrShot_u8, scrShot_u8_smooth, scrShot_corners, scrShot_descriptors, num_scrShot_corners;
@@ -370,8 +366,6 @@ function findCorrespondence(scrShot, template, cb) {
         
         //data strs for patten/logo
         var pattern_corners, pattern_descriptors;
-        var max_pattern_size = 128;
-        var max_per_level = 150;
         var sc_pc = 0.1;//Math.sqrt(2.0); // magic number ;)
 
         scrShot_u8 = new jsfeat.matrix_t(image2.width, image2.height, jsfeat.U8_t | jsfeat.C1_t);
@@ -391,11 +385,11 @@ function findCorrespondence(scrShot, template, cb) {
         
         function render_matches(ctx, matches, count) {
 
-            for(var i = 0; i < count; ++i) {
+            for (var i = 0; i < count; ++i) {
                 var m = matches[i];
                 var s_kp = scrShot_corners[m.screen_idx];
                 var p_kp = pattern_corners[m.pattern_lev][m.pattern_idx];
-                if(match_mask.data[i]) {
+                if (match_mask.data[i]) {
                     ctx.strokeStyle = "rgb(0,255,0)";
                     ctx.beginPath();
                     ctx.moveTo(s_kp.x + 200,s_kp.y);
@@ -413,17 +407,6 @@ function findCorrespondence(scrShot, template, cb) {
             }
         }
 
-        function stripCorners(corners) {
-            stripped_array = [];
-            console.log(corners[0]);
-            for (var i = 0; i < corners.length; i++) {
-                if (corners[i].score != 0) {
-                    stripped_array.push(corners[i]);
-                }
-            }
-            return stripped_array;
-        }
-
         // transform matrix
         homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
         match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
@@ -433,7 +416,7 @@ function findCorrespondence(scrShot, template, cb) {
         var corners_num=0;
         var sc = 1.0;
         jsfeat.imgproc.grayscale(imageData1.data, image1.width, image1.height, lev0_img);
-        for(lev=0; lev < num_train_levels; ++lev) {
+        for (var lev=0; lev < num_train_levels; ++lev) {
             pattern_corners[lev] = [];
             lev_corners = pattern_corners[lev];
             pattern_descriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
@@ -443,33 +426,29 @@ function findCorrespondence(scrShot, template, cb) {
         lev_corners = pattern_corners[0];
         lev_descr = pattern_descriptors[0];
         var s_pattern_corners = [];
-        var s_pattern_descriptors = [];
 
         jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blur_size); // this is more robust
         corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-        s_pattern_corners.push(stripCorners(lev_corners));
+        s_pattern_corners.push(lev_corners);
         jsfeat.orb.describe(lev_img, s_pattern_corners[0], corners_num, lev_descr);
-
-        console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
-
         sc -= sc_pc;
 
         // lets do multiple scale levels
         // we can use Canvas context draw method for faster resize
         // but its nice to demonstrate that you can do everything with jsfeat
-        for(lev = 1; lev < num_train_levels; ++lev) {
+        for (lev = 1; lev < num_train_levels; ++lev) {
             lev_corners = pattern_corners[lev];
             lev_descr = pattern_descriptors[lev];
 
-            new_width = (lev0_img.cols*sc)|0;
-            new_height = (lev0_img.rows*sc)|0;
+            var new_width = (lev0_img.cols*sc)|0;
+            var new_height = (lev0_img.rows*sc)|0;
             jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
             jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blur_size);
             corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-            s_pattern_corners.push(stripCorners(lev_corners));
+            s_pattern_corners.push(lev_corners);
             jsfeat.orb.describe(lev_img, s_pattern_corners[lev], corners_num, lev_descr);
             // fix the coordinates due to scale level
-            for(i = 0; i < corners_num; ++i) {
+            for (i = 0; i < corners_num; ++i) {
                 lev_corners[i].x *= 1./sc;
                 lev_corners[i].y *= 1./sc;
             }
@@ -481,12 +460,9 @@ function findCorrespondence(scrShot, template, cb) {
         jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blur_size);
         num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrShot_corners, 3);
         jsfeat.orb.describe(scrShot_u8_smooth, scrShot_corners, num_scrShot_corners, scrShot_descriptors);
-        console.log(scrShot_descriptors);
-        var num_matches = 0;
-        var good_matches = 0;
-        num_matches = match_pattern(scrShot_descriptors, pattern_descriptors, matches);
-        good_matches = find_transform(scrShot_corners, pattern_corners,matches, num_matches, homo3x3, match_mask);
-        if(num_matches) {
+        var num_matches = match_pattern(scrShot_descriptors, pattern_descriptors, matches);
+        find_transform(scrShot_corners, pattern_corners,matches, num_matches, homo3x3, match_mask);
+        if (num_matches) {
             render_matches(ctx, matches, num_matches);
         }
     });

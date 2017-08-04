@@ -242,7 +242,7 @@ function snapcheck(ti) {
                         if (matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
                             template.patternDescriptors, template.site)) {
                             let t1 = performance.now();
-                            console.log("Match found, time taken : " + (t1-t0) + " ms", Date());
+                            console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
                             ti.state = "redflagged";
                             findCorrespondence(normalizedImage, template.logo, function (img) {
                                 ti.port.postMessage({op: "redflag", site: template.site, img:img});
