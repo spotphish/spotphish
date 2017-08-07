@@ -272,6 +272,9 @@ function createPatterns(logo) {
 
                 jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blurSize); // this is more robust
                 corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
+                if (corners_num < 30) {
+                    reject({err: "few_corners", corners: corners_num});
+                }
                 jsfeat.orb.describe(lev_img, lev_corners, corners_num, lev_descr);
 
                 console.log("train " + lev_img.cols + "x" + lev_img.rows + " points: " + corners_num);
@@ -318,7 +321,6 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
 
     //data strs for the screenshot
     var  matches, homo3x3, match_mask;
-    
 
     // transform matrix
     homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);

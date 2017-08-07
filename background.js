@@ -70,15 +70,23 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         chrome.tabs.getSelected(null, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
                 crop(image, msg.area, msg.dpr, true, (cropped) => {
-                    respond({message: "image", image: cropped});
+                    let cb = function(res) {
+                        if (res) {
+                            respond({message: "cropped", image: cropped});
+                        } else {
+                            respond({message: "failed", err: "few_corners"});
+                        }
+                    };
+
                     var url = stripQueryParams(sender.tab.url);
                     console.log ("URL: ", url, " tab: ", sender.tab);
-                    addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, cropped);
+                    addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, cropped, cb);
                 });
             });
         });
     } else if (msg.op === "add_wh") {
         var url = stripQueryParams(sender.tab.url);
+        respond({message: "Added"});
         console.log ("URL: ", url, " tab: ", sender.tab);
         addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, null);
     } else if (msg.op === "add_skip") {
@@ -88,6 +96,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else {
         console.log("KPBG: Unknown message", msg);
     }
+    return true;
 });
 
 function inject (tab, site) {
@@ -338,7 +347,7 @@ function toggleWhitelistItems(id, state, cb) {
     objWhitelist.get(id, onSuccess, onError);
 } 
 
-function addToWhiteList(data, tab, logo) {
+function addToWhiteList(data, tab, logo, cb) {
     var pattern = {};
     let addToDb = function(pattern) {
         pattern.patternName = data.site;
@@ -390,9 +399,18 @@ function addToWhiteList(data, tab, logo) {
             } else {
                 addToDb(pattern);
             }
+            if (cb !== undefined || cb !== null) {
+                cb(true);
+            }
+            tabinfo[tab.id].state = "greenflagged";
+            let urlInfo = getPathInfo(tab.url); 
+            addToKPSkipList(urlInfo.host);
         }).catch((e) => {
             console.log(e);//promise rejected.
-            return false;
+            if (cb !== undefined || cb !== null) {
+                cb(false);
+            }
+            return;
         });
     } else {
         pattern.url = tab.url;
@@ -401,11 +419,11 @@ function addToWhiteList(data, tab, logo) {
         } else {
             addToDb(pattern);
         }
+        tabinfo[tab.id].state = "greenflagged";
+        let urlInfo = getPathInfo(tab.url); 
+        addToKPSkipList(urlInfo.host);
     }
 
-    tabinfo[tab.id].state = "greenflagged";
-    let urlInfo = getPathInfo(tab.url); 
-    addToKPSkipList(urlInfo.host);
 }
 
 function removeUrlFromWhiteList(url, id) {

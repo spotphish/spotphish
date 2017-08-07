@@ -136,10 +136,26 @@ function rpc(msg) {
     });
 }
 
+function injectAckModal() {
+    console.log("jasd");
+    const ack = {
+        title: "Killphisher",
+        type: "info",
+        main: "This page was successfully  added to protected pages.",
+        extra: null,
+        buttons: [],
+        dismiss_after: 2000
+    };
+    dialog(ack);
+}
 function injectCropModal() {
     function basic() {
         chrome.runtime.sendMessage({
             op: "add_wh"
+        }, function (res) {
+            console.log("resp called");
+            setTimeout(
+            injectAckModal, 500);
         });
     }
 

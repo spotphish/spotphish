@@ -43,17 +43,6 @@ var redFlagSites =[{
         "logo": "assets/img/icici-shot.png"
     }]
 }, {
-    "site":"HDFC Bank",
-    "enabled": true,
-    "type": "default",
-    "url": [
-        "https://netbanking.hdfcbank.com/netbanking"
-    ],
-    "templates": [{
-        "templateName": "HDFC bank",
-        "logo":"assets/img/hdfc-screen.png"
-    }]
-}, {
     "site":"IDBI Bank",
     "enabled": true,
     "type": "default",
@@ -126,14 +115,6 @@ var skipDomains = [ {
                         "name": "ICICI Bank",
                         "site": "icicibank.com",
                         "domains": ["icicibank.com"]
-                    }, {
-                        "name": "HDFC Bank",
-                        "site": "hdfcbank.com",
-                        "domains": ["hdfcbank.com"]
-                    }, {
-                        "name": "Dropbox",
-                        "site": "dropbox.com",
-                        "domains": ["dropbox.com"]
                     }, {
                         "name" : "IDBI Bank",
                         "site": "inet.idbibank.co.in",

@@ -150,6 +150,19 @@ function startCrop() {
     });
 }
 
+function injectErrorModal() {
+    const cropDialog = {
+        title: "Error!",
+        type: "info",
+        main: "Selected area is not distinctive enough",
+        extra: "<div>The area is too small or has too few details to be recognized.</div>",
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Try again</button>`, onclick: crop},
+       {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Cancel</button>`, onclick: null} ]
+    };
+
+    dialog(cropDialog);
+}
+
 function crop() {
     loadPixel()
         .then(startCrop)
@@ -159,8 +172,12 @@ function crop() {
                     op: "crop_capture",
                     area: sel,
                     dpr: devicePixelRatio
-                }, res => {
-                    /* Display done notification */
+                }, function (res) {
+                    if (res.message == "failed") {
+                        injectErrorModal();
+                    } else {
+                        injectAckModal();
+                    }
                 });
             } else {
                 /* Display cancel notification */
