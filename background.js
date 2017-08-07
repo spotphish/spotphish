@@ -355,6 +355,9 @@ function addToWhiteList(data, tab, logo, cb) {
         data.templates.push(pattern);
         data.domains = [];
         data.domains.push(data.site);
+        tabinfo[tab.id].state = "greenflagged";
+        let urlInfo = getPathInfo(tab.url); 
+        addToKPSkipList(urlInfo.host);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
             debug("Added to DB : ", x);
@@ -368,6 +371,9 @@ function addToWhiteList(data, tab, logo, cb) {
             obj.url.push(data.url[0]);
             obj.templates.push(pattern);
             objWhitelist.put(obj, syncWhiteList);
+            tabinfo[tab.id].state = "greenflagged";
+            let urlInfo = getPathInfo(tab.url); 
+            addToKPSkipList(urlInfo.host);
         };
         var onError = function(error) {
             console.log("Error updating field : ", error);
@@ -402,9 +408,6 @@ function addToWhiteList(data, tab, logo, cb) {
             if (cb !== undefined || cb !== null) {
                 cb(true);
             }
-            tabinfo[tab.id].state = "greenflagged";
-            let urlInfo = getPathInfo(tab.url); 
-            addToKPSkipList(urlInfo.host);
         }).catch((e) => {
             console.log(e);//promise rejected.
             if (cb !== undefined || cb !== null) {
@@ -419,9 +422,6 @@ function addToWhiteList(data, tab, logo, cb) {
         } else {
             addToDb(pattern);
         }
-        tabinfo[tab.id].state = "greenflagged";
-        let urlInfo = getPathInfo(tab.url); 
-        addToKPSkipList(urlInfo.host);
     }
 
 }
