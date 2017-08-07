@@ -11,7 +11,7 @@ function dialog(obj={}) {
         titlecol = d.type === "info" ? "kpmdl-color--primary" : "kpmdl-color--accent",
         img = d.img ? `<div class="kp-image-container"></div>` : "",
         main = d.main ? `<div class="kpmdl-card__supporting-text kp-main">${d.main}</div>` : "",
-        extra = d.extra ? `<div class="kpmdl-card__supporting-text">${d.extra}</div>` : "",
+        extra = d.extra ? `<div class="kpmdl-card__supporting-text kp-extra">${d.extra}</div>` : "",
         buttons = d.buttons.length ? `<div class="kpmdl-card__actions kpmdl-card--border">` +
             d.buttons.map(x => x.html).join(" ") + `</div>` : "",
         template = `
