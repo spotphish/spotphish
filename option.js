@@ -19,10 +19,10 @@ function templateImage(src, favorite, imageClass) {
 
 function templateSafeDomain(index, data) {
     const template = `
-        <li class="mdl-list__item kp-safelist-row" data-id=${index} data-name=${data}>
+        <li class="mdl-list__item kp-safelist-row" data-id=${index} data-name=${data.site}>
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons  mdl-list__item-avatar">public</i>
-                ${data}
+                ${data.site}
             </span>
             <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
             <i class="material-icons kp-sl-delete">delete</i>

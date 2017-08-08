@@ -357,7 +357,7 @@ function addToWhiteList(data, tab, logo, cb) {
         data.domains.push(data.site);
         tabinfo[tab.id].state = "greenflagged";
         let urlInfo = getPathInfo(tab.url); 
-        addToKPSkipList(urlInfo.host);
+        addToKPSkipList(urlInfo.host, true);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
             debug("Added to DB : ", x);
@@ -373,7 +373,7 @@ function addToWhiteList(data, tab, logo, cb) {
             objWhitelist.put(obj, syncWhiteList);
             tabinfo[tab.id].state = "greenflagged";
             let urlInfo = getPathInfo(tab.url); 
-            addToKPSkipList(urlInfo.host);
+            addToKPSkipList(urlInfo.host, true);
         };
         var onError = function(error) {
             console.log("Error updating field : ", error);
@@ -564,7 +564,7 @@ function loadDefaults() {
 }
 
 
-function addToKPSkipList(domain) {
+function addToKPSkipList(domain, isWhitelisted = false) {
     console.log("addToSkipList Callled");
     if (KPSkipList.indexOf(domain) !== -1) {
         console.log("Skiplist adding failed");
@@ -572,6 +572,7 @@ function addToKPSkipList(domain) {
     }
     var obj = {};
     obj.site = domain;
+    obj.whiteListed = isWhitelisted;
     obj.domains = [];
     obj.domains.push(domain);
     KPSkipArray.push(obj);
@@ -597,7 +598,7 @@ function removeFromKPSkipList(domain) {
 function getKPSkipListSites(cb) {
     console.log("getSkipListSites Callled");
     return KPSkipArray.map((x)=> {
-        return x.site; });
+        return {site: x.site, whitelisted: x.whiteListed }});
 }
 
 

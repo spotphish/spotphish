@@ -102,26 +102,32 @@ var redFlagSites =[{
 var skipDomains = [ {
                         "name": "Google",
                         "site": "google.com",
+                        "whiteListed":true,
                         "domains": ["google.com","google.co.in"]
                     }, {
                         "name": "Facebook",
                         "site": "facebook.com",
+                        "whiteListed":true,
                         "domains": ["facebook.com"]
                     }, {
                         "name": "Paypal",
                         "site": "paypal.com",
+                        "whiteListed":true,
                         "domains": ["paypal.com"]
                     }, {
                         "name": "ICICI Bank",
                         "site": "icicibank.com",
+                        "whiteListed":true,
                         "domains": ["icicibank.com"]
                     }, {
                         "name" : "IDBI Bank",
                         "site": "inet.idbibank.co.in",
+                        "whiteListed":true,
                         "domains": ["inet.idbibank.co.in", "www.idbi.com"]
                     }, {
                         "name" : "Amazon",
                         "site": "amazon.com",
+                        "whiteListed":true,
                         "domains": [
                                     "amazon.com",
                                     "amazon.in",
