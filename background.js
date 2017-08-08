@@ -148,7 +148,7 @@ function init(msg, sender, respond) {
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
     const ti = tabinfo[sender.tab.id];
-    if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || t1.state !== "redflagged")) {
+    if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || ti.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
         const now = Date.now();
@@ -598,7 +598,7 @@ function removeFromKPSkipList(domain) {
 function getKPSkipListSites(cb) {
     console.log("getSkipListSites Callled");
     return KPSkipArray.map((x)=> {
-        return {site: x.site, whitelisted: x.whiteListed }});
+        return {site: x.site, whitelisted: x.whiteListed };});
 }
 
 

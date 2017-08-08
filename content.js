@@ -108,7 +108,7 @@ function showGreenflag(msg) {
 }
 
 function showRedflag(msg) {
-        let safeDomainLink = chrome.extension.getURL("option.html") + "#safedomain";
+    let safeDomainLink = chrome.extension.getURL("option.html") + "#safedomain";
     function openSafeDomainLink() {
         window.open(safeDomainLink);
     }
@@ -155,7 +155,7 @@ function injectCropModal() {
         }, function (res) {
             console.log("resp called");
             setTimeout(
-            injectAckModal, 500);
+                injectAckModal, 500);
         });
     }
 
