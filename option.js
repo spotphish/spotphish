@@ -24,8 +24,8 @@ function templateSafeDomain(index, data) {
                 <i class="material-icons  mdl-list__item-avatar">public</i>
                 ${data.site}
             </span>
-            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-            <i class="material-icons kp-sl-delete">delete</i>
+            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.whitelisted? 'disabled' :''}>
+            <i class="material-icons ${data.whitelisted? '' : 'kp-sl-delete'}">delete</i>
             </button>
 
         </li>
