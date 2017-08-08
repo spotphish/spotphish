@@ -148,7 +148,7 @@ function init(msg, sender, respond) {
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
     const ti = tabinfo[sender.tab.id];
-    if (msg.data && !ti.checkState) {
+    if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || t1.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
         const now = Date.now();
