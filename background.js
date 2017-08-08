@@ -248,12 +248,14 @@ function snapcheck(ti) {
                 for (let i = 0; i < KPTemplates.length; i++) {
                     const template = KPTemplates[i];
                     if (template.enabled) {
-                        if (matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
-                            template.patternDescriptors, template.site)) {
+                        res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
+                            template.patternDescriptors, template.site);
+                        if (res) {
                             let t1 = performance.now();
                             console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
                             ti.state = "redflagged";
-                            findCorrespondence(normalizedImage, template.logo, function (img) {
+                            findCorrespondence(normalizedImage, scrCorners , template, res.matches,
+                                    res.matchCount, res.mask, function (img) {
                                 ti.port.postMessage({op: "redflag", site: template.site, img:img});
                             });
                             break;

@@ -334,15 +334,14 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     let match_ratio = good_matches/ncorners;
     console.log("Corners:" + ncorners + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
     if (match_ratio > 0.3) {
-        return true;
+        return ({matches: matches, matchCount: num_matches, mask: match_mask});
     }
     return false;
 }
 
-function findCorrespondence(scrShot, template, cb) {
-
+function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, mask, cb) {
     let p1 = loadImage(scrShot);
-    let p2 = loadImage(template);
+    let p2 = loadImage(template.logo);
     Promise.all([p1, p2]).then(res => {
         let image1 = res[1];
         let image2 = res[0];
@@ -352,124 +351,28 @@ function findCorrespondence(scrShot, template, cb) {
         canvas.height = image2.height;
         var ctx = canvas.getContext("2d");
         ctx.drawImage(image1, 0, 0, image1.width, image1.height);
-        ctx.drawImage(image2, 200, 0, image2.width, image2.height);
-        var imageData1 = ctx.getImageData(0, 0, image1.width, image1.height);
-        var imageData2 = ctx.getImageData(200, 0, image2.width, image2.height);
-        var blur_size = 5;
-        var num_train_levels = 4; // no. of stages in the pyramid
-        jsfeat.yape06.laplacian_threshold = 30; //not really sure what influence this has
-        jsfeat.yape06.min_eigen_value_threshold = 25;// ditto
-        var threshold = 10;
-        jsfeat.fast_corners.set_threshold(threshold);
-        var max_per_level = 128;
-
-        //data strs for the screenshot
-        var scrShot_u8, scrShot_u8_smooth, scrShot_corners, scrShot_descriptors, num_scrShot_corners;
-        var  matches, homo3x3, match_mask;
+        ctx.drawImage(image2, image1.width * 1.5, 0, image2.width, image2.height);
         
-        //data strs for patten/logo
-        var pattern_corners, pattern_descriptors;
-        var sc_pc = 0.1;//Math.sqrt(2.0); // magic number ;)
+        for (var i = 0; i < matchCount; ++i) {
+            var m = matches[i];
+            var s_kp = scrCorners[m.screen_idx];
+            var p_kp = template.patternCorners[m.pattern_lev][m.pattern_idx];
+            if (mask.data[i]) {
+                ctx.strokeStyle = "rgb(0,255,0)";
+                ctx.beginPath();
+                ctx.moveTo(s_kp.x + (image1.width * 1.5),s_kp.y);
+                ctx.lineTo(p_kp.x, p_kp.y);
+                ctx.lineWidth=1;
+                ctx.stroke();
 
-        scrShot_u8 = new jsfeat.matrix_t(image2.width, image2.height, jsfeat.U8_t | jsfeat.C1_t);
-        scrShot_u8_smooth = new jsfeat.matrix_t(image2.width, image2.height, jsfeat.U8_t | jsfeat.C1_t);
-        
-        // we wll limit to 500 strongest points
-        pattern_descriptors = [];
-        scrShot_descriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
-        scrShot_corners = [];
-        pattern_corners = [];
-        matches = [];
-        var i = image2.width * image2.height;
-
-        // naive brute-force matching.
-        // each on screen point is compared to all pattern points
-        // to find the closest match
-        
-        function render_matches(ctx, matches, count) {
-
-            for (var i = 0; i < count; ++i) {
-                var m = matches[i];
-                var s_kp = scrShot_corners[m.screen_idx];
-                var p_kp = pattern_corners[m.pattern_lev][m.pattern_idx];
-                if (match_mask.data[i]) {
-                    ctx.strokeStyle = "rgb(0,255,0)";
-                    ctx.beginPath();
-                    ctx.moveTo(s_kp.x + 200,s_kp.y);
-                    ctx.lineTo(p_kp.x, p_kp.y);
-                    ctx.lineWidth=1;
-                    ctx.stroke();
-
-                } else {
-                    ctx.strokeStyle = "rgb(255,0,0)";
-                }
-            }
-            var img = canvas.toDataURL("image/png");
-            if (cb !== undefined) {
-                cb(img);
-                return;
+            } else {
+                ctx.strokeStyle = "rgb(255,0,0)";
             }
         }
-
-        // transform matrix
-        homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
-        match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
-        var lev0_img = new jsfeat.matrix_t(image1.width, image1.height, jsfeat.U8_t | jsfeat.C1_t);
-        var lev_img = new jsfeat.matrix_t(image1.width, image1.height, jsfeat.U8_t | jsfeat.C1_t);
-        var lev_corners, lev_descr;
-        var corners_num=0;
-        var sc = 1.0;
-        jsfeat.imgproc.grayscale(imageData1.data, image1.width, image1.height, lev0_img);
-        for (var lev=0; lev < num_train_levels; ++lev) {
-            pattern_corners[lev] = [];
-            lev_corners = pattern_corners[lev];
-            pattern_descriptors[lev] = new jsfeat.matrix_t(32, max_per_level, jsfeat.U8_t | jsfeat.C1_t);
-        }
-
-        // do the first level
-        lev_corners = pattern_corners[0];
-        lev_descr = pattern_descriptors[0];
-        var s_pattern_corners = [];
-
-        jsfeat.imgproc.gaussian_blur(lev0_img, lev_img, blur_size); // this is more robust
-        corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-        s_pattern_corners.push(lev_corners);
-        jsfeat.orb.describe(lev_img, s_pattern_corners[0], corners_num, lev_descr);
-        sc -= sc_pc;
-
-        // lets do multiple scale levels
-        // we can use Canvas context draw method for faster resize
-        // but its nice to demonstrate that you can do everything with jsfeat
-        for (lev = 1; lev < num_train_levels; ++lev) {
-            lev_corners = pattern_corners[lev];
-            lev_descr = pattern_descriptors[lev];
-
-            var new_width = (lev0_img.cols*sc)|0;
-            var new_height = (lev0_img.rows*sc)|0;
-            jsfeat.imgproc.resample(lev0_img, lev_img, new_width, new_height);
-            jsfeat.imgproc.gaussian_blur(lev_img, lev_img, blur_size);
-            corners_num = jsfeat.fast_corners.detect(lev_img, lev_corners, 3);
-            s_pattern_corners.push(lev_corners);
-            jsfeat.orb.describe(lev_img, s_pattern_corners[lev], corners_num, lev_descr);
-            // fix the coordinates due to scale level
-            for (i = 0; i < corners_num; ++i) {
-                lev_corners[i].x *= 1./sc;
-                lev_corners[i].y *= 1./sc;
-            }
-
-            sc -= sc_pc;
-        }
-
-        jsfeat.imgproc.grayscale(imageData2.data, image2.width, image2.height, scrShot_u8);
-        jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blur_size);
-        num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrShot_corners, 3);
-        jsfeat.orb.describe(scrShot_u8_smooth, scrShot_corners, num_scrShot_corners, scrShot_descriptors);
-        var num_matches = match_pattern(scrShot_descriptors, pattern_descriptors, matches);
-        var good_matches = find_transform(scrShot_corners, pattern_corners,matches, num_matches, homo3x3, match_mask);
-        console.log(num_matches, good_matches);
-        if (num_matches) {
-            render_matches(ctx, matches, num_matches);
+        var img = canvas.toDataURL("image/png");
+        if (cb !== undefined) {
+            cb(img);
+            return;
         }
     });
-
 }
