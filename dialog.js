@@ -173,10 +173,10 @@ function crop() {
                     area: sel,
                     dpr: devicePixelRatio
                 }, function (res) {
-                    if (res.message == "failed") {
+                    if (res.message === "failed") {
                         injectErrorModal();
                     } else {
-                        injectAckModal();
+                        injectAckModal("Enhanced protection enabled for this page");
                     }
                 });
             } else {

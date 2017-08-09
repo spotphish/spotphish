@@ -16,8 +16,7 @@ CHECK_SOURCES = background.js orb-features.js content.js popup.js option.js dial
 BACKGROUND = js/bg.js
 CONTENT = js/cs.js
 
-all: check css
-#all: $(BACKGROUND) $(CONTENT)
+all: check
 
 $(BACKGROUND): $(BG_SOURCES)
 	cat $^ > $@

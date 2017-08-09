@@ -136,15 +136,14 @@ function rpc(msg) {
     });
 }
 
-function injectAckModal() {
-    console.log("jasd");
+function injectAckModal(message = "All done") {
     const ack = {
-        title: "Killphisher",
+        title: "KillPhisher",
         type: "info",
-        main: "This page was successfully  added to protected pages.",
+        main: message,
         extra: null,
-        buttons: [],
-        dismiss_after: 2000
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        dismiss_after: 3000
     };
     dialog(ack);
 }
@@ -154,8 +153,7 @@ function injectCropModal() {
             op: "add_wh"
         }, function (res) {
             console.log("resp called");
-            setTimeout(
-                injectAckModal, 500);
+            setTimeout(x => injectAckModal("Basic protection enabled for this page"), 500);
         });
     }
 
@@ -163,7 +161,7 @@ function injectCropModal() {
         title: "Protect Page",
         type: "info",
         main: "Basic or Enhanced?",
-        extra: "<div>With <b>basic protection</b>, your personal security image will be displayed every time you visit this page.</div><br><div>For <b>enhanced protection</b>, select the part of the page by which you identify this site. The logo is usually a good choice. You will be alerted if any other page looks like this one - it may be a phishing attempt!</div>",
+        extra: "<div>With <b>basic protection</b>, your personal security image will be displayed every time you visit this page.</div><br><div>For <b>enhanced protection</b>, identify the most recognizable part of the page, like the area around the logo. You will be alerted if any other page looks like this one.</div>",
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Enhance!</button>`, onclick: crop},
             {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Basic</button>`, onclick: basic}]
     };

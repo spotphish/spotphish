@@ -51,6 +51,9 @@
         "jsfeat": false,
         "defPatterns": false,
         "debug": false,
-        "dialog": false
+        "dialog": false,
+        "findCorrespondence": false,
+        "getUrlVars": false,
+        "injectAckModal": false
     }
 }

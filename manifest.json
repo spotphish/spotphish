@@ -1,13 +1,13 @@
 {
   "manifest_version": 2,
 
-  "name": "Killphisher",
+  "name": "KillPhisher",
   "description": "Zero-day phishing protection",
   "version": "0.1.0",
   "browser_action": {
     "default_icon": "assets/icons/icon24.png",
     "default_popup": "popup.html",
-    "default_title": "Killphisher"
+    "default_title": "KillPhisher"
   },
   "icons": {
     "16": "assets/icons/icon16.png",

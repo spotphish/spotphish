@@ -174,7 +174,6 @@ function renderSafeDomainTable() {
     $(".kp-safelist-row").on("click", function(e) {
         //e.preventDefault();
         if ($(e.target).is(".kp-sl-delete")) {
-            var id = $(this).data("id");
             var domain = $(this).data("name");
             var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {

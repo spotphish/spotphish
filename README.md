@@ -53,11 +53,12 @@ More information and technical details [here](doc/rationale.md).
 
 To get this running from the source code on your local machine (Chrome only):
 
-- clone this git repository
-- navigate to "chrome://extensions"
-- click the checkbox next to "Developer mode" in the upper right hand corner
-- click the "Load unpacked extension..." button below the "Extensions" title
-- select the "killphisher" folder from your filesystem
+- Clone this git repository
+- Navigate to "chrome://extensions"
+- Click the checkbox next to "Developer mode" in the upper right hand corner
+- Click the "Load unpacked extension..." button below the "Extensions" title
+- Select the "killphisher" folder from your filesystem
+- Existing pages will not be affected; reload for protection
 
 ## Usage
 
