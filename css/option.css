@@ -14,6 +14,9 @@ img.secure-image {
   width: 100%;
   height: auto; }
 
+.mdl-card__media.kp-security-image {
+    background: #fff;
+}
 img.template-image {
   width: 100%;
   height: auto;
@@ -51,8 +54,27 @@ img.template-image {
 .kp-hero-text {
     font-size: 1.2rem;
     line-height: 1.3;
+}
+
+p.kp-hero-text {
     padding-left: 0;
 }
+
+ul.kp-hero-text {
+    margin-top: 0;
+}
+
+figure img {
+    width: 100%;
+}
+
+figcaption {
+    font-size: 1.2rem;
+    line-height: 1.3;
+    font-style: italic;
+    margin: 0.5em 0;
+}
+
 
 .mdl-list__item-secondary-content.kp-settings-button {
     align-items: flex-start;

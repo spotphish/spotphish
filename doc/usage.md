@@ -33,21 +33,21 @@ page versus an imitation page in the following manner:
 
   * Visiting a genuine page triggers a popup with a personal security image,
     which is displayed for a few seconds.
-  * The plugin takes periodic screenshots of the active browser tab and raises
-    an alarm if the current page visually resembles the login page of a
-    protected site.
+  * Periodic screenshots of the active browser tab are taken and compared with
+    "mugshots" of protected pages. The user is alerted if the current
+    page visually resembles a protected page.
 
-More information and technical details [here](rationale.md).
+More information and technical details [here](doc/rationale.md).
 
 ![Paypal Greenflag]
 
-*Actual Paypal login, green flag*
+*Real Paypal login page*
 
 <br>
 
 ![Paypal Redflag]
 
-*Paypal Phish, red flag*
+*Paypal phishing page*
 
 ## Installation
 
@@ -63,10 +63,9 @@ To get this running from the source code on your local machine (Chrome only):
 
 Once the plugin is installed, try visiting the following links:
 
-- [Paypal real login page](https://www.paypal.com/signin):
-  You should see a popup with an image of Batman giving you a thumbs-up
-  which will fade in a few seconds. This is an indication that the page is
-  a protected page and its URL has been verified.
+- [Paypal real login page](https://www.paypal.com/signin): You should see a
+  popup with a security image, which will fade in a few seconds. This is an
+  indication that the page is a protected page and its URL has been verified.
 
 - [Paypal phishing sample](http://www.phishtank.com/phish_detail.php?phish_id=5123590)
   (Don't worry, it's harmless): This page contains a screenshot of a Paypal phishing page
@@ -85,8 +84,8 @@ Some points to keep in mind while choosing a security image:
 
 - An image with personal and emotional significance works better than generic
   defaults.
-- Choose an image which you would _miss_ if it didn't show up. Pictures or animated gifs of pets,
-  loved ones, favorite movie clips make good choices.
+- Choose an image you would _miss_ if it didn't show up. Pictures or animated gifs of pets,
+  loved ones, favorite movie clips are good choices.
 - Pick an image which is not publicly associated with you, like your profile pictures or photos
   shared on social media.
 
@@ -98,23 +97,23 @@ Protected pages are webpages being monitored by the plugin, as they are potentia
 targets for phishing attempts. Protection comes in two flavours:
 
   * **Basic:** Your security image is flashed in a popup whenever you visit a
-    protected page. This means the page has been verified to be genuine and you
-    can safely enter your creds. Basic mode has negligible overhead and can be
-    turned on for any number of pages.
+    protected page. This means the page URL has been verified to be genuine and you
+    can safely enter your creds.
 
   * **Enhanced:** The plugin records a "mugshot" of the protected page - a
     distinctive snippet by which most people would identify the page. In
     addition to flashing the security image when the original page is visited,
     the plugin monitors all browsing activity, taking periodic snapshots of the
     active tab. It raises an alarm if the mugshot is present anywhere the
-    snapshot of the current page. This comparison is carried out using computer
-    vision techniques.
+    snapshot of the current page.
 
-Enhanced mode adds some CPU overhead, so we optimize it to run only in certain
-conditions: if the page contains a visible password field and not part of a
+Basic mode has negligible overhead and can be turned on for any number of pages.
+The image comparison in enhanced mode is done using computer vision techniques,
+and adds some CPU overhead. Therefore, we optimize it to run only under certain
+conditions: if the page contains a visible password field and is not part of a
 [safe domain](#safe-domains). The domain of a protected page is automatically
-enrolled as a [safe domain](#safe-domains), i.e. one which is highly unlikely to
-host phishing pages.
+enrolled as a [safe domain](#safe-domains), i.e. one which is highly unlikely
+to host phishing pages.
 
 Login pages of popular and heavily-phished sites like Google, Facebook, Amazon
 and Paypal are protected out of the box. To protect any other login page, say
@@ -145,7 +144,7 @@ removed from this tab.
 
 ## Troubleshooting
 
-  1. **I'm getting a lot of false alarms!**
+  1. **I'm getting a lot of false alarms on this site!**
 
     If you trust the site, consider adding it to [Safe Domains](#safe-domains).
 
@@ -156,15 +155,15 @@ removed from this tab.
     the corresponding features. You can view a larger version of this image by
     right-clicking and selecting the browser's _Open Image in New Tab_.
 
-    The current image matching strategy is very much a work in progress; it can
+    The current image matching strategy is very much a work in progress; it might
     consider two pages alike which look very different to the human eye.
 
   1. **This page looks like a protected page, but I didn't get warned!**
 
     If a mugshot of the protected page exists (_enhanced_ mode), it might still
-    fail to trigger a warning due to limitations of the image matching code. The
-    more closely a page resembles the original protected page, the more likely it
-    will trigger a warning.
+    fail to trigger a warning due to limitations of the image matching code.
+    The more closely a fake page resembles the original protected page, the
+    more likely it will trigger a warning.
 
     You will not get a warning in the following cases:
       * The page had only _basic_ protection - no mugshot.
@@ -196,11 +195,12 @@ Components used and their licenses
 | [Material Design Lite](https://github.com/google/material-design-lite) | Apache 2 |
 | [IDBWrapper](https://github.com/jensarps/IDBWrapper) | MIT |
 | [JQuery](https://jquery.com) | MIT |
+| [Ad Blocking](https://github.com/citp/ad-blocking) | MIT |
 
 ## License:
 
 MIT
 
-[Paypal Greenflag]: ../doc/img/paypal-greenflag.gif
-[Paypal Redflag]: ../doc/img/paypal-redflag.gif
+[Paypal Greenflag]: doc/img/paypal-greenflag.gif
+[Paypal Redflag]: doc/img/paypal-redflag.gif
 [foab]: https://arxiv.org/abs/1705.08568

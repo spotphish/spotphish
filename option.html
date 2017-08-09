@@ -39,13 +39,13 @@
     <section class="mdl-layout__tab-panel is-active" id="scroll-tab-secure-img">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
-                <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet">
+                <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet kp-security-image">
                     <img class="secure-image" id="secureimage" src="assets/img/secure_img/kp1.jpg" width="100" border="0" alt="">
                 </div>
                 <div class="mdl-cell mdl-cell--8-col">
                     <h2 class="mdl-card__title-text">Security Image &nbsp;<i class="material-icons">lock</i></h2>
                     <div class="mdl-card__supporting-text kp-hero-text">
-                    Your security image is displayed on login pages of protected sites. Look for your secure image whenever you login to Google, Facebook, Amazon, Paypal and other sites you have whitelisted. If you do not see it, <em>double check the URL</em>.
+                    Your security image is flashed in a popup when you visit protected pages. Look for your secure image whenever you login to Google, Facebook, Amazon, Paypal and other pages you have protected. If you do not see it, <em>double check the URL</em>.
                     </div>
                     <div class="mdl-card__supporting-text kp-hero-text">
                     Your security image should be known only to you.
@@ -166,6 +166,44 @@
             </div>
     </section>
     <section class="mdl-layout__tab-panel" id="scroll-tab-help">
+        <div class="mdl-grid kp-max-width">
+            <div class="mdl-cell mdl-cell--12-col">
+                <h3>About</h3>
+            </div>
+            <div class="mdl-cell mdl-cell--9-col mdl-grid">
+                <p class="kp-hero-text">
+                KillPhisher is a Chrome extension which protects against zero-day phishing
+                by creating large visual differences between legitimate sites and phishing
+                pages which attempt to mimic them. This is done as follows:
+                </p>
+                <ul class="kp-hero-text">
+                    <li>Visiting a genuine page triggers a popup with a personal security image,
+                    which is displayed for a few seconds.
+                    </li>
+                    <li>The plugin takes periodic screenshots of the active browser tab and raises
+                    an alarm if the current page visually resembles the login page of a
+                    protected site.
+                    </li>
+                </ul>
+                <figure>
+                    <img src="doc/img/paypal-greenflag.gif">
+                    <figcaption>Real Paypal login page</figcaption>
+                </figure>
+                <figure>
+                    <img src="doc/img/paypal-redflag.gif">
+                    <figcaption>Paypal phishing page</figcaption>
+                </figure>
+            </div>
+            <div class="mdl-cell mdl-cell--12-col">
+                <h3>Documentation</h3>
+            </div>
+            <div class="mdl-cell mdl-cell--9-col mdl-grid">
+                <ul class="kp-hero-text">
+                    <li><a href="https://github.com/coriolis/killphisher/blob/master/doc/README.md">Usage and FAQ</a></li>
+                    <li><a href="https://github.com/coriolis/killphisher/blob/master/doc/rationale.md">Background and technical details</a></li>
+                </ul>
+            </div>
+        </div>
     </section>
   </main>
 </div>
