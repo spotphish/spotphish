@@ -108,7 +108,7 @@ function showGreenflag(msg) {
 }
 
 function showRedflag(msg) {
-    let safeDomainLink = chrome.extension.getURL("option.html") + "#safedomain";
+    let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=safedomain&host=" + window.location.hostname;
     function openSafeDomainLink() {
         window.open(safeDomainLink);
     }

@@ -30,6 +30,19 @@ function stripQueryParams(url) {
     return site;
 }
 
+function getUrlVars()
+{
+    var vars = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++)
+    {
+        hash = hashes[i].split('=');
+        vars.push(hash[0]);
+        vars[hash[0]] = hash[1];
+    }
+    return vars;
+}
+
 function isSpecialTab(url) {
     if (url.indexOf('chrome:') === 0 || url.indexOf('chrome-extension:') === 0 || url.indexOf('chrome-devtools:') === 0 || url.indexOf('file:') === 0 || url.indexOf('chrome.google.com/webstore') >= 0) {
         return true;

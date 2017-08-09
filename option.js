@@ -176,7 +176,7 @@ function renderSafeDomainTable() {
         if ($(e.target).is(".kp-sl-delete")) {
             var id = $(this).data("id");
             var domain = $(this).data("name");
-            var res = confirm("Do you want to delete " + KPSkipList[id] + " from the list of safe domains?");
+            var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {
                 let err = bkg.removeFromKPSkipList(domain);
                 if (err) {
@@ -204,12 +204,18 @@ $(document).ready(function() {
             bkg.syncWhiteList(renderWhitelistTable);
         }
     });
-  
-    let hash = $.trim( window.location.hash );
-    if (hash === "#safedomain") {
+
+    let params = getUrlVars();
+    console.log(params);
+    if (params["tab"] === "safedomain") {
         $("#safedomain")[0].click();
+        if (params["host"]) {
+            $("label[for=kp-safelist-input]").attr("style", "visibility: hidden");
+            $("#kp-safelist-input").focus();
+            $("#kp-safelist-input").val(params["host"]);
+        }
     }
-  
+
     initAdvanceTab();
     updateImage();
     defaultImages.forEach(function(img) {
