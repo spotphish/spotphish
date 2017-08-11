@@ -25,7 +25,8 @@ var redFlagSites =[{
         "https://www.paypal.com/in/signin",
         "https://www.paypal.com/us/cgi-bin",
         "https://www.paypal.com/signin",
-        "https://www.paypal.com/jp/signin"
+        "https://www.paypal.com/jp/signin",
+        "https://www.paypal.com/signin/authorize"
     ],
     "templates": [{
         "templateName": "Paypal",
