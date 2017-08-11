@@ -3,7 +3,7 @@ const watches = [0, 4000, 20000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
-const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp1.jpg");
+const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 
 let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
