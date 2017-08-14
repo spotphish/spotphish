@@ -1,4 +1,4 @@
-# Killphisher: Zero-Day Phishing Protection
+# SpotPhish: Zero-Day Phishing Protection
 
 ## Introduction
 

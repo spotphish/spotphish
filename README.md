@@ -1,4 +1,4 @@
-# KillPhisher: Zero-Day Phishing Protection
+# SpotPhish: Zero-Day Phishing Protection
 
 A Chrome extension which provides zero-day phishing protection.
 
@@ -18,7 +18,7 @@ A Chrome extension which provides zero-day phishing protection.
 
 ## Introduction
 
-KillPhisher is a Chrome extension which provides zero-day phishing protection
+SpotPhish is a Chrome extension which provides zero-day phishing protection
 by creating large visual differences between legitimate sites and phishing
 pages which attempt to mimic them.
 
@@ -57,7 +57,7 @@ To get this running from the source code on your local machine (Chrome only):
 - Navigate to "chrome://extensions"
 - Click the checkbox next to "Developer mode" in the upper right hand corner
 - Click the "Load unpacked extension..." button below the "Extensions" title
-- Select the "killphisher" folder from your filesystem
+- Select the "spotphish" folder from your filesystem
 - Existing pages will not be affected; reload for protection
 
 ## Usage
@@ -119,7 +119,7 @@ to host phishing pages.
 Login pages of popular and heavily-phished sites like Google, Facebook, Amazon
 and Paypal are protected out of the box. To protect any other login page, say
 of your bank, visit the page containing the login dialog, click on the
-KillPhisher icon to the right of the address bar and select _Protect Page_.
+SpotPhish icon to the right of the address bar and select _Protect Page_.
 
 If you want enhanced protection, you will be prompted to select the "mugshot"
 of the page. Select the area which distictly identifies the brand and function

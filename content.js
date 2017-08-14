@@ -138,7 +138,7 @@ function rpc(msg) {
 
 function injectAckModal(message = "All done") {
     const ack = {
-        title: "KillPhisher",
+        title: "SpotPhish",
         type: "info",
         main: message,
         extra: null,

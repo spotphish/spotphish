@@ -1,6 +1,6 @@
 function dialog(obj={}) {
     const icon = chrome.extension.getURL("assets/icons/icon128.png"),
-        d = Object.assign({}, {title: "KillPhisher",
+        d = Object.assign({}, {title: "SpotPhish",
             type: "info",
             main: "",
             img: "",
