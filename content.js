@@ -19,10 +19,7 @@ function main() {
                 console.log("KP: Invalid msg from background?!", msg);
             }
             if (msg.op === "greenflag") {
-                const visible = $("input[type=\"password\"]").filter(":visible");
-                if (visible.length > 0) {
-                    showGreenflag(msg);
-                }
+                showGreenflag(msg);
             } else if (msg.op === "redflag") {
                 showRedflag(msg);
             } else if (msg.op === "crop_template") {
