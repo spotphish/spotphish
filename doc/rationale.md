@@ -16,9 +16,10 @@ We increase the contrast in user experience between browsing a genuine page
 versus an imitation page in the following manner:
 
   * Annotate genuine login pages with a personal image selected by the user.
-  * Take periodic screenshots of the active browser tab and raise an alarm if
-    it visually resembles the login page of a whitelisted site. The comparison
-    is done using computer vision techniques.
+  * Take periodic screenshots of the active browser tab if it does not belong
+    to a trusted domain, and raise an alarm if it visually resembles the
+    login page of a whitelisted site. The comparison is done using computer
+    vision techniques.
 
 Our approach can thus effectively protect against zero-day phishing, which
 would not be caught by a blacklist-based system. It is implemented as a browser
@@ -26,8 +27,8 @@ plugin.
 
 ## How We Get Phished
 
-Phishing is an attack on the vulnerabilities of the human cognitive system,
-rather than an attack on the vulnerabilities of software. Consider the task of
+Phishing is an attack on the limitations of the human cognitive system, rather
+than an attack on the vulnerabilities of software. Consider the task of
 navigating a computer interface to access protected resources like email,
 social networking and bank accounts through the lens of Daniel Kahneman's model
 of human thought processes: [System 1 and System 2][sys12].
@@ -38,8 +39,9 @@ without bumping into things. System 2 is effortful, slow, consciously allocates
 attention to process complex situations, like writing an email or multiplying
 large numbers.
 
-When System 1 gets confused or surprised, it escalates the matter to System 2,
-which then allocates attention to the event and formulates a response.
+When System 1 gets confused, surprised, or alarmed, it escalates the matter to
+System 2, which then allocates attention to the event and formulates a
+response.
 
 A cardinal rule of UX design is that the user's System 1 should effortlessly
 parse the user interface landscape and navigate common workflows, and involve
@@ -85,6 +87,12 @@ governments, banks, public utilities and other sensitive organizations are
 especially at risk from such targeted zero-day "spearphishing" attacks.
 
 ## Perceptual anti-phishing
+
+When human System 1s fall short, either due to inherent limitations or
+disabilities, we often use other humans or service animals like guard dogs and
+seeing-eye dogs to bridge gaps and augment our own System 1s. In the same
+spirit, a software System 1, a "cyberdog", can keep an eye out for warning
+signs which our own eyes may glaze over.
 
 Our approach is inspired by the paper [The Future of Ad Blocking][foab] by
 Storey et al, which introduces a novel _perceptual ad blocking_ technique. It

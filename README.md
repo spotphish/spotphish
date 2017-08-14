@@ -28,16 +28,19 @@ blacklist-based methods present on most browsers. High-value individuals and
 employees of sensitive organizations are especially vulnerable to such
 _zero-day phishing_ attacks.
 
-The plugin increases the contrast in user experience between browsing a genuine
+The extension increases the contrast in user experience between browsing a genuine
 page versus an imitation page in the following manner:
 
   * Visiting a genuine page triggers a popup with a personal security image,
     which is displayed for a few seconds.
-  * Periodic screenshots of the active browser tab are taken and compared with
+  * Screenshots of the active browser tab are taken and compared with
     "mugshots" of protected pages. The user is alerted if the current
-    page visually resembles a protected page.
+    page visually resembles a protected page, but belongs to an unknown
+    domain.
 
-More information and technical details [here](doc/rationale.md).
+Screenshots are processed locally in the browser and discarded immediately;
+they are not stored or sent to an external site.  More information and
+technical details [here](doc/rationale.md).
 
 ![Paypal Greenflag]
 
@@ -101,12 +104,13 @@ targets for phishing attempts. Protection comes in two flavours:
     protected page. This means the page URL has been verified to be genuine and you
     can safely enter your creds.
 
-  * **Enhanced:** The plugin records a "mugshot" of the protected page - a
+  * **Enhanced:** The extension has a "mugshot" of the protected page - a
     distinctive snippet by which most people would identify the page. In
     addition to flashing the security image when the original page is visited,
-    the plugin monitors all browsing activity, taking periodic snapshots of the
+    the extension monitors all browsing activity, taking periodic snapshots of the
     active tab. It raises an alarm if the mugshot is present anywhere the
-    snapshot of the current page.
+    snapshot of the current page, and the current page does not belong to a
+    known, safe domain.
 
 Basic mode has negligible overhead and can be turned on for any number of pages.
 The image comparison in enhanced mode is done using computer vision techniques,
@@ -145,31 +149,26 @@ removed from this tab.
 
 ## Troubleshooting
 
-  1. **I'm getting a lot of false alarms on this site!**
+  1. **I'm getting a lot of false alarms on this site!**  
+If you trust the site, consider adding it to [Safe Domains](#safe-domains).
 
-    If you trust the site, consider adding it to [Safe Domains](#safe-domains).
+  1. **No, really, why does it think this page looks like Amazon?**  
+Look at the _correspondence image_ shown in the red warning dialog - the
+mugshot of the protected page and the current page side by side, with green
+lines connecting the corresponding features. You can view a larger version of
+this image by right-clicking and selecting the browser's _Open Image in New
+Tab_.  The current image matching strategy is very much a work in progress; it
+might consider two pages alike which look very different to the human eye.
 
-  1. **No, really, why does it think this page looks like Amazon?**
-
-    The warning dialog shows a _correspondence image_ - the mugshot of the
-    protected page and the current page side by side, with green lines connecting
-    the corresponding features. You can view a larger version of this image by
-    right-clicking and selecting the browser's _Open Image in New Tab_.
-
-    The current image matching strategy is very much a work in progress; it might
-    consider two pages alike which look very different to the human eye.
-
-  1. **This page looks like a protected page, but I didn't get warned!**
-
-    If a mugshot of the protected page exists (_enhanced_ mode), it might still
-    fail to trigger a warning due to limitations of the image matching code.
-    The more closely a fake page resembles the original protected page, the
-    more likely it will trigger a warning.
-
-    You will not get a warning in the following cases:
-      * The page had only _basic_ protection - no mugshot.
-      * The current page is part of a _safe domain_, or does not contain a
-        password field.
+  1. **This page looks like a protected page, but I didn't get warned!**  
+If a mugshot of the protected page exists (_enhanced_ mode), it might still
+fail to trigger a warning due to limitations of the image matching code.
+The less a fake page resembles the original protected page, the
+less likely it will trigger a warning. You will not get a warning in the
+following cases:
+    * The page had only _basic_ protection - no mugshot.
+    * The current page is part of a _safe domain_.
+    * The current page does not contain a password field.
 
 ## History
 
