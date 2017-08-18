@@ -243,7 +243,6 @@ function snapcheck(ti) {
             findOrbFeatures(normalizedImage).then(result => {
                 scrCorners = result.corners;
                 scrDescriptors = result.descriptors;
-                console.log("KPTemplates : ", KPTemplates);
                 let t0 = performance.now();
                 for (let i = 0; i < KPTemplates.length; i++) {
                     const template = KPTemplates[i];
