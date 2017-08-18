@@ -13,14 +13,16 @@ var save = (image) => {
 }
 
 function crop(image, area, dpr, crop, done) {
+    console.log(dpr);
     var top = area.y * dpr
     var left = area.x * dpr
     var width = area.w * dpr
     var height = area.h * dpr
     var w = area.w
     var h = area.h
-
-    if (dpr === 1 && !crop) {
+    var browser = typeof(InstallTrigger) !== "undefined" ? "firefox" : "chrome";
+    console.log(browser);
+    if ((dpr === 1 && !crop) || browser === "firefox") {
         done(image);
         return;
     }
