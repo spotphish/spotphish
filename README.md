@@ -54,7 +54,7 @@ technical details [here](doc/rationale.md).
 
 ## Installation
 
-To get this running from the source code on your local machine (Chrome only):
+To get this running from the source code on your local machine:
 
 - Clone this git repository
 - Navigate to "chrome://extensions". For Firefox navigate to "about:debugging"
