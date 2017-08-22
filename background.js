@@ -67,7 +67,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         removeFromWhiteList(msg.site, msg.currentTab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
-        chrome.tabs.getSelected(null, (tab) => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
                 crop(image, msg.area, msg.dpr, true, (cropped) => {
                     let cb = function(res) {
