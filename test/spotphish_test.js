@@ -92,7 +92,6 @@ async function testImageData(imageUrl) {
                             console.log("Match found for  : " + template.site + ", Image Path : " + imageUrl + ", Time taken : " + (t1 - t0) + ", Matches : " + res.matchCount + ", Good Matches : " + res.goodMatches + ", Corners : " + res.ncorners, 1);
                         } else {
 
-                            console.log("");
                             console.log("Wrong Match found for  : " + template.site + ", Image Path : " + imageUrl + ", Time taken : " + (t1 - t0) + ", Matches : " + res.matchCount + ", Good Matches : " + res.goodMatches + ", Corners : " + res.ncorners, 0);
                         }
                     } else {
