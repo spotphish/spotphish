@@ -1,6 +1,6 @@
 # SpotPhish: Zero-Day Phishing Protection
 
-A Chrome extension which provides zero-day phishing protection.
+A browser extension for Chrome and Firefox which provides zero-day phishing protection.
 
 ## Contents
 
@@ -18,7 +18,7 @@ A Chrome extension which provides zero-day phishing protection.
 
 ## Introduction
 
-SpotPhish is a Chrome extension which provides zero-day phishing protection
+SpotPhish is a browser extension, for Chrome and Firefox, which provides zero-day phishing protection
 by creating large visual differences between legitimate sites and phishing
 pages which attempt to mimic them.
 
@@ -57,9 +57,9 @@ technical details [here](doc/rationale.md).
 To get this running from the source code on your local machine (Chrome only):
 
 - Clone this git repository
-- Navigate to "chrome://extensions"
-- Click the checkbox next to "Developer mode" in the upper right hand corner
-- Click the "Load unpacked extension..." button below the "Extensions" title
+- Navigate to "chrome://extensions". For Firefox navigate to "about:debugging"
+- For Chrome, click the checkbox next to "Developer mode" in the upper right hand corner.
+- Click the "Load unpacked extension..." button below the "Extensions" title on Chrome. On Firefox click on the "Load Temporary Add-on" button.
 - Select the "spotphish" folder from your filesystem
 - Existing pages will not be affected; reload for protection
 
