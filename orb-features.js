@@ -1,7 +1,7 @@
 var num_train_levels = 4;
 var match_threshold = 48;
 var promiseTimeout = 5000; //in ms
-var blurSize = 5; 
+var blurSize = 5;
 var match_t = (function () {
     function match_t(screen_idx, pattern_lev, pattern_idx, distance) {
         if (typeof screen_idx === "undefined") { screen_idx=0; }
@@ -73,6 +73,7 @@ function popcnt32(n) {
 }
 
 function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
+
     var q_cnt = scrShot_descriptors.rows;
     //var query_du8 = scrShot_descriptors.data;
     var query_u32 = scrShot_descriptors.buffer.i32; // cast to integer buffer
@@ -85,15 +86,13 @@ function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
         var best_dist2 = 256;
         var best_idx = -1;
         var best_lev = -1;
-
         for (lev = 0; lev < num_train_levels; ++lev) {
             var lev_descr = patternDescriptors[lev];
+
             var ld_cnt = lev_descr.rows;
             var ld_i32 = lev_descr.buffer.i32; // cast to integer buffer
             var ld_off = 0;
-
             for (pidx = 0; pidx < ld_cnt; ++pidx) {
-
                 var curr_d = 0;
                 // our descriptor is 32 bytes so we have 8 Integers
                 for (k=0; k < 8; ++k) {
@@ -124,7 +123,6 @@ function match_pattern(scrShot_descriptors, patternDescriptors, matches) {
 
         qd_off += 8; // next query descriptor
     }
-
     return num_matches;
 }
 
@@ -183,7 +181,6 @@ const loadImage = (imageUrl, canvasElement) => {
             }
             resolve(image);
         };
-
         image.src = imageUrl;
     });
 };
@@ -198,9 +195,9 @@ function findOrbFeatures(screenShot) {
         var ctx = canvas.getContext("2d");
         ctx.drawImage(image, 0, 0, image.width, image.height);
         var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
-        
+
         var scrShot_u8 = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
-        var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t); 
+        var scrShot_u8_smooth = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
         var scrCorners = [];
         var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
 
@@ -210,7 +207,7 @@ function findOrbFeatures(screenShot) {
         var num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrCorners, 3);
         jsfeat.orb.describe(scrShot_u8_smooth, scrCorners, num_scrShot_corners, scrDescriptors);
         let t1 = performance.now();
-        console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
+        // console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
         var res = {};
         res.corners = scrCorners;
         res.descriptors = scrDescriptors;
@@ -241,7 +238,7 @@ function createPatterns(logo) {
                 var ctx = canvas.getContext("2d");
                 ctx.drawImage(image, 0, 0, image.width, image.height);
                 var imageData1 = ctx.getImageData(0, 0, image.width, image.height);
-                
+
                 var max_per_level = 150;
                 var sc_pc = 0.1;//Math.sqrt(2.0); // magic number ;)
                 var lev_corners, lev_descr;
@@ -253,10 +250,10 @@ function createPatterns(logo) {
                 var patternDescriptors = [];
                 var num_train_levels = 4; // no. of stages in the pyramid
                 var res = {};
-                
+
                 var lev0_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
                 var lev_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
-                
+
                 jsfeat.fast_corners.set_threshold(threshold);
                 jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, lev0_img);
                 for (let lev = 0; lev < num_train_levels; ++lev) {
@@ -325,16 +322,16 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     // transform matrix
     homo3x3 = new jsfeat.matrix_t(3,3,jsfeat.F32C1_t);
     match_mask = new jsfeat.matrix_t(500,1,jsfeat.U8C1_t);
-    matches = []; 
+    matches = [];
     var num_matches = 0;
     var good_matches = 0;
     num_matches = match_pattern(scrDescriptors, patternDescriptors, matches);
     good_matches = find_transform(scrCorners, patternCorners, matches, num_matches, homo3x3, match_mask);
     const ncorners = patternCorners[0].length;
     let match_ratio = good_matches/ncorners;
-    console.log("Corners:" + ncorners + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
+    // console.log("Corners:" + ncorners + "|Good matches:" + good_matches + "|Match ratio:" + match_ratio);
     if (match_ratio > 0.3) {
-        return ({matches: matches, matchCount: num_matches, mask: match_mask});
+        return ({matches: matches, matchCount: num_matches, mask: match_mask, goodMatches: good_matches, ncorners: ncorners });
     }
     return false;
 }
@@ -345,14 +342,14 @@ function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, 
     Promise.all([p1, p2]).then(res => {
         let image1 = res[1];
         let image2 = res[0];
- 
+
         var canvas = document.createElement("canvas");
         canvas.width = image1.width + image2.width + image1.width/2;
         canvas.height = image2.height;
         var ctx = canvas.getContext("2d");
         ctx.drawImage(image1, 0, 0, image1.width, image1.height);
         ctx.drawImage(image2, image1.width * 1.5, 0, image2.width, image2.height);
-        
+
         for (var i = 0; i < matchCount; ++i) {
             var m = matches[i];
             var s_kp = scrCorners[m.screen_idx];
