@@ -38,6 +38,7 @@ async function testImageData(imageUrl) {
 
     // print console messages from inside evaluate
     page.on('console', (...args) => {
+         console.log("");
         if (`${args[1]}` == 1) {
             console.log('\x1b[32m', `${args[0]}`);
         } else if (`${args[1]}` == 0) {
@@ -77,6 +78,8 @@ async function testImageData(imageUrl) {
             });
 
             let t0 = performance.now();
+            let matchFoundFlag = false;
+
             for (let i = 0; i < KPTemplates.length; i++) {
                 const template = KPTemplates[i];
                 const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners, template.patternDescriptors, template.site);
@@ -84,19 +87,26 @@ async function testImageData(imageUrl) {
                     let t1 = performance.now();
                     if (testFor) {
                         if (testFor === template.site.toLowerCase()) {
-                            console.log("");
+
+                            matchFoundFlag = true
                             console.log("Match found for  : " + template.site + ", Image Path : " + imageUrl + ", Time taken : " + (t1 - t0) + ", Matches : " + res.matchCount + ", Good Matches : " + res.goodMatches + ", Corners : " + res.ncorners, 1);
                         } else {
+
                             console.log("");
                             console.log("Wrong Match found for  : " + template.site + ", Image Path : " + imageUrl + ", Time taken : " + (t1 - t0) + ", Matches : " + res.matchCount + ", Good Matches : " + res.goodMatches + ", Corners : " + res.ncorners, 0);
                         }
                     } else {
-                        console.log("");
+
+                         matchFoundFlag = true
                         console.log("Match found for  : " + template.site + ", Image Path : " + imageUrl + ", Time taken : " + (t1 - t0) + ", Matches : " + res.matchCount + ", Good Matches : " + res.goodMatches + ", Corners : " + res.ncorners, 1);
                     }
                 } else {
                     // console.log("No Match found for : " + template.site );
                 }
+            }
+
+            if (!matchFoundFlag){
+                console.log("No Match found for  : " + imageUrl, 0);
             }
         });
         return false
