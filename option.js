@@ -61,13 +61,13 @@ function templateWhitelist(data) {
     if (data.url.length === 1) {
         urls =`
             <tr class="kp-wl-url-row" data-id=${data.id}>
-                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
+                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0].url}</td>
             </tr>`;
     } else {
         urls = data.url.reduce((a,b) => {
             var tmp = `
-                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
+                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b.url} >
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
                     <td>
                         <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete">
                             <i class="material-icons kp-wl-url-delete">delete</i>
@@ -105,7 +105,6 @@ function templateWhitelist(data) {
             `;
     return template;
 }
-
 
 function updateImage(data) {
     if (data) {

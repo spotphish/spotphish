@@ -4,11 +4,12 @@ var redFlagSites =[{
     "site": "Facebook",
     "enabled": true,
     "type": "default",
+    "green_check": { "password": 1},
     "url": [
-        "https://www.facebook.com/",
-        "https://www.facebook.com/login/",
-        "https://www.facebook.com/reg/",
-        "https://www.facebook.com/login.php"
+        { url: "https://www.facebook.com/", green_check: { password: 2 } },
+        { url: "https://www.facebook.com/login/" },
+        { url: "https://www.facebook.com/reg/" },
+        { url: "https://www.facebook.com/login.php" }
     ],
     "templates": [{
         "templateName": "Facebook",
@@ -22,11 +23,11 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://www.paypal.com/in/signin",
-        "https://www.paypal.com/us/cgi-bin",
-        "https://www.paypal.com/signin",
-        "https://www.paypal.com/jp/signin",
-        "https://www.paypal.com/signin/authorize"
+        { url: "https://www.paypal.com/in/signin" },
+        { url: "https://www.paypal.com/us/cgi-bin" },
+        { url: "https://www.paypal.com/signin" },
+        { url: "https://www.paypal.com/jp/signin" },
+        { url: "https://www.paypal.com/signin/authorize" }
     ],
     "templates": [{
         "templateName": "Paypal",
@@ -37,7 +38,7 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://infinity.icicibank.com/corp/AuthenticationController"
+        { url:  "https://infinity.icicibank.com/corp/AuthenticationController" }
     ],
     "templates": [{
         "templateName": "ICICI bank",
@@ -48,7 +49,7 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://inet.idbibank.co.in/corp/BANKAWAY"
+        { url: "https://inet.idbibank.co.in/corp/BANKAWAY" }
     ],
     "templates": [{
         "templateName": "IDBI bank",
@@ -59,8 +60,8 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://accounts.google.com/signin/v2/identifier",
-        "https://accounts.google.com/signin/oauth/identifier"
+        { url: "https://accounts.google.com/signin/v2/identifier" },
+        { url: "https://accounts.google.com/signin/oauth/identifier" }
     ],
     "templates": [{
         "templateName": "Google 2016",
@@ -74,21 +75,21 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://www.amazon.in/ap/signin",
-        "https://www.amazon.com/ap/signin",
-        "https://www.amazon.co.uk/ap/signin",
-        "https://www.amazon.com.au/ap/signin",
-        "https://www.amazon.co.jp/ap/signin",
-        "https://www.amazon.cn/ap/signin",
-        "https://www.amazon.sg/ap/signin",
-        "https://www.amazon.fr/ap/signin",
-        "https://www.amazon.de/ap/signin",
-        "https://www.amazon.it/ap/signin",
-        "https://www.amazon.nl/ap/signin",
-        "https://www.amazon.es/ap/signin",
-        "https://www.amazon.ca/ap/signin",
-        "https://www.amazon.com.mx/ap/signin",
-        "https://www.amazon.com.br/ap/signin"
+        { url: "https://www.amazon.in/ap/signin" },
+        { url: "https://www.amazon.com/ap/signin" },
+        { url: "https://www.amazon.co.uk/ap/signin" },
+        { url: "https://www.amazon.com.au/ap/signin" },
+        { url: "https://www.amazon.co.jp/ap/signin" },
+        { url: "https://www.amazon.cn/ap/signin" },
+        { url: "https://www.amazon.sg/ap/signin" },
+        { url: "https://www.amazon.fr/ap/signin" },
+        { url: "https://www.amazon.de/ap/signin" },
+        { url: "https://www.amazon.it/ap/signin" },
+        { url: "https://www.amazon.nl/ap/signin" },
+        { url: "https://www.amazon.es/ap/signin" },
+        { url: "https://www.amazon.ca/ap/signin" },
+        { url: "https://www.amazon.com.mx/ap/signin" },
+        { url: "https://www.amazon.com.br/ap/signin" }
     ],
     "templates": [{
         "templateName": "Amazon",
@@ -97,7 +98,7 @@ var redFlagSites =[{
         "templateName":"AWS",
         "logo":"assets/img/aws-logo.png"
     }]
-}]
+}];
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ {
@@ -109,7 +110,7 @@ var skipDomains = [ {
                         "name": "Facebook",
                         "site": "facebook.com",
                         "whiteListed":true,
-                        "domains": ["facebook.com"]
+                        "domains": ["facebook.com"],
                     }, {
                         "name": "Paypal",
                         "site": "paypal.com",

@@ -40,7 +40,7 @@ setInterval(watchdog, WATCHDOG_INTERVAL);
 function updateTabinfo(id, tab) {
     tabinfo[id].tab = tab;
 }
- 
+
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     if (sender.tab) {
         updateTabinfo(sender.tab.id, sender.tab);
@@ -78,17 +78,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                         }
                     };
 
-                    var url = stripQueryParams(sender.tab.url);
-                    console.log ("URL: ", url, " tab: ", sender.tab);
-                    addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, cropped, cb);
+                    addToWhiteList(sender.tab, cropped, cb);
                 });
             });
         });
     } else if (msg.op === "add_wh") {
-        var url = stripQueryParams(sender.tab.url);
         respond({message: "Added"});
-        console.log ("URL: ", url, " tab: ", sender.tab);
-        addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, null);
+        addToWhiteList(sender.tab, null);
     } else if (msg.op === "add_skip") {
         let domain = getPathInfo(sender.tab.url).host;
         addToKPSkipList(domain);
@@ -124,13 +120,25 @@ function init(msg, sender, respond) {
     if (msg.top) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
+        ti.inputFields = msg.inputFields;
         let res = checkWhitelist(tab);
         if (res) {
-            respond({action: "nop"});
-            debug("greenflagging", tab.id, tab.url);
-            ti.state = "greenflagged";
-            ti.port.postMessage({op: "greenflag", site: res.site});
-            return;
+            let greenFlag = true;
+            if (res.green_check) {
+                let rules = res.green_check;
+                for ( let key in rules) {
+                    if (!ti.inputFields[key] || ti.inputFields[key] !== rules[key]) {
+                        greenFlag = false;
+                        break;
+                    }
+                }
+            }
+            if (greenFlag) {
+                respond({action: "nop"});
+                ti.state = "greenflagged";
+                ti.port.postMessage({op: "greenflag", site: res.site});
+                return;
+            }
         }
     }
 
@@ -220,10 +228,11 @@ function checkSkip(url) {
 
 function checkWhitelist(tab) {
     const site = stripQueryParams(tab.url);
-    const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y === site).length > 0);
+    const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y.url === site).length > 0);
     if (wl.length) {
         debug("WHITE LISTED:", wl[0]);
-        return {"site":wl[0].site};
+        const wl_url = wl[0].url.filter(x => x.url === site);
+        return {"site":wl[0].site, "green_check": wl_url[0].green_check};
     }
     return false;
 }
@@ -319,7 +328,7 @@ function syncWhiteList(cb){
         KPWhiteList = dbObj.filter((x) => {
             return x.url !== undefined;
         }).map((x) => {
-            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site, domains:x.domains};
+            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site, domains: x.domains, green_check: x.green_check};
         });
 
         debug("syncWhiteList called : ", KPWhiteList, KPTemplates);
@@ -344,19 +353,24 @@ function toggleWhitelistItems(id, state, cb) {
         return;
     };
     objWhitelist.get(id, onSuccess, onError);
-} 
+}
 
-function addToWhiteList(data, tab, logo, cb) {
-    var pattern = {};
+function addToWhiteList(tab, logo, cb) {
+    let url = stripQueryParams(tab.url),
+        site = getPathInfo(url).host,
+        pattern = {};
+    pattern.patternName = site;
+    pattern.url = url;
     let addToDb = function(pattern) {
-        pattern.patternName = data.site;
+        let data = { type: "custom", site: site, enabled: true};
         data.templates = [];
         data.templates.push(pattern);
         data.domains = [];
         data.domains.push(data.site);
+        data.url = [];
+        data.url.push({url: url});
         tabinfo[tab.id].state = "greenflagged";
-        let urlInfo = getPathInfo(tab.url); 
-        addToKPSkipList(urlInfo.host, true);
+        addToKPSkipList(site, true);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
             debug("Added to DB : ", x);
@@ -365,14 +379,12 @@ function addToWhiteList(data, tab, logo, cb) {
 
     let appendToDb = function(pattern, index) {
         let id = KPWhiteList[index].id;
-        pattern.patternName = data.site;
         var onSuccess = function(obj) {
-            obj.url.push(data.url[0]);
+            obj.url.push( { url: url} );
             obj.templates.push(pattern);
             objWhitelist.put(obj, syncWhiteList);
             tabinfo[tab.id].state = "greenflagged";
-            let urlInfo = getPathInfo(tab.url); 
-            addToKPSkipList(urlInfo.host, true);
+            addToKPSkipList(site, true);
         };
         var onError = function(error) {
             console.log("Error updating field : ", error);
@@ -384,7 +396,7 @@ function addToWhiteList(data, tab, logo, cb) {
 
     var isSiteAdded = KPWhiteList.findIndex((x) => {
         let y = x.domains.filter((z) => {
-            return data.site.endsWith(z);
+            return site.endsWith(z);
         });
         if (y.length > 0) {
             return true;
@@ -398,7 +410,6 @@ function addToWhiteList(data, tab, logo, cb) {
             pattern.logo = logo;
             pattern.patternCorners = result.patternCorners;
             pattern.patternDescriptors = result.patternDescriptors;
-            pattern.url = tab.url;
             if (isSiteAdded !== -1) {
                 appendToDb(pattern, isSiteAdded);
             } else {
@@ -415,19 +426,19 @@ function addToWhiteList(data, tab, logo, cb) {
             return;
         });
     } else {
-        pattern.url = tab.url;
         if (isSiteAdded !== -1) {
             appendToDb(pattern, isSiteAdded);
         } else {
             addToDb(pattern);
         }
     }
-
 }
 
 function removeUrlFromWhiteList(url, id) {
     var onSuccess = function(data) {
-        let j = data.url.indexOf(url);
+        let j = data.url.findIndex((x) => {
+            return x.url === url;
+        });
         if (data.type === "custom" && data.url.length > 1) {
             data.url.splice(j, 1);
             let ti = data.templates.findIndex((x) => {
