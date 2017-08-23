@@ -197,9 +197,13 @@ Components used and their licenses
 | [JQuery](https://jquery.com) | MIT |
 | [Ad Blocking](https://github.com/citp/ad-blocking) | MIT |
 
-## License:
+## License
 
 MIT
+
+## Contact
+
+Email us at <dev@spotphish.com> or follow [@spotphish](https://twitter.com/spotphish).
 
 [Paypal Greenflag]: doc/img/paypal-greenflag.gif
 [Paypal Redflag]: doc/img/paypal-redflag.gif
