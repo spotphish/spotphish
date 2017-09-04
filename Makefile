@@ -33,4 +33,10 @@ css: .PHONY
 clean:
 	rm $(BACKGROUND) $(CONTENT)
 
+firefox:
+	 sed -i -e 's/chrome-extension/moz-extension/g' css/iconfont/material-icons.css
+
+chrome:
+	 sed -i -e 's/moz-extension/chrome-extension/g' css/iconfont/material-icons.css
+
 .PHONY:

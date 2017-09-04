@@ -40,6 +40,7 @@ function do_init() {
     if (window === top) {
         init.top = true;
         init.dpr = devicePixelRatio;
+        init.inputFields = scanInputFields();
     }
     topUrl = stripQueryParams(window.location.href);
 
@@ -147,6 +148,7 @@ function injectAckModal(message = "All done") {
     };
     dialog(ack);
 }
+
 function injectCropModal() {
     function basic() {
         chrome.runtime.sendMessage({
@@ -169,3 +171,15 @@ function injectCropModal() {
     dialog(cropDialog);
 }
 
+function scanInputFields() {
+    let ip = {};
+    $("input").filter(":visible").map(function() {
+        if (ip[this.type]) {
+            ip[this.type]++;
+        } else {
+            ip[this.type] = 1;
+        }
+    });
+    console.log("IP : ", ip);
+    return ip;
+}

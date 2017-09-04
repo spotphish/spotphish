@@ -61,15 +61,15 @@ function templateWhitelist(data) {
     if (data.url.length === 1) {
         urls =`
             <tr class="kp-wl-url-row" data-id=${data.id}>
-                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
+                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0].url}</td>
             </tr>`;
     } else {
         urls = data.url.reduce((a,b) => {
             var tmp = `
-                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
+                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b.url} >
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
                     <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete">
                             <i class="material-icons kp-wl-url-delete">delete</i>
                         </button>
                     </td>
@@ -84,10 +84,10 @@ function templateWhitelist(data) {
                     <h2 class="mdl-card__title-text">${data.site}</h2>
                 </div>
                 <div class="mdl-card__menu">
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-check">
                       <i class="material-icons kp-wl-site-check">${enabled}</i>
                     </button>
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-delete">
                       <i class="material-icons kp-wl-site-delete">delete</i>
                     </button>
                  </div>
@@ -105,7 +105,6 @@ function templateWhitelist(data) {
             `;
     return template;
 }
-
 
 function updateImage(data) {
     if (data) {
@@ -132,6 +131,7 @@ function renderWhitelistTable(data) {
         var id = $(this).data("id");
         var site = $(this).data("site");
         if ($(e.target).is(".kp-wl-site-delete")) {
+            console.log("delete called");
             var res = confirm("Do you want to delete " + site + " from the list of protected pages?");
             if (res) {
                 bkg.removeFromWhiteListById(id);
@@ -139,13 +139,14 @@ function renderWhitelistTable(data) {
             }
         } else if ($(e.target).is(".kp-wl-site-check")) {
             const checked = "check_box", unchecked ="check_box_outline_blank";
-            var value = $(e.target)[0].innerHTML.trim();
+            var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+            var value = icon.innerHTML.trim();
             if (value === checked) {
                 bkg.toggleWhitelistItems(id, false);
-                $(e.target)[0].innerHTML = unchecked;
+                icon.innerHTML = unchecked;
             } else {
                 bkg.toggleWhitelistItems(id, true);
-                $(e.target)[0].innerHTML = checked;
+                icon.innerHTML = checked;
             }
         } else if ($(e.target).is(".kp-wl-url-delete")) {
             $(e.target)[0].remove();
