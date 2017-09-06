@@ -48,6 +48,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     if (msg.op === "init") {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
+        console.log("check data received");
         checkdata(msg, sender, respond);
     } else if (msg.op === "url_change") {
         url_change(msg, sender, respond);
@@ -148,6 +149,7 @@ function init(msg, sender, respond) {
     }
 
     if (!ti.checkState) {
+        console.log("Sending check message");
         return respond({action: "check"});
     }
     return respond({action: "nop"});

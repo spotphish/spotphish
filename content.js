@@ -45,6 +45,7 @@ function do_init() {
     topUrl = stripQueryParams(window.location.href);
 
     rpc(init).then(x => {
+        console.log(x);
         if (x.action === "check") {
             startChecking();
         } else if (x.action === "nop") {
@@ -130,11 +131,24 @@ function showRedflag(msg) {
 }
 
 function rpc(msg) {
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(msg, res => {
-            return (res === undefined) ? reject({ error: chrome.runtime.lastError }) : resolve(res);
+    var browser = typeof(InstallTrigger) !== "undefined" ? "firefox" : "chrome";
+    console.log(browser);
+    if (browser === "chrome") {
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(msg, res => {
+                return (res === undefined) ? reject({ error: chrome.runtime.lastError }) : resolve(res);
+            });
         });
-    });
+    } else {
+        console.log("Sending ff compatible message");
+        return new Promise((resolve, reject) => {
+            let send = chrome.runtime.sendMessage(msg);
+            send.then(function (message) {
+                console.log("message recieved : ", message);
+                return (message === undefined) ? reject({ error: chrome.runtime.lastError }) : resolve(message);
+            });
+        });
+    }
 }
 
 function injectAckModal(message = "All done") {
