@@ -464,7 +464,12 @@ function removeUrlFromWhiteList(url, id) {
 function removeFromWhiteList(site, tab) {
     let upsertInDb = function(id) {
         var onSuccess = function(obj) {
-            let i = obj.url.indexOf(site);
+            let i = obj.url.findIndex((x) => {
+                return x.url === site;
+            });
+            if (i === -1) {
+                return;
+            }
             obj.url.splice(i, 1);
             let ti = obj.templates.findIndex((x) => {
                 return x.url === site;
@@ -482,7 +487,7 @@ function removeFromWhiteList(site, tab) {
     };
 
     let found = KPWhiteList.filter((x) => {
-        return (x.url.filter(y => y === site)).length > 0;
+        return (x.url.filter(y => y.url === site)).length > 0;
     });
     if (found.length > 0) {
         if (found[0].url.length > 1) {
