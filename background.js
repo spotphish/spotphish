@@ -90,7 +90,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         let domain = getPathInfo(sender.tab.url).host;
         addToKPSkipList(domain);
         respond({message: "added"});
-    } else {
+    } else if (msg.op === "urgent_check") {
+        respond({action: "nop"});
+        let tabState = tabinfo[sender.tab.id].state;
+        if (tabState === "watching" || tabState === "init") {
+            redflag(tabinfo[sender.tab.id]);
+        }
+    }else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;

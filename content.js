@@ -56,6 +56,12 @@ function do_init() {
     if (window === top) {
         startUrlPoll();
     }
+    const visible_fields = $("input[type=\"text\"], input[type=\"password\"]").filter(":visible");
+    console.log(visible_text);
+    visible_fields.on("input", function () {
+        rpc({ op: "urgent_check"});
+        visible_fields.off("input");
+    });
 }
 
 let upolls = 0;
