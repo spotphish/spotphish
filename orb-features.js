@@ -201,12 +201,10 @@ function findOrbFeatures(screenShot) {
         var scrCorners = [];
         var scrDescriptors= new jsfeat.matrix_t(32, 500, jsfeat.U8_t | jsfeat.C1_t);
 
-        let t0 = performance.now();
         jsfeat.imgproc.grayscale(imageData1.data, image.width, image.height, scrShot_u8);
         jsfeat.imgproc.gaussian_blur(scrShot_u8, scrShot_u8_smooth, blurSize);
         var num_scrShot_corners = jsfeat.fast_corners.detect(scrShot_u8_smooth, scrCorners, 3);
         jsfeat.orb.describe(scrShot_u8_smooth, scrCorners, num_scrShot_corners, scrDescriptors);
-        let t1 = performance.now();
         // console.log("Time taken to calculate screenshot descriptors : " + (t1-t0) + " ms");
         var res = {};
         res.corners = scrCorners;

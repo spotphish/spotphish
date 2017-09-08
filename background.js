@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         if (tabState === "watching" || tabState === "init") {
             redflag(tabinfo[sender.tab.id]);
         }
-    }else {
+    } else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;
