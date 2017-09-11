@@ -4,6 +4,7 @@ const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
+var update_flag = false;
 
 let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
@@ -295,14 +296,63 @@ chrome.runtime.onInstalled.addListener(function(details) {
     if (details.reason === "install") {
         chrome.tabs.create({ url: "option.html" });
     }
+    if (details.reason === "update") {
+        update_flag = true;
+    }
 });
 
 /* Indexed DB related functions */
+
+function runUpdate(dbData) { 
+    defPatterns.forEach((x) => {
+        let index = dbData.findIndex((y) => {
+            return y.site === x.site;
+        });
+        if (index != -1) {
+            x.templates.forEach((t) => {
+                let tempIndex = dbData[index].templates.findIndex((ind) => {
+                    return t.templateName === ind.templateName;
+                });
+                if (tempIndex === -1) {
+                    dbData[index].templates.push(t);
+                }
+            });
+            x.url.forEach((u) => {
+                let urlIndex = dbData[index].url.findIndex((ind) => {
+                    return u.url === ind.url
+                });
+                if (urlIndex === -1) {
+                    dbData[index].url.push(u);
+                }
+            });
+        } else {
+            dbData.push(x);
+        }
+    });
+    skipDomains.forEach((x) => {
+        let index = KPSkipArray.findIndex((i) => {
+            return x.name === i.name;
+        });
+        if (index !== -1){
+            x.domains.forEach((y) => {
+                if (!KPSkipArray[index].domains.includes(y)) {
+                    KPSkipArray[index].domains.push(y);
+                }
+            });
+        } else {
+            KPSkipArray.push(x);
+        }
+    });
+    saveKPSkipList();
+    objWhitelist.putBatch(dbData, syncWhiteList);
+}
 
 function initWhitelist() {
     objWhitelist.getAll((data) => {
         if (data.length <= 0) {
             objWhitelist.putBatch(defPatterns, syncWhiteList);
+        } else if (update_flag) {
+            runUpdate(data);
         } else {
             syncWhiteList();
         }

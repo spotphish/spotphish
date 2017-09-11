@@ -4,7 +4,6 @@ var redFlagSites =[{
     "site": "Facebook",
     "enabled": true,
     "type": "default",
-    "green_check": { "password": 1},
     "url": [
         { url: "https://www.facebook.com/", green_check: { password: 2 } },
         { url: "https://www.facebook.com/login/" },
