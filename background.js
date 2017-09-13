@@ -562,7 +562,7 @@ function removeFromWhiteList(site, tab) {
             debug("Removed from whitelist : ", site);
         }
         tabinfo[tab.id].state = "red_done";
-        setIcon(ti.tab.id, "red_done");
+        setIcon(tab.id, "red_done");
         tabinfo[tab.id].checkState = false;
     } else {
         debug("site not Whitelisted : ", site);
@@ -731,22 +731,22 @@ function setIcon(tabId, state, info) {
     let iconPath = iconFolder + "/icon24.png";
     let title = "Page not tested";
     switch (state) {
-        case "safe":
-            title = "Page belongs to safe domain";
-            iconPath = iconFolder + "/icon24-green.png";
-            break;
-        case "greenflagged":
-            title = "Protected page verified: " + info.site;
-            iconPath = iconFolder + "/icon24-green.png";
-            break;
-        case "redflagged":
-            title = "Possible phishing: looks like " + info.site;
-            iconPath = iconFolder + "/icon24-red.png";
-            break;
-        case "red_done":
-            title = "Page tested, appears clean";
-            iconPath = iconFolder + "/icon24-blue.png";
-            break;
+    case "safe":
+        title = "Page belongs to safe domain";
+        iconPath = iconFolder + "/icon24-green.png";
+        break;
+    case "greenflagged":
+        title = "Protected page verified: " + info.site;
+        iconPath = iconFolder + "/icon24-green.png";
+        break;
+    case "redflagged":
+        title = "Possible phishing: looks like " + info.site;
+        iconPath = iconFolder + "/icon24-red.png";
+        break;
+    case "red_done":
+        title = "Page tested, appears clean";
+        iconPath = iconFolder + "/icon24-blue.png";
+        break;
     }
 
     chrome.browserAction.setIcon({
