@@ -56,11 +56,14 @@ function do_init() {
     if (window === top) {
         startUrlPoll();
     }
-    const visible_fields = $("input[type=\"text\"], input[type=\"password\"]").filter(":visible");
-    visible_fields.on("input", function () {
+
+    function urgentCheck() {
+        console.log("key event captured");
         rpc({ op: "urgent_check"});
-        visible_fields.off("input");
-    });
+        $(document).off("keypress", urgentCheck);
+    }
+
+    $(document).on("keypress", urgentCheck);
 }
 
 let upolls = 0;
