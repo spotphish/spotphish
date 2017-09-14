@@ -281,6 +281,9 @@ function snapcheck(ti) {
                         }
                     }
                 }
+                if (END_STATES.indexOf(ti.state) === -1) {
+                    setIcon(tab.id, "checked"); // The page is checked atleast once.
+                }
             });
         });
     });
@@ -744,6 +747,7 @@ function setIcon(tabId, state, info) {
         iconPath = iconFolder + "/icon24-red.png";
         break;
     case "red_done":
+    case "checked":
         title = "Page tested, appears clean";
         iconPath = iconFolder + "/icon24-blue.png";
         break;
