@@ -32,35 +32,14 @@ var redFlagSites =[{
         "templateName": "Paypal",
         "logo": "assets/img/paypal-linux.png"
     }]
-}, {
-    "site":"ICICI Bank",
-    "enabled": true,
-    "type": "default",
-    "url": [
-        { url:  "https://infinity.icicibank.com/corp/AuthenticationController" }
-    ],
-    "templates": [{
-        "templateName": "ICICI bank",
-        "logo": "assets/img/icici-shot.png"
-    }]
-}, {
-    "site":"IDBI Bank",
-    "enabled": true,
-    "type": "default",
-    "url": [
-        { url: "https://inet.idbibank.co.in/corp/BANKAWAY" }
-    ],
-    "templates": [{
-        "templateName": "IDBI bank",
-        "logo":"assets/img/idbi-linux.png"
-    }],
-},{ 
+} ,{
     "site": "Google",
     "enabled": true,
     "type": "default",
     "url": [
         { url: "https://accounts.google.com/signin/v2/identifier" },
-        { url: "https://accounts.google.com/signin/oauth/identifier" }
+        { url: "https://accounts.google.com/signin/oauth/identifier" },
+        { url: "https://accounts.google.com/signin/v2/sl/pwd" }
     ],
     "templates": [{
         "templateName": "Google 2016",
@@ -97,6 +76,21 @@ var redFlagSites =[{
         "templateName":"AWS",
         "logo":"assets/img/aws-logo.png"
     }]
+}, {
+    "site": "Dropbox",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: "https://www.dropbox.com/"},
+        {url: "https://www.dropbox.com/business"}
+    ],
+    "templates": [{
+        "templateName": "Dropbox-1",
+        "logo": "assets/img/db1.png"
+    }, {
+        "templateName":"Dropbox-2",
+        "logo":"assets/img/db2.png"
+    }]
 }];
 
 //Domains/sites that are skipped completely for red flaf approach.
@@ -115,16 +109,6 @@ var skipDomains = [ {
                         "site": "paypal.com",
                         "whiteListed":true,
                         "domains": ["paypal.com"]
-                    }, {
-                        "name": "ICICI Bank",
-                        "site": "icicibank.com",
-                        "whiteListed":true,
-                        "domains": ["icicibank.com"]
-                    }, {
-                        "name" : "IDBI Bank",
-                        "site": "inet.idbibank.co.in",
-                        "whiteListed":true,
-                        "domains": ["inet.idbibank.co.in", "www.idbi.com"]
                     }, {
                         "name" : "Amazon",
                         "site": "amazon.com",
@@ -146,4 +130,10 @@ var skipDomains = [ {
                                     "amazon.com.mx",
                                     "amazon.com.br"
                                     ]
-                    }];
+                    }, {
+                        "name": "Dropbox",
+                        "site": "dropbox.com",
+                        "whiteListed":true,
+                        "domains": ["dropbox.com"]
+                    }
+];
