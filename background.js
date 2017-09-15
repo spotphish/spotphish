@@ -322,7 +322,7 @@ function runUpdate(dbData) {
             });
             x.url.forEach((u) => {
                 let urlIndex = dbData[index].url.findIndex((ind) => {
-                    return u.url === ind.url
+                    return u.url === ind.url;
                 });
                 if (urlIndex === -1) {
                     dbData[index].url.push(u);
