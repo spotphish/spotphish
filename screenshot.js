@@ -23,7 +23,6 @@ function crop(image, area, dpr, crop, done) {
     var height = area.h * dpr;
     var w = area.w;
     var h = area.h;
-    console.log(browser);
     if (dpr === 1 && !crop) {
         done(image);
         return;

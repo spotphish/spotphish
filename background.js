@@ -1,5 +1,5 @@
 const tabinfo = {};
-const watches = [0, 4000, 20000];
+const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
@@ -32,9 +32,10 @@ function initTabinfo(id, tab) {
         tab,
         watches: [],
         dpr: 1,
-        port: null
+        port: null,
+        nchecks: 0
     };
-    setIcon(id,"init");
+    setIcon(tabinfo[id], "init");
 }
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
@@ -60,7 +61,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         } else {
             respond({status: "NA"});
         }
-
     } else if (msg.op === "addToWhitelist") {
         console.log("addToWhitelist handled");
         inject(msg.currentTab, msg.site);
@@ -94,7 +94,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
         let tabState = tabinfo[sender.tab.id].state;
-        if (tabState === "watching" || tabState === "init") {
+        if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
             redflag(tabinfo[sender.tab.id]);
         }
     } else {
@@ -119,7 +119,8 @@ function inject (tab, site) {
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
         tab = ti.tab;
-    console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
     if (END_STATES.indexOf(ti.state) !== -1) {
         return respond({action: "nop"});
@@ -144,7 +145,7 @@ function init(msg, sender, respond) {
             if (greenFlag) {
                 respond({action: "nop"});
                 ti.state = "greenflagged";
-                setIcon(tab.id, "greenflagged", {site: res.site});
+                setIcon(ti, "greenflagged", {site: res.site});
                 ti.port.postMessage({op: "greenflag", site: res.site});
                 return;
             }
@@ -153,7 +154,7 @@ function init(msg, sender, respond) {
 
     if (checkSkip(tab.url)) {
         ti.state = "safe";
-        setIcon(tab.id, "safe");
+        setIcon(ti, "safe");
         return respond({action: "nop"});
     }
 
@@ -186,7 +187,7 @@ function url_change(msg, sender, respond) {
     if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
-        setIcon(ti.tab.id, "greenflagged", {site: res.site});
+        setIcon(ti, "greenflagged", {site: res.site});
         ti.port.postMessage({op: "greenflag", site: res.site});
     }
 }
@@ -219,12 +220,8 @@ function watchdog() {
 }
 
 function redflag(ti) {
-    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.watches);
+    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
     snapcheck(ti);
-    if (ti.watches.length === 0) {
-        ti.state = "red_done";
-        setIcon(ti.tab.id, "red_done");
-    }
 }
 
 function checkSkip(url) {
@@ -261,6 +258,7 @@ function snapcheck(ti) {
         const area = {x: 0, y: 0, w: tab.width, h: tab.height};
         crop(image, area, ti.dpr, false, cropped => {
             normalizedImage = cropped;
+            ti.nchecks++;
             findOrbFeatures(normalizedImage).then(result => {
                 scrCorners = result.corners;
                 scrDescriptors = result.descriptors;
@@ -274,15 +272,19 @@ function snapcheck(ti) {
                             let t1 = performance.now();
                             console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
                             ti.state = "redflagged";
-                            setIcon(tab.id, "redflagged", {site: template.site});
+                            setIcon(ti, "redflagged", {site: template.site});
                             findCorrespondence(normalizedImage, scrCorners , template, res.matches, res.matchCount,
                                 res.mask, img => ti.port.postMessage({op: "redflag", site: template.site, img:img}));
                             break;
                         }
                     }
                 }
-                if (END_STATES.indexOf(ti.state) === -1) {
-                    setIcon(tab.id, "checked"); // The page is checked atleast once.
+                if (ti.state !== "redflagged" && ti.watches.length === 0) {
+                    ti.state = "red_done";
+                }
+                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
+                    console.log("setting icon to checked", ti.nchecks);
+                    setIcon(ti, "checked"); // The page is checked atleast once.
                 }
             });
         });
@@ -435,7 +437,7 @@ function addToWhiteList(tab, logo, cb) {
         data.url = [];
         data.url.push({url: url});
         tabinfo[tab.id].state = "greenflagged";
-        setIcon(tab.id, "greenflagged", {site: site});
+        setIcon(tabinfo[tab.id], "greenflagged", {site: site});
         addToKPSkipList(site, true);
         objWhitelist.put(data, (x) => {
             syncWhiteList();
@@ -450,7 +452,7 @@ function addToWhiteList(tab, logo, cb) {
             obj.templates.push(pattern);
             objWhitelist.put(obj, syncWhiteList);
             tabinfo[tab.id].state = "greenflagged";
-            setIcon(tab.id, "greenflagged", {site: site});
+            setIcon(tabinfo[tab.id], "greenflagged", {site: site});
             addToKPSkipList(site, true);
         };
         var onError = function(error) {
@@ -565,7 +567,7 @@ function removeFromWhiteList(site, tab) {
             debug("Removed from whitelist : ", site);
         }
         tabinfo[tab.id].state = "red_done";
-        setIcon(tab.id, "red_done");
+        setIcon(tabinfo[tab.id], "red_done");
         tabinfo[tab.id].checkState = false;
     } else {
         debug("site not Whitelisted : ", site);
@@ -729,37 +731,36 @@ function getBsicMode() {
     return basic_mode;
 }
 
-function setIcon(tabId, state, info) {
+function setIcon(ti, state, info) {
     const iconFolder = "assets/icons";
-    let iconPath = iconFolder + "/icon24.png";
-    let title = "Page not tested";
+    let tabId = ti.tab.id,
+        path = iconFolder + "/icon24.png",
+        title = "Page not tested",
+        text = "", times = "";
+
     switch (state) {
     case "safe":
         title = "Page belongs to safe domain";
-        iconPath = iconFolder + "/icon24-green.png";
+        path = iconFolder + "/icon24-green.png";
         break;
     case "greenflagged":
         title = "Protected page verified: " + info.site;
-        iconPath = iconFolder + "/icon24-green.png";
+        path = iconFolder + "/icon24-green.png";
         break;
     case "redflagged":
         title = "Possible phishing: looks like " + info.site;
-        iconPath = iconFolder + "/icon24-red.png";
+        path = iconFolder + "/icon24-red.png";
         break;
     case "red_done":
     case "checked":
-        title = "Page tested, appears clean";
-        iconPath = iconFolder + "/icon24-blue.png";
+        text = ti.nchecks.toString();
+        times = (ti.nchecks === 1) ? "time" : "times";
+        title = `Page tested ${text} ${times}, appears clean`;
+        path = iconFolder + "/icon24-blue.png";
         break;
     }
 
-    chrome.browserAction.setIcon({
-        path: iconPath,
-        tabId: tabId
-    });
-
-    chrome.browserAction.setTitle({
-        title: title,
-        tabId: tabId
-    });
+    chrome.browserAction.setIcon({path, tabId});
+    chrome.browserAction.setTitle({title, tabId});
+    chrome.browserAction.setBadgeText({text, tabId});
 }
