@@ -131,7 +131,6 @@ function renderWhitelistTable(data) {
         var id = $(this).data("id");
         var site = $(this).data("site");
         if ($(e.target).is(".kp-wl-site-delete")) {
-            console.log("delete called");
             var res = confirm("Do you want to delete " + site + " from the list of protected pages?");
             if (res) {
                 bkg.removeFromWhiteListById(id);

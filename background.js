@@ -403,7 +403,16 @@ function syncWhiteList(cb){
 }
 
 function removeFromWhiteListById(id) {
-    objWhitelist.remove(id, syncWhiteList);
+    var onSuccess = function(data) {
+        console.log("Data : ", data);
+        data.domains.forEach(x => removeFromKPSkipList(x));
+        objWhitelist.remove(id, syncWhiteList);
+    };
+    var onError = function(error) {
+        console.log("Error updating field : ", error);
+        return;
+    };
+    objWhitelist.get(id, onSuccess, onError);
 }
 
 
@@ -562,8 +571,7 @@ function removeFromWhiteList(site, tab) {
         if (found[0].url.length > 1) {
             upsertInDb(found[0].id);
         } else {
-            removeFromKPSkipList(getPathInfo(site).host);
-            objWhitelist.remove(found[0].id, syncWhiteList);
+            removeFromWhiteListById(found[0].id);
             debug("Removed from whitelist : ", site);
         }
         tabinfo[tab.id].state = "red_done";
