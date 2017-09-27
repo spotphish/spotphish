@@ -13,7 +13,14 @@ let DEBUG = true, basic_mode = false,
     KPSkipList,
     KPTemplates,
     KPSkipArray,
-    objWhitelist;
+    SPTemplates,
+    SPSafeDomains,
+    SPProtectedUrls,
+    objWhitelist,
+    objFeedList,
+    objDefaultSites,
+    objCustomSites,
+    objTemplateList;
 
 loadDefaults();
 
@@ -377,6 +384,111 @@ function initWhitelist() {
     });
 }
 
+function initFeedList() {
+    objFeedList.getAll((data) => {
+        if (data.length <= 0) {
+            objFeedList.putBatch(defaultFeeds, checkUpdates);
+        } else {
+            var newFeeds = defaultFeeds.filter(x => data.map(y => y.src).indexOf(x.src));
+            if (newFeeds.length) {
+                objFeedList.putBatch(newFeeds, checkUpdates);
+            } else {
+                checkUpdates();
+            }
+        }
+    });
+}
+
+function initDefaultSites() {
+    //TODO:
+}
+
+function initCustomSites() {
+    //TODO:
+}
+
+function initTemplateList() {
+    objTemplateList.getAll((data) => {
+        if (data.length > 0) {
+            SPTemplates = data.filter(x => !x.disabled);
+        }
+    });
+}
+
+function checkUpdates() {
+    objFeedList.getAll((data) => {
+        var activeFeeds = data.filter(x => !x.deleted && !x.disabled);
+        console.log(" Active Feed List : ", activeFeeds);
+        activeFeeds.forEach((x) => {
+            updateFeed(x);
+        });
+    });
+}
+
+function updateFeed(feed) {
+    ajax_get(feed.src, (err, data) => {
+        if (!err && data) {
+            console.log("Versions feed, data : ", feed.version, data.version);
+            if (feed.version !== data.version) {
+                feed.version = data.version;
+                feed.last_updated = new Date().toUTCString();
+                objFeedList.put(feed);
+                updateDefaultSitesFromFeedData(data);
+                //TODO: Update the default_sites table and template_list.
+            }
+        } else {
+            console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
+        }
+    });
+}
+
+function updateDefaultSitesFromFeedData(feed_data) {
+    let sites = feed_data.sites;
+    objDefaultSites.putBatch(sites, syncDS, errorfn);
+}
+let  a = {a: 1, b:{x:1, y:2}}, b = {b: {y:4, z:5},c: 3};
+mergeDeep(a,b);
+console.log("a : ", a);
+console.log("b : ", b);
+
+function syncDS() {
+    objCustomSites.getAll(custom_data => {
+        console.log("Custom Sites : ", custom_data);
+        let SPSites = [];
+        objDefaultSites.getAll(default_data => {
+            console.log("Default Sites : ", default_data);
+            default_data.forEach((site) => {
+                let site_index = custom_data.findIndex(x => x.name === site.name);
+                if (site_index === -1) {
+                    SPSites.push(site);
+                } else {
+                    //TODO:
+                    //Implemenet the deep merge logic here.
+                    let custom_site = custom_data[site_index];
+                    if (!custom_site.deleted) {
+                        mergeDeep(site, custom_site);
+                        SPSites.push(site);
+                    } else {
+                        SPSites.push(custom_site);
+                    }
+                }
+                //update all the global lists.
+                //SafeList Done,
+                //if needed create entry in TemplateList table.
+            });
+            let activeSites = SPSites.filter(x => !x.deleted && !x.disabled);
+            console.log("Active Sites : ", activeSites);
+            SPSafeDomains = activeSites.map(x => x.safe).reduce((a,b) => a.concat(b),[]).map(y => y.domain);
+            SPProtectedUrls =activeSites.map(x => {
+                return {"name": x.name, "protected": x.protected};
+            });
+            let templates = activeSites.map(x => x.templates).reduce((a,b) => a.concat(b),[]);
+            console.log("SPSafeDomains : ", SPSafeDomains);
+            console.log("SPProtectedList : ", SPProtectedUrls);
+        });
+    });
+}
+
 function syncWhiteList(cb){
     objWhitelist.getAll(function (dbObj){
         debug("Object retrived from indexed DB : ", dbObj);
@@ -405,6 +517,7 @@ function syncWhiteList(cb){
         }).map((x) => {
             return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
         });
+
         KPWhiteList = dbObj.filter((x) => {
             return x.url !== undefined;
         }).map((x) => {
@@ -632,9 +745,8 @@ function syncSkipList(){
     });
 }
 
-
 function errorfn(err) {
-    console.log("error occured");
+    console.log("Inedexeddb error occured : ", err);
 }
 
 function setDefaultSecurityImage(cb) {
@@ -650,7 +762,7 @@ function setDefaultSecurityImage(cb) {
         }
     });
 }
-    
+
 function loadDefaults() {
     initAdvConfigs();
     initSkipList();
@@ -665,6 +777,48 @@ function loadDefaults() {
         onError: errorfn,
         indexes: [
             { name: "url", keyPath: "url", unique: false, multiEntry: false }
+        ]
+    });
+
+    objFeedList = new IDBStore({
+        storeName: "feed_list",
+        keyPath: "src",
+        unique: true,
+        onStoreReady: initFeedList,
+        onError: errorfn,
+        indexes: [
+            { name: "name", keyPath: "name", unique: false, multiEntry: true }
+        ]
+    });
+
+    objDefaultSites = new IDBStore({
+        storeName: "default_sites",
+        keyPath: "name",
+        onStoreReady: initDefaultSites,
+        onError: errorfn,
+        indexes: [
+            { name: "name", keyPath: "name", unique: false, multiEntry: false }
+        ]
+    });
+
+    objCustomSites = new IDBStore({
+        storeName: "custom_sites",
+        keyPath: "name",
+        onStoreReady: initCustomSites,
+        onError: errorfn,
+        indexes: [
+            { name: "name", keyPath: "name", unique: false, multiEntry: false }
+        ]
+    });
+
+    objTemplateList = new IDBStore({
+        storeName: "template_list",
+        keyPath: "checksum",
+        unique: true,
+        onStoreReady: initTemplateList,
+        onError: errorfn,
+        indexes: [
+            { name: "name", keyPath: "name", unique: false, multiEntry: true }
         ]
     });
 }
@@ -684,7 +838,6 @@ function addToKPSkipList(domain, isWhitelisted = false) {
     KPSkipArray.push(obj);
     saveKPSkipList();
 }
-
 
 function removeFromKPSkipList(domain) {
     let found = KPSkipArray.filter((x) => {
@@ -706,7 +859,6 @@ function getKPSkipListSites(cb) {
     return KPSkipArray.map((x)=> {
         return {site: x.site, whitelisted: x.whiteListed };});
 }
-
 
 function cleanDB() {
     chrome.storage.local.remove(["skiplist", "secure_img"], () => {

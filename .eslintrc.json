@@ -54,6 +54,7 @@
         "dialog": false,
         "findCorrespondence": false,
         "getUrlVars": false,
-        "injectAckModal": false
+        "injectAckModal": false,
+        "defaultFeeds": false
     }
 }

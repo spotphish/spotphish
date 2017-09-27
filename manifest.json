@@ -35,6 +35,7 @@
     "scripts": [
         "assets/defaults/pattern.js",
         "whitelist.js",
+        "config.js",
         "externalCode/idbstore.min.js",
         "utils.js",
         "screenshot.js",
