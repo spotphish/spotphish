@@ -7,10 +7,23 @@
         if (!response) {
             return;
         }
-        if (response.status === "greenflagged") {
+        
+        $("#kp-status").css({display: "flex"});
+        $("#kp-status-span").append(`<em>${response.status}</em>`);
+        
+        if (response.state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
-        } else if (response.status === "watching" || response.status === "red_done" || response.status === "safe") {
+            $("#kp-status-span").addClass("mdl-color-text--primary");
+        } else if (response.state === "watching" || response.state === "red_done" || response.state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
+            $("#kp-test-now").css({display: "flex"});
+            $("#kp-status-span").addClass("mdl-color-text--primary");
+        } else if (response.state === "init") {
+            $("#kp-status-span").addClass("mdl-color-text--primary");
+            $("#kp-test-now").css({display: "flex"});
+        } else {
+            $("#kp-status-span").addClass("mdl-color-text--accent");
+            $("#kp-test-now").css({display: "flex"});
         }
     };
 
@@ -34,6 +47,10 @@
                         /* notify */
                     }
                 });
+                window.close();
+            });
+            $("#kp-test-now").on("click", e => {
+                chrome.runtime.sendMessage({op: "urgent_check", curtab: curTab});
                 window.close();
             });
             $("#settingsLink").on("click", e => {
