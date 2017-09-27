@@ -33,7 +33,8 @@ function initTabinfo(id, tab) {
         watches: [],
         dpr: 1,
         port: null,
-        nchecks: 0
+        nchecks: 0,
+        status: ""
     };
     setIcon(tabinfo[id], "init");
 }
@@ -57,9 +58,9 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "get_tabinfo") {
         var tab = msg.curtab;
         if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond({status: tabinfo[tab.id].state});
+            respond(tabinfo[tab.id]);
         } else {
-            respond({status: "NA"});
+            respond({state: "NA"});
         }
     } else if (msg.op === "addToWhitelist") {
         console.log("addToWhitelist handled");
@@ -93,9 +94,16 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         respond({message: "added"});
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
-        let tabState = tabinfo[sender.tab.id].state;
-        if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-            redflag(tabinfo[sender.tab.id]);
+        let curTabInfo = sender.tab ? tabinfo[sender.tab.id] : tabinfo[msg.curtab.id];
+        let tabState = curTabInfo.state;
+        if (sender.tab) {
+            if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+                redflag(curTabInfo);
+            }
+        } else {
+            if (tabState !== "greenflagged") {
+                redflag(curTabInfo);
+            }
         }
     } else {
         console.log("KPBG: Unknown message", msg);
@@ -763,11 +771,12 @@ function setIcon(ti, state, info) {
     case "checked":
         text = ti.nchecks.toString();
         times = (ti.nchecks === 1) ? "time" : "times";
-        title = `Page tested ${text} ${times}, appears clean`;
+        title = `Page tested ${text} ${times}, looks clean`;
         path = iconFolder + "/icon24-blue.png";
         break;
     }
 
+    ti.status = title;
     chrome.browserAction.setIcon({path, tabId});
     chrome.browserAction.setTitle({title, tabId});
     chrome.browserAction.setBadgeText({text, tabId});
