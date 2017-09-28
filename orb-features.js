@@ -248,6 +248,7 @@ function createPatterns(logo) {
                 var patternDescriptors = [];
                 var num_train_levels = 4; // no. of stages in the pyramid
                 var res = {};
+                res.base64 = canvas.toDataURL("image/png");
 
                 var lev0_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
                 var lev_img = new jsfeat.matrix_t(image.width, image.height, jsfeat.U8_t | jsfeat.C1_t);
