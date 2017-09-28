@@ -13,9 +13,10 @@ let DEBUG = true, basic_mode = false,
     KPSkipList,
     KPTemplates,
     KPSkipArray,
-    SPTemplates,
-    SPSafeDomains,
-    SPProtectedUrls,
+    SPTemplates = [],
+    SPSafeDomains = [],
+    SPProtectedUrls = [],
+    SPDefaultSites = [],
     objWhitelist,
     objFeedList,
     objDefaultSites,
@@ -426,7 +427,9 @@ function checkUpdates() {
 }
 
 function updateFeed(feed) {
-    ajax_get(feed.src, (err, data) => {
+    let ord = Math.floor(Math.random()*100);
+    let src = feed.src + "?ord=" + ord;
+    ajax_get(src, (err, data) => {
         if (!err && data) {
             console.log("Versions feed, data : ", feed.version, data.version);
             if (feed.version !== data.version) {
@@ -452,39 +455,56 @@ console.log("a : ", a);
 console.log("b : ", b);
 
 function syncDS() {
-    objCustomSites.getAll(custom_data => {
-        console.log("Custom Sites : ", custom_data);
-        let SPSites = [];
-        objDefaultSites.getAll(default_data => {
-            console.log("Default Sites : ", default_data);
-            default_data.forEach((site) => {
-                let site_index = custom_data.findIndex(x => x.name === site.name);
-                if (site_index === -1) {
-                    SPSites.push(site);
-                } else {
-                    //TODO:
-                    //Implemenet the deep merge logic here.
-                    let custom_site = custom_data[site_index];
-                    if (!custom_site.deleted) {
-                        mergeDeep(site, custom_site);
-                        SPSites.push(site);
-                    } else {
-                        SPSites.push(custom_site);
-                    }
-                }
-                //update all the global lists.
-                //SafeList Done,
-                //if needed create entry in TemplateList table.
-            });
+    objDefaultSites.getAll(default_data => {
+        console.log("Default Sites : ", default_data);
+        let SPSites = default_data;
+        objCustomSites.getAll(custom_data => {
+            console.log("Custom Sites : ", custom_data);
+            mergeDeep(SPSites, custom_data);
             let activeSites = SPSites.filter(x => !x.deleted && !x.disabled);
             console.log("Active Sites : ", activeSites);
             SPSafeDomains = activeSites.map(x => x.safe).reduce((a,b) => a.concat(b),[]).map(y => y.domain);
+            console.log("SPSafeDomains : ", SPSafeDomains);
             SPProtectedUrls =activeSites.map(x => {
                 return {"name": x.name, "protected": x.protected};
             });
-            let templates = activeSites.map(x => x.templates).reduce((a,b) => a.concat(b),[]);
-            console.log("SPSafeDomains : ", SPSafeDomains);
             console.log("SPProtectedList : ", SPProtectedUrls);
+            //let templates = activeSites.map(x => x.templates).reduce((a,b) => a.concat(b),[]);
+            let templates = activeSites.filter(x => x.templates).map(y => {
+                return y.templates.map(z=> {
+                    z.site = y.name;
+                    return z;
+                });
+            }).reduce((a,b) => a.concat(b),[]);
+            console.log("templates : ", templates);
+            let checksumList = templates.map(x => x.checksum);
+            let garbageTemplates = SPTemplates.filter(x => {
+                return checksumList.indexOf(x.checksum) === -1;
+            }).map(y => y.checksum);
+            console.log("Garbage Templates : ", garbageTemplates);
+            objTemplateList.removeBatch(garbageTemplates); //Cleanup Garbage templates.
+            let newTemplates = templates.filter(x => {
+                return SPTemplates.findIndex(y => x.checksum === y.checksum) === -1;
+            });
+            console.log("New Templates : ", newTemplates);
+            newTemplates.forEach(x => {
+                if (x.image) {
+                    createPatterns(x.image).then(function(result) {
+                        console.log("Template promise result : ", result);
+                        x.base64 = result.base64;
+                        x.patternCorners = result.patternCorners;
+                        x.patternDescriptors = result.patternDescriptors;
+                        objTemplateList.put(x);
+                        SPTemplates.push(x);
+                    }).catch((e) => {
+                        console.log(e);//promise rejected.
+                        return;
+                    });
+                }
+            });
+            //TODO: Add New Templates.
+            //Basically the custom templates won't fall in this list, They usually get Added when we add it to protected page.
+            //For the default templates, we have to calculate the base_64 and other data, then add it to the SafeDomain
         });
     });
 }
