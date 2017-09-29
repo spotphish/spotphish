@@ -17,6 +17,7 @@ let DEBUG = true, basic_mode = false,
     SPSafeDomains = [],
     SPProtectedUrls = [],
     SPDefaultSites = [],
+    SPSites = [],
     objWhitelist,
     objFeedList,
     objDefaultSites,
@@ -89,6 +90,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                         }
                     };
 
+                    addToProtectedList(sender.tab, cropped);
                     addToWhiteList(sender.tab, cropped, cb);
                 });
             });
@@ -457,11 +459,12 @@ console.log("b : ", b);
 function syncDS() {
     objDefaultSites.getAll(default_data => {
         console.log("Default Sites : ", default_data);
-        let SPSites = default_data;
+        let sites = default_data;
         objCustomSites.getAll(custom_data => {
             console.log("Custom Sites : ", custom_data);
-            mergeDeep(SPSites, custom_data);
-            let activeSites = SPSites.filter(x => !x.deleted && !x.disabled);
+            mergeDeep(sites, custom_data);
+            SPSites = sites;
+            let activeSites = sites.filter(x => !x.deleted && !x.disabled);
             console.log("Active Sites : ", activeSites);
             SPSafeDomains = activeSites.map(x => x.safe).reduce((a,b) => a.concat(b),[]).map(y => y.domain);
             console.log("SPSafeDomains : ", SPSafeDomains);
@@ -507,6 +510,97 @@ function syncDS() {
             //For the default templates, we have to calculate the base_64 and other data, then add it to the SafeDomain
         });
     });
+}
+
+function getSiteFromUrl(url) {
+    let host = getPathInfo(url).host;
+    let found = SPSites.filter(a => !a.deleted && !a.disabled ).filter(x => {
+        let domain = x.safe.filter(y => host.endsWith(y.domain));
+        if (domain.length > 0) {
+            return true;
+        }
+        return false;
+    });
+    if (found.length > 0) {
+        return found[0];
+    }
+    return null;
+}
+
+function addToProtectedList(tab, logo, cb) {
+    let url = stripQueryParams(tab.url),
+        site = getSiteFromUrl(url),
+        pattern = {}, data = {};
+    if (!site) {
+        data.name = getPathInfo(url).host;
+        data.src = "user_defined";
+        data.safe = [{domain: data.name}];
+    } else {
+        data.name = site.name;
+        data.src = site.src;
+    }
+    data.protected = [{url: url}];
+
+    if (logo) {
+        createPatterns(logo).then(function(result) {
+            console.log("Template promise result : ", result);
+            pattern.base64 = logo;
+            pattern.patternCorners = result.patternCorners;
+            pattern.patternDescriptors = result.patternDescriptors;
+            pattern.site = data.name;
+            pattern.checksum = CryptoJS.SHA256(logo).toString();
+            pattern.page = url;
+            objTemplateList.put(pattern);
+            data.templates = [{page: url, checksum: pattern.checksum}];
+            console.log("SHA256 : ", pattern.checksum);
+            if (cb !== undefined || cb !== null) {
+                cb(true);
+            }
+        }).catch((e) => {
+            console.log(e);//promise rejected.
+            if (cb !== undefined || cb !== null) {
+                cb(false);
+            }
+            return;
+        });
+    }
+
+    objCustomSites.get(site.name, (x) => {
+        if (x) {
+            mergeDeep(x, data);
+            objCustomSites.put(x, syncDS);
+        } else {
+            objCustomSites.put(data, syncDS);
+        }
+    });
+}
+
+function deleteSiteByName(name) {
+    let site = SPSites.filter(x => x.name === name);
+    if (site.length > 0) {
+        site = site[0];
+        if (site.src !== "user_defined") {
+            objCustomSites.put({ name: name, src: site.src, deleted: true}, syncDS);
+        } else {
+            objCustomSites.remove(name, syncDS);
+        }
+    } else {
+        console.log(name, "is not in DB ");
+    }
+}
+
+function addToSafeDomains(url) {
+    let site = getSiteFromUrl(url);
+    if (!site) {
+        let data = {};
+        data.name = getPathInfo(url).host;
+        data.safe = [{domain: data.name}];
+        data.src = "user_defined";
+        objCustomSites.put(data);
+        SPSites.push(data);
+    } else {
+        console.log("Already in safe list ");
+    }
 }
 
 function syncWhiteList(cb){
