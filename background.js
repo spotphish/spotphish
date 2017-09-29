@@ -451,10 +451,69 @@ function updateDefaultSitesFromFeedData(feed_data) {
     let sites = feed_data.sites;
     objDefaultSites.putBatch(sites, syncDS, errorfn);
 }
-let  a = {a: 1, b:{x:1, y:2}}, b = {b: {y:4, z:5},c: 3};
+let  a = {a: 1, b:{x:1, y:[2,3]}}, b = {b: {y:[3,4], z:5},c: 3};
 mergeDeep(a,b);
 console.log("a : ", a);
 console.log("b : ", b);
+var original = [
+  { label: 'private', value: 'private', disabled: true },
+  { label: 'work', value: 'work' }
+];
+
+var update = [
+  { label: 'private', value: 'me' },
+  { label: 'school', value: 'school', deleted: true }
+];
+
+var result = _.unionBy(update, original, "label");
+
+console.log(original);
+console.log(update);
+console.log(result);
+
+/*function mergeDeep(target, ...sources) {
+  if (!sources.length) return target;
+  const source = sources.shift();
+
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    }
+  }
+  return mergeDeep(target, ...sources);
+}
+*/
+
+function mergeSite(update, old) {
+    const unionProperty = {
+        templates : "checksum",
+        safe: "domain",
+        protected: "url"
+    }
+    if (update.deleted) {
+        return update;
+    }
+    let result = update;
+    for (const key in old) {
+        if (unionProperty[key]) {
+            if (!update[key]) {
+                result[key] = old[key];
+            } else {
+                result[key] = _.unionBy(update[key], old[key], unionProperty[key]);
+            }
+        } else {
+            if (!update[key]) {
+                result[key] = old[key];
+            }
+        }
+    }
+    return result;
+}
 
 function syncDS() {
     objDefaultSites.getAll(default_data => {
@@ -462,13 +521,25 @@ function syncDS() {
         let sites = default_data;
         objCustomSites.getAll(custom_data => {
             console.log("Custom Sites : ", custom_data);
-            mergeDeep(sites, custom_data);
+            //mergeDeep(sites, custom_data);
+            //TODO: mergeDeep won't work for us. It would be good to use lodash.
+            custom_data.forEach(x => {
+                let found = default_data.findIndex(y => y.name === x.name);
+                if (found === -1) {
+                    //Entry only on custom_sites.
+                    sites.push(x);
+                } else {
+                    // Index of the site in sites should be same as the index of the site in default_site
+                    let merged_site = mergeSite(x,default_data[found]);
+                    sites[found] = merged_site;
+                }
+            });
             SPSites = sites;
             let activeSites = sites.filter(x => !x.deleted && !x.disabled);
             console.log("Active Sites : ", activeSites);
             SPSafeDomains = activeSites.map(x => x.safe).reduce((a,b) => a.concat(b),[]).map(y => y.domain);
             console.log("SPSafeDomains : ", SPSafeDomains);
-            SPProtectedUrls =activeSites.map(x => {
+            SPProtectedUrls = activeSites.map(x => {
                 return {"name": x.name, "protected": x.protected};
             });
             console.log("SPProtectedList : ", SPProtectedUrls);
@@ -481,6 +552,7 @@ function syncDS() {
             }).reduce((a,b) => a.concat(b),[]);
             console.log("templates : ", templates);
             let checksumList = templates.map(x => x.checksum);
+            console.log("checksum list : ", checksumList);
             let garbageTemplates = SPTemplates.filter(x => {
                 return checksumList.indexOf(x.checksum) === -1;
             }).map(y => y.checksum);
@@ -523,6 +595,19 @@ function getSiteFromUrl(url) {
     });
     if (found.length > 0) {
         return found[0];
+    }
+    return null;
+}
+
+function checkProtectedSite(url) {
+    let _url = stripQueryParams(url);
+    let site = getSiteFromUrl(_url);
+    if (site && site.protected) {
+        let found = site.protected.filter(x =>  !x.deleted && !x.disabled && x.url === _url );
+        if (found.length > 0) {
+            found[0].site = site.name;
+            return found[0];
+        }
     }
     return null;
 }
@@ -894,47 +979,74 @@ function loadDefaults() {
         ]
     });
 
-    objFeedList = new IDBStore({
-        storeName: "feed_list",
-        keyPath: "src",
-        unique: true,
-        onStoreReady: initFeedList,
-        onError: errorfn,
-        indexes: [
-            { name: "name", keyPath: "name", unique: false, multiEntry: true }
-        ]
+    function initDefaultSites () {
+        return new Promise((resolve) => {
+            objDefaultSites = new IDBStore({
+                storeName: "default_sites",
+                keyPath: "name",
+                onStoreReady: () => {resolve("default_site");},
+                onError: errorfn,
+                indexes: [
+                    { name: "name", keyPath: "name", unique: false, multiEntry: false }
+                ]
+            });
+           /* function onReady(res) {
+                console.log("onReady : ", res );
+                resolve(res);
+            }*/
+        });
+    }
+    function initCustomSites () {
+        return new Promise((resolve) => {
+            objCustomSites = new IDBStore({
+                storeName: "custom_sites",
+                keyPath: "name",
+                onStoreReady: () => {resolve("custom_site");},
+                onError: errorfn,
+                indexes: [
+                    { name: "name", keyPath: "name", unique: false, multiEntry: false }
+                ]
+            });
+        });
+    }
+
+    function initTemplates() {
+        return new Promise((resolve) => {
+            objTemplateList = new IDBStore({
+                storeName: "template_list",
+                keyPath: "checksum",
+                unique: true,
+                onStoreReady: () => {
+                    objTemplateList.getAll((data) => {
+                        if (data.length > 0) {
+                            SPTemplates = data.filter(x => !x.disabled);
+                        }
+                        resolve("template_list");
+                    });
+                },
+                onError: errorfn,
+                indexes: [
+                    { name: "name", keyPath: "name", unique: false, multiEntry: true }
+                ]
+            });
+        });
+    }
+
+    Promise.all([initTemplates(), initDefaultSites(), initCustomSites()]).then( result => {
+        syncDS();
+        objFeedList = new IDBStore({
+            storeName: "feed_list",
+            keyPath: "src",
+            unique: true,
+            onStoreReady: initFeedList,
+            onError: errorfn,
+            indexes: [
+                { name: "name", keyPath: "name", unique: false, multiEntry: true }
+            ]
+        });
+
     });
 
-    objDefaultSites = new IDBStore({
-        storeName: "default_sites",
-        keyPath: "name",
-        onStoreReady: initDefaultSites,
-        onError: errorfn,
-        indexes: [
-            { name: "name", keyPath: "name", unique: false, multiEntry: false }
-        ]
-    });
-
-    objCustomSites = new IDBStore({
-        storeName: "custom_sites",
-        keyPath: "name",
-        onStoreReady: initCustomSites,
-        onError: errorfn,
-        indexes: [
-            { name: "name", keyPath: "name", unique: false, multiEntry: false }
-        ]
-    });
-
-    objTemplateList = new IDBStore({
-        storeName: "template_list",
-        keyPath: "checksum",
-        unique: true,
-        onStoreReady: initTemplateList,
-        onError: errorfn,
-        indexes: [
-            { name: "name", keyPath: "name", unique: false, multiEntry: true }
-        ]
-    });
 }
 
 
