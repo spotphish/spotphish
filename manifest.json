@@ -37,6 +37,8 @@
         "whitelist.js",
         "config.js",
         "externalCode/idbstore.min.js",
+        "externalCode/CryptoJs_v3.1.2/core-min.js",
+        "externalCode/CryptoJs_v3.1.2/sha256-min.js",
         "utils.js",
         "screenshot.js",
         "background.js",
