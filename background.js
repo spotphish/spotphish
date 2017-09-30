@@ -58,7 +58,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "get_tabinfo") {
         var tab = msg.curtab;
         if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond(tabinfo[tab.id]);
+            respond({tabinfo: tabinfo[tab.id], debug: DEBUG });
         } else {
             respond({state: "NA"});
         }
@@ -101,9 +101,12 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                 redflag(curTabInfo);
             }
         } else {
-            if (tabState !== "greenflagged") {
-                redflag(curTabInfo);
-            }
+            curTabInfo.checkState = false;
+            curTabInfo.state = "init";
+            curTabInfo.status = "";
+            setIcon(curTabInfo, "init");
+            curTabInfo.port.postMessage({op: "kill_dialog", data: {}});
+            redflag(curTabInfo);
         }
     } else {
         console.log("KPBG: Unknown message", msg);
@@ -764,6 +767,7 @@ function setIcon(ti, state, info) {
         path = iconFolder + "/icon24-green.png";
         break;
     case "redflagged":
+        text = ti.nchecks.toString();
         title = "Possible phishing: looks like " + info.site;
         path = iconFolder + "/icon24-red.png";
         break;

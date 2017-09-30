@@ -26,7 +26,10 @@ function main() {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
                 alert("This site already added to whitelist");
-            } else {
+            } else if (msg.op === "kill_dialog") {
+                $(".kp-dialog").remove();
+            } 
+            else {
                 console.log("KP: unknown op", msg);
             }
         });
