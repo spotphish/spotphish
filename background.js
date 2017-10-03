@@ -287,10 +287,8 @@ function snapcheck(ti) {
                 let t0 = performance.now();
                 //for (let i = 0; i < KPTemplates.length; i++) {
                 //   const template = KPTemplates[i];
-                console.log("SPTemplates.length : ", SPTemplates.length);
                 for (let i = 0; i < SPTemplates.length; i++) {
                     const template = SPTemplates[i];
-                    console.log("Template : ", template.checksum);
                     if (!template.disabled) {
                         const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
                             template.patternDescriptors, template.site);
@@ -447,27 +445,6 @@ function updateDefaultSitesFromFeedData(feed_data) {
     objDefaultSites.putBatch(sites, syncDS, errorfn);
 }
 
-/*
-let  a = {a: 1, b:{x:1, y:[2,3]}}, b = {b: {y:[3,4], z:5},c: 3};
-mergeDeep(a,b);
-console.log("a : ", a);
-console.log("b : ", b);
-var original = [
-  { label: 'private', value: 'private', disabled: true },
-  { label: 'work', value: 'work' }
-];
-
-var update = [
-  { label: 'private', value: 'me' },
-  { label: 'school', value: 'school', deleted: true }
-];
-
-var result = _.unionBy(update, original, "label");
-
-console.log(original);
-console.log(update);
-console.log(result);
-*/
 
 function mergeSite(update, old) {
     const unionProperty = {
@@ -591,8 +568,12 @@ function checkProtectedSite(tab) {
 
 function checkSafeDomain(url) {
     let site = getSiteFromUrl(url);
+    let host = getPathInfo(url).host;
     if (site) {
-        return true;
+        let domain = site.safe.filter(x => !x.deleted && !x.disabled && host.endsWith(x.domain));
+        if (domain.length > 0) {
+            return true;
+        }
     }
     return false;
 }
@@ -659,17 +640,45 @@ function deleteSiteByName(name) {
     }
 }
 
-function addToSafeDomains(url) {
-    let site = getSiteFromUrl(url);
+function addToSafeDomains(domain) {
+    let site = null;
+    let found = SPSites.filter(a => !a.deleted && !a.disabled ).filter(x => {
+        let res = x.safe.filter(y => domain.endsWith(y.domain));
+        if (res.length > 0) {
+            return true;
+        }
+        return false;
+    });
+    if (found.length > 0) {
+        site = found[0];
+    }
     if (!site) {
         let data = {};
-        data.name = getPathInfo(url).host;
+        data.name = domain;
         data.safe = [{domain: data.name}];
         data.src = "user_defined";
         objCustomSites.put(data);
         SPSites.push(data);
     } else {
-        console.log("Already in safe list ");
+        let safe = site.safe.filter(x => domain.endsWith(x.domain));
+        if (safe[0].deleted ) {
+            // Make deleted = false and push to the objCustomSite
+            objCustomSites.get(site.name, curSite => {
+                let res = {};
+                res.name = site.name;
+                res.src = site.src;
+                let tmp = safe[0];
+                tmp.deleted = false;
+                res.safe = [tmp];
+                if (curSite) {
+                    res = mergeSite(res, curSite);
+                }
+                objCustomSites.put(res, syncDS);
+            });
+        } else {
+            console.log("Already in safe list : ", safe[0].domain);
+            return "Already in safe list : " +  safe[0].domain;
+        }
     }
 }
 
@@ -710,7 +719,7 @@ function removeFromSafeDomainsByURL(url) {
 }
 
 function removeFromSafeDomainsBySiteName(name) {
-    let sites = SPSites.filte(x => x.name === name);
+    let sites = SPSites.filter(x => x.name === name);
     let site;
     if ( sites.length > 0) {
         site = sites[0];
@@ -724,11 +733,11 @@ function removeFromSafeDomainsBySiteName(name) {
             objCustomSites.remove(site.name, syncDS);
         }
     } else {
-        let data = {},
-            host = getPathInfo(url).host;
+        let data = {};
         data.name = site.name;
         let safe_entry = site.safe.map(x => {
             x.deleted = true;
+            return x;
         });
         data.safe = safe_entry;
         data.src = site.src;
@@ -746,7 +755,6 @@ function removeFromSafeDomainsBySiteName(name) {
 
 function removeFromProtectedList(url, tab) {
     let site = getSiteFromUrl(url);
-        console.log("Site : ", site, " URL : ", url);
     let indexProtected = site.protected.findIndex(x => x.url === url),
         indexTemplate = -1;
     if (indexProtected === -1) {
@@ -761,7 +769,6 @@ function removeFromProtectedList(url, tab) {
             site.templates.splice(indexTemplate, 1);
         }
         site.protected.splice(indexProtected, 1);
-        console.log("Site : ", site);
         objCustomSites.put(site, syncDS);
 
     } else { // This is one of the default sites.
@@ -787,6 +794,37 @@ function removeFromProtectedList(url, tab) {
     setIcon(tabinfo[tab.id], "red_done");
     tabinfo[tab.id].checkState = false;
 }
+/********* Functions for Option Page *************/
+
+function getProtectedSitesData() {
+    let data = SPSites.filter(x => !x.deleted && (x.protected || x.templates)).map( site => {
+        let res = site;
+        if (res.templates) {
+            res.templates.map(template => {
+                template.base64 = SPTemplates.filter(y => y.checksum === template.checksum)[0].base64;
+                return template;
+            });
+        }
+        return res;
+    });
+    return data;
+}
+
+function getSafeDomainsData() {
+    let data = SPSites.filter(x => !x.deleted).filter(y => {
+        if (!y.safe) {
+            return false;
+        }
+        let found = y.safe.filter(z => !z.deleted);
+        if (found.length > 0) {
+            return true;
+        }
+        return false;
+    });
+    return data;
+}
+
+/*******************/
 
 function syncWhiteList(cb){
     objWhitelist.getAll(function (dbObj){
