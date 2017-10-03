@@ -337,7 +337,8 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
 
 function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, mask, cb) {
     let p1 = loadImage(scrShot);
-    let p2 = loadImage(template.logo);
+    //let p2 = loadImage(template.logo);
+    let p2 = loadImage(template.base64);
     Promise.all([p1, p2]).then(res => {
         let image1 = res[1];
         let image2 = res[0];
