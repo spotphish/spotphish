@@ -76,7 +76,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
-        removeFromWhiteList(msg.site, msg.currentTab);
+        //removeFromWhiteList(msg.site, msg.currentTab);
+        removeFromProtectedList(msg.site, msg.currentTab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
         chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
@@ -89,15 +90,15 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                             respond({message: "failed", err: "few_corners"});
                         }
                     };
-
-                    addToProtectedList(sender.tab, cropped);
-                    addToWhiteList(sender.tab, cropped, cb);
+                    addToProtectedList(sender.tab, cropped, cb);
+                    //addToWhiteList(sender.tab, cropped, cb);
                 });
             });
         });
     } else if (msg.op === "add_wh") {
         respond({message: "Added"});
-        addToWhiteList(sender.tab, null);
+        addToProtectedList(sender.tab, null);
+        //addToWhiteList(sender.tab, null);
     } else if (msg.op === "add_skip") {
         let domain = getPathInfo(sender.tab.url).host;
         addToKPSkipList(domain);
@@ -148,7 +149,9 @@ function init(msg, sender, respond) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
         ti.inputFields = msg.inputFields;
-        let res = checkWhitelist(tab);
+        //let res = checkWhitelist(tab);
+        let res = checkProtectedSite(tab);
+        console.log("Result check Protected : ", res);
         if (res) {
             let greenFlag = true;
             if (res.green_check) {
@@ -170,7 +173,7 @@ function init(msg, sender, respond) {
         }
     }
 
-    if (checkSkip(tab.url)) {
+    if (checkSafeDomain(tab.url)) {
         ti.state = "safe";
         setIcon(ti, "safe");
         return respond({action: "nop"});
@@ -201,7 +204,8 @@ function url_change(msg, sender, respond) {
     console.log("url change", tab.url);
 
     respond({action: "nop"});
-    let res = checkWhitelist(tab);
+    //let res = checkWhitelist(tab);
+    let res = checkProtectedSite(tab);
     if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
@@ -281,9 +285,13 @@ function snapcheck(ti) {
                 scrCorners = result.corners;
                 scrDescriptors = result.descriptors;
                 let t0 = performance.now();
-                for (let i = 0; i < KPTemplates.length; i++) {
-                    const template = KPTemplates[i];
-                    if (template.enabled) {
+                //for (let i = 0; i < KPTemplates.length; i++) {
+                //   const template = KPTemplates[i];
+                console.log("SPTemplates.length : ", SPTemplates.length);
+                for (let i = 0; i < SPTemplates.length; i++) {
+                    const template = SPTemplates[i];
+                    console.log("Template : ", template.checksum);
+                    if (!template.disabled) {
                         const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
                             template.patternDescriptors, template.site);
                         if (res) {
@@ -397,14 +405,6 @@ function initFeedList() {
     });
 }
 
-function initDefaultSites() {
-    //TODO:
-}
-
-function initCustomSites() {
-    //TODO:
-}
-
 function initTemplateList() {
     objTemplateList.getAll((data) => {
         if (data.length > 0) {
@@ -446,6 +446,8 @@ function updateDefaultSitesFromFeedData(feed_data) {
     let sites = feed_data.sites;
     objDefaultSites.putBatch(sites, syncDS, errorfn);
 }
+
+/*
 let  a = {a: 1, b:{x:1, y:[2,3]}}, b = {b: {y:[3,4], z:5},c: 3};
 mergeDeep(a,b);
 console.log("a : ", a);
@@ -465,23 +467,6 @@ var result = _.unionBy(update, original, "label");
 console.log(original);
 console.log(update);
 console.log(result);
-
-/*function mergeDeep(target, ...sources) {
-  if (!sources.length) return target;
-  const source = sources.shift();
-
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
-  }
-  return mergeDeep(target, ...sources);
-}
 */
 
 function mergeSite(update, old) {
@@ -489,7 +474,7 @@ function mergeSite(update, old) {
         templates : "checksum",
         safe: "domain",
         protected: "url"
-    }
+    };
     if (update.deleted) {
         return update;
     }
@@ -572,9 +557,6 @@ function syncDS() {
                     });
                 }
             });
-            //TODO: Add New Templates.
-            //Basically the custom templates won't fall in this list, They usually get Added when we add it to protected page.
-            //For the default templates, we have to calculate the base_64 and other data, then add it to the SafeDomain
         });
     });
 }
@@ -594,17 +576,25 @@ function getSiteFromUrl(url) {
     return null;
 }
 
-function checkProtectedSite(url) {
-    let _url = stripQueryParams(url);
-    let site = getSiteFromUrl(_url);
+function checkProtectedSite(tab) {
+    let url1 = stripQueryParams(tab.url);
+    let site = getSiteFromUrl(tab.url);
     if (site && site.protected) {
-        let found = site.protected.filter(x =>  !x.deleted && !x.disabled && x.url === _url );
+        let found = site.protected.filter(x =>  !x.deleted && !x.disabled && x.url === url1 );
         if (found.length > 0) {
             found[0].site = site.name;
             return found[0];
         }
     }
     return null;
+}
+
+function checkSafeDomain(url) {
+    let site = getSiteFromUrl(url);
+    if (site) {
+        return true;
+    }
+    return false;
 }
 
 function addToProtectedList(tab, logo, cb) {
@@ -645,10 +635,10 @@ function addToProtectedList(tab, logo, cb) {
         });
     }
 
-    objCustomSites.get(site.name, (x) => {
+    objCustomSites.get(data.name, (x) => {
         if (x) {
-            mergeDeep(x, data);
-            objCustomSites.put(x, syncDS);
+            let res =mergeSite(data, x);
+            objCustomSites.put(res, syncDS);
         } else {
             objCustomSites.put(data, syncDS);
         }
@@ -681,6 +671,121 @@ function addToSafeDomains(url) {
     } else {
         console.log("Already in safe list ");
     }
+}
+
+function removeFromSafeDomainsByURL(url) {
+    let site = getSiteFromUrl(url);
+    if (!site) {
+        console.log("This url does not belong to safe domains");
+    }
+
+    if (site.src === "user_defined") {
+        if (!site.protected && !site.templates && site.safe.length === 1) { // It means site has only safe list entry
+            objCustomSites.remove(site.name, syncDS);
+        }
+        //TODO:
+        //In future we may allow the user to add multiple safe domains for a site,
+        //so we need to handle that. Secondly we should not allow the user to delete
+        //an entry if any of its page in protected list.(In ideal case we won't get
+        //this option, as we disable delete option of safe domains for the sites
+        //which has protected lists)
+    } else {
+        let data = {},
+            host = getPathInfo(url).host;
+        data.name = site.name;
+        let safe_entry = site.safe.filter(x => x.domain === host);
+        safe_entry[0].deleted = true;
+        data.safe = safe_entry;
+        data.src = site.src;
+        objCustomSites.get(site.name, curSite => {
+            let res;
+            if (curSite) {
+                res = mergeSite(data, curSite);
+            } else {
+                res = data;
+            }
+            objCustomSites.put(res, syncDS);
+        });
+    }
+}
+
+function removeFromSafeDomainsBySiteName(name) {
+    let sites = SPSites.filte(x => x.name === name);
+    let site;
+    if ( sites.length > 0) {
+        site = sites[0];
+    } else {
+        console.log("Site ", name, " is not in the list");
+        return;
+    }
+
+    if (site.src === "user_defined") {
+        if (!site.protected && !site.templates) { // It means site has only safe list entry
+            objCustomSites.remove(site.name, syncDS);
+        }
+    } else {
+        let data = {},
+            host = getPathInfo(url).host;
+        data.name = site.name;
+        let safe_entry = site.safe.map(x => {
+            x.deleted = true;
+        });
+        data.safe = safe_entry;
+        data.src = site.src;
+        objCustomSites.get(site.name, curSite => {
+            let res;
+            if (curSite) {
+                res = mergeSite(data, curSite);
+            } else {
+                res = data;
+            }
+            objCustomSites.put(res, syncDS);
+        });
+    }
+}
+
+function removeFromProtectedList(url, tab) {
+    let site = getSiteFromUrl(url);
+        console.log("Site : ", site, " URL : ", url);
+    let indexProtected = site.protected.findIndex(x => x.url === url),
+        indexTemplate = -1;
+    if (indexProtected === -1) {
+        console.log("This is not in protected sites list");
+        return;
+    }
+    if (site.templates) {
+        indexTemplate = site.templates.findIndex(x => x.page && x.page === url);
+    }
+    if (site.src === "user_defined") {
+        if (indexTemplate !== -1) {
+            site.templates.splice(indexTemplate, 1);
+        }
+        site.protected.splice(indexProtected, 1);
+        console.log("Site : ", site);
+        objCustomSites.put(site, syncDS);
+
+    } else { // This is one of the default sites.
+        objCustomSites.get(site.name, (curSite) => {
+            let newSite = {};
+            newSite.name = site.name;
+            newSite.src = site.src;
+            let protected_entry = site.protected[indexProtected];
+            protected_entry.deleted = true;
+            newSite.protected = [protected_entry];
+            if (indexTemplate !== -1) {
+                let template_entry = site.templates[indexTemplate];
+                template_entry.deleted = true;
+                newSite.templates = [template_entry];
+            }
+            if (curSite) {
+                newSite = mergeSite(newSite, curSite);
+            }
+            objCustomSites.put(newSite, syncDS);
+        });
+    }
+    tabinfo[tab.id].state = "red_done";
+    setIcon(tabinfo[tab.id], "red_done");
+    tabinfo[tab.id].checkState = false;
 }
 
 function syncWhiteList(cb){
@@ -985,10 +1090,6 @@ function loadDefaults() {
                     { name: "name", keyPath: "name", unique: false, multiEntry: false }
                 ]
             });
-           /* function onReady(res) {
-                console.log("onReady : ", res );
-                resolve(res);
-            }*/
         });
     }
     function initCustomSites () {
