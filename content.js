@@ -26,10 +26,9 @@ function main() {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
                 alert("This site already added to whitelist");
-            } else if (msg.op === "kill_dialog") {
-                $(".kp-dialog").remove();
-            } 
-            else {
+            } else if (msg.op == "no_match") {
+                showNoMatch();
+            } else {
                 console.log("KP: unknown op", msg);
             }
         });
@@ -181,6 +180,19 @@ function injectCropModal() {
 
     dialog(cropDialog);
 }
+
+function showNoMatch() {
+    const ack1 = {
+        title: "SpotPhish",
+        type: "info",
+        main: "No template matches found for this page.",
+        extra: null,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        dismiss_after: 3000
+    };
+    dialog(ack1);
+}
+
 
 function scanInputFields() {
     let ip = {};
