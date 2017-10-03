@@ -58,7 +58,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "get_tabinfo") {
         var tab = msg.curtab;
         if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond(tabinfo[tab.id]);
+            respond({tabinfo: tabinfo[tab.id], debug: DEBUG });
         } else {
             respond({state: "NA"});
         }
@@ -101,9 +101,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                 redflag(curTabInfo);
             }
         } else {
-            if (tabState !== "greenflagged") {
-                redflag(curTabInfo);
-            }
+            redflag(curTabInfo, true);
         }
     } else {
         console.log("KPBG: Unknown message", msg);
@@ -227,9 +225,9 @@ function watchdog() {
     });
 }
 
-function redflag(ti) {
+function redflag(ti, testNow = false) {
     console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
-    snapcheck(ti);
+    snapcheck(ti, testNow);
 }
 
 function checkSkip(url) {
@@ -255,7 +253,7 @@ function checkWhitelist(tab) {
 }
 
 
-function snapcheck(ti) {
+function snapcheck(ti, testNow) {
     const tab = ti.tab;
     chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, image => {
         // image is base64
@@ -271,6 +269,7 @@ function snapcheck(ti) {
                 scrCorners = result.corners;
                 scrDescriptors = result.descriptors;
                 let t0 = performance.now();
+                let matchFound = false;
                 for (let i = 0; i < KPTemplates.length; i++) {
                     const template = KPTemplates[i];
                     if (template.enabled) {
@@ -283,10 +282,16 @@ function snapcheck(ti) {
                             setIcon(ti, "redflagged", {site: template.site});
                             findCorrespondence(normalizedImage, scrCorners , template, res.matches, res.matchCount,
                                 res.mask, img => ti.port.postMessage({op: "redflag", site: template.site, img:img}));
+                            matchFound = true;
                             break;
                         }
                     }
                 }
+
+                if (!matchFound && testNow) {
+                    ti.port.postMessage({op: "no_match"});
+                }
+
                 if (ti.state !== "redflagged" && ti.watches.length === 0) {
                     ti.state = "red_done";
                 }
@@ -764,6 +769,7 @@ function setIcon(ti, state, info) {
         path = iconFolder + "/icon24-green.png";
         break;
     case "redflagged":
+        text = ti.nchecks.toString();
         title = "Possible phishing: looks like " + info.site;
         path = iconFolder + "/icon24-red.png";
         break;

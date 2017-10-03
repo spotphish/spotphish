@@ -7,23 +7,27 @@
         if (!response) {
             return;
         }
+        //TODO: handle error condition where state = NA
+        let tabinfo = response.tabinfo;
+        console.log(response);
         
         $("#kp-status").css({display: "flex"});
-        $("#kp-status-span").append(`<em>${response.status}</em>`);
+        $("#kp-status-span").append(`<em>${tabinfo.status}</em>`);
+
+        if (response.debug) {
+            $("#kp-test-now").css({display: "flex"}); 
+        };
         
-        if (response.state === "greenflagged") {
+        if (tabinfo.state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (response.state === "watching" || response.state === "red_done" || response.state === "safe") {
+        } else if (tabinfo.state === "watching" || tabinfo.state === "red_done" || tabinfo.state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
-            $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (response.state === "init") {
+        } else if (tabinfo.state === "init") {
             $("#kp-status-span").addClass("mdl-color-text--primary");
-            $("#kp-test-now").css({display: "flex"});
         } else {
             $("#kp-status-span").addClass("mdl-color-text--accent");
-            $("#kp-test-now").css({display: "flex"});
         }
     };
 
