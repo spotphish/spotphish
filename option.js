@@ -16,7 +16,7 @@ function templateImage(src, favorite, imageClass) {
   `;
     return temp;
 }
-
+/*
 function templateSafeDomain(index, data) {
     const template = `
         <li class="mdl-list__item kp-safelist-row" data-id=${index} data-name=${data.site}>
@@ -26,6 +26,22 @@ function templateSafeDomain(index, data) {
             </span>
             <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.whitelisted? "disabled" :""}>
             <i class="material-icons ${data.whitelisted? "" : "kp-sl-delete"}">delete</i>
+            </button>
+
+        </li>
+        `;
+    return template;
+}
+*/
+function templateSafeDomain(data) {
+    const template = `
+        <li class="mdl-list__item kp-safelist-row" data-name=${data.site}>
+            <span class="mdl-list__item-primary-content">
+                <i class="material-icons  mdl-list__item-avatar">public</i>
+                ${data.site}
+            </span>
+            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.protected? "disabled" :""}>
+            <i class="material-icons ${data.protected? "" : "kp-sl-delete"}">delete</i>
             </button>
 
         </li>
@@ -161,8 +177,7 @@ function renderWhitelistTable(data) {
         }
     });
 }
-
-
+/*
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let KPSkipList = bkg.getKPSkipListSites();
@@ -183,6 +198,35 @@ function renderSafeDomainTable() {
                 } else {
                     $(this).remove();
                 }
+            }
+        }
+    });
+}
+*/
+function renderSafeDomainTable() {
+    $(".kp-safelist").empty();
+    let safeSites = bkg.getSafeDomainsData();
+
+    safeSites.forEach((x, index)=> {
+        let data = {};
+        data.site = x.name;
+        data.safe = x.safe; // Needed if we plan to expand the list of safe sites.
+        if (x.protected && x.protected.length > 0) {
+            data.protected = true;
+        } else {
+            data.protected = false;
+        }
+        $(".kp-safelist").append(templateSafeDomain(data));
+    });
+
+    $(".kp-safelist-row").on("click", function(e) {
+        //e.preventDefault();
+        if ($(e.target).is(".kp-sl-delete")) {
+            var domain = $(this).data("name");
+            var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
+            if (res) {
+                bkg.removeFromSafeDomainsBySiteName(domain);
+                $(this).remove();
             }
         }
     });
@@ -292,7 +336,7 @@ $(document).ready(function() {
                 alert("Incorrect domain entered, please try again");
                 return;
             }
-            let err = bkg.addToKPSkipList(val);
+            let err = bkg.addToSafeDomains(val);
             if (err) {
                 alert(err);
             } else {
