@@ -16,23 +16,7 @@ function templateImage(src, favorite, imageClass) {
   `;
     return temp;
 }
-/*
-function templateSafeDomain(index, data) {
-    const template = `
-        <li class="mdl-list__item kp-safelist-row" data-id=${index} data-name=${data.site}>
-            <span class="mdl-list__item-primary-content">
-                <i class="material-icons  mdl-list__item-avatar">public</i>
-                ${data.site}
-            </span>
-            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.whitelisted? "disabled" :""}>
-            <i class="material-icons ${data.whitelisted? "" : "kp-sl-delete"}">delete</i>
-            </button>
 
-        </li>
-        `;
-    return template;
-}
-*/
 function templateSafeDomain(data) {
     const template = `
         <li class="mdl-list__item kp-safelist-row" data-name=${data.site}>
@@ -52,52 +36,64 @@ function templateSafeDomain(data) {
 //   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
 function templateWhitelist(data) {
     const checked = "check_box", unchecked ="check_box_outline_blank";
-    let logos_temp = data.templates.filter((x) => {
-        return x.logo !== undefined;
-    }).reduce((a,b) => {
-        var logo_name = "";
-        if (b.templateName) {
-            logo_name = b.templateName;
-        }
-        var tmp = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                <div class="mdl-card__media">
-                    <img class="template-image" src="${b.logo}" border="0" alt="">
-                </div>
-                <div class="mdl-card__supporting-text">
-                ${logo_name}
-                </div>
-            </div>`;
-        return a + tmp;
-    }, "");
-
-    let urls = "";
-    let enabled = data.enabled ? checked : unchecked;
-
-    if (data.url.length === 1) {
-        urls =`
-            <tr class="kp-wl-url-row" data-id=${data.id}>
-                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0].url}</td>
-            </tr>`;
-    } else {
-        urls = data.url.reduce((a,b) => {
+    let template_str = "";
+    if (data.templates) {
+        template_str = data.templates.filter(x => !x.deleted).reduce((a,b) => {
+            var logo_name = "";
+            if (b.name) {
+                logo_name = b.name;
+            }
             var tmp = `
-                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b.url} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
-                    <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete">
-                            <i class="material-icons kp-wl-url-delete">delete</i>
-                        </button>
-                    </td>
-                </tr>`;
+                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                    <div class="mdl-card__media">
+                        <img class="template-image" src="${b.base64}" border="0" alt="">
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                    ${logo_name}
+                    </div>
+                </div>`;
             return a + tmp;
-        },"");
+        }, "");
     }
 
-    const template = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-id=${data.id} data-site=${data.site}>
+    let protected_urls = "";
+    let enabled = data.disabled ? unchecked : checked;
+    let disable_flag = data.disabled ?  "disabled" : "";
+
+    if (data.protected) {
+        let protectedList = data.protected.filter(x => !x.deleted);
+        console.log("Protected List : ", protectedList);
+        if (protectedList.length === 1) {
+            protected_urls =`
+                <tr class="kp-wl-url-row" data-name=${data.name}>
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.protected[0].url}</td>
+                </tr>`;
+        } else {
+            protected_urls = protectedList.reduce((a,b) => {
+                let url_disabled = b.disabled? "unchecked ": "checked";
+                var tmp = `
+                    <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
+                        <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
+                        <td>
+                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
+                              <i class="material-icons kp-wl-url-check">${url_disabled}</i>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
+                                <i class="material-icons kp-wl-url-delete">delete</i>
+                            </button>
+                        </td>
+                    </tr>`;
+                return a + tmp;
+            },"");
+        }
+    }
+
+    const site = `
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name}>
                 <div class="mdl-card__title mdl-card--border">
-                    <h2 class="mdl-card__title-text">${data.site}</h2>
+                    <h2 class="mdl-card__title-text">${data.name}</h2>
                 </div>
                 <div class="mdl-card__menu">
                     <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-check">
@@ -108,18 +104,18 @@ function templateWhitelist(data) {
                     </button>
                  </div>
                 <div class="mdl-grid kp-template-container">
-                ${logos_temp}
+                ${template_str}
                 </div>
                 <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
                     <table class="mdl-data-table mdl-js-data-table kp-url-table">
                         <tbody>
-                        ${urls}
+                        ${protected_urls}
                         </tbody>
                     </table>
                 </div>
             </div>
             `;
-    return template;
+    return site;
 }
 
 function updateImage(data) {
@@ -137,19 +133,19 @@ function updateImage(data) {
     }
 }
 
-function renderWhitelistTable(data) {
+function renderProtectedList() {
+    let data = bkg.getProtectedSitesData();
     $(".kp-wl-site").remove();
     console.log("IDB-data", data);
     data.forEach((x) => {
         $(".kp-wl-main").append(templateWhitelist(x));
     });
     $(".kp-wl-site").on("click", function(e) {
-        var id = $(this).data("id");
-        var site = $(this).data("site");
+        var name = $(this).data("name");
         if ($(e.target).is(".kp-wl-site-delete")) {
-            var res = confirm("Do you want to delete " + site + " from the list of protected pages?");
+            var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
             if (res) {
-                bkg.removeFromWhiteListById(id);
+                bkg.removeSiteByName(name);
                 $(this).remove();
             }
         } else if ($(e.target).is(".kp-wl-site-check")) {
@@ -157,52 +153,25 @@ function renderWhitelistTable(data) {
             var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
             var value = icon.innerHTML.trim();
             if (value === checked) {
-                bkg.toggleWhitelistItems(id, false);
+                bkg.toggleSite(name, false);
                 icon.innerHTML = unchecked;
             } else {
-                bkg.toggleWhitelistItems(id, true);
+                bkg.toggleSite(name, true);
                 icon.innerHTML = checked;
             }
-        } else if ($(e.target).is(".kp-wl-url-delete")) {
-            $(e.target)[0].remove();
         }
     });
     $(".kp-wl-url-row").on("click", function(e){
         e.stopPropagation();
         if ($(e.target).is(".kp-wl-url-delete")) {
-            let id = $(this).data("id");
+            let name = $(this).data("name");
             let url = $(this).data("url");
-            bkg.removeUrlFromWhiteList(url, id);
+            bkg.removeFromProtectedList(url);
             $(this).remove();
         }
     });
 }
-/*
-function renderSafeDomainTable() {
-    $(".kp-safelist").empty();
-    let KPSkipList = bkg.getKPSkipListSites();
 
-    KPSkipList.forEach((data, index)=> {
-        $(".kp-safelist").append(templateSafeDomain(index, data));
-    });
-
-    $(".kp-safelist-row").on("click", function(e) {
-        //e.preventDefault();
-        if ($(e.target).is(".kp-sl-delete")) {
-            var domain = $(this).data("name");
-            var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
-            if (res) {
-                let err = bkg.removeFromKPSkipList(domain);
-                if (err) {
-                    alert(err);
-                } else {
-                    $(this).remove();
-                }
-            }
-        }
-    });
-}
-*/
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let safeSites = bkg.getSafeDomainsData();
@@ -244,7 +213,8 @@ $(document).ready(function() {
         if (href === "#scroll-tab-safedomain") {
             renderSafeDomainTable();
         } else if (href === "#scroll-tab-whitelist") {
-            bkg.syncWhiteList(renderWhitelistTable);
+            //bkg.syncWhiteList(renderWhitelistTable);
+            renderProtectedList();
         }
     });
 

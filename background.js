@@ -14,8 +14,6 @@ let DEBUG = true, basic_mode = false,
     KPTemplates,
     KPSkipArray,
     SPTemplates = [],
-    SPSafeDomains = [],
-    SPProtectedUrls = [],
     SPDefaultSites = [],
     SPSites = [],
     objWhitelist,
@@ -287,8 +285,9 @@ function snapcheck(ti) {
                 let t0 = performance.now();
                 //for (let i = 0; i < KPTemplates.length; i++) {
                 //   const template = KPTemplates[i];
-                for (let i = 0; i < SPTemplates.length; i++) {
-                    const template = SPTemplates[i];
+                let activeTemplates = SPTemplates.filter(x => !x.disabled);
+                for (let i = 0; i < activeTemplates.length; i++) {
+                    const template = activeTemplates[i];
                     if (!template.disabled) {
                         const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
                             template.patternDescriptors, template.site);
@@ -403,7 +402,7 @@ function initFeedList() {
     });
 }
 
-function initTemplateList() {
+function syncTemplateList() {
     objTemplateList.getAll((data) => {
         if (data.length > 0) {
             SPTemplates = data.filter(x => !x.disabled);
@@ -442,7 +441,7 @@ function updateFeed(feed) {
 
 function updateDefaultSitesFromFeedData(feed_data) {
     let sites = feed_data.sites;
-    objDefaultSites.putBatch(sites, syncDS, errorfn);
+    objDefaultSites.putBatch(sites, syncSPSites, errorfn);
 }
 
 
@@ -452,34 +451,49 @@ function mergeSite(update, old) {
         safe: "domain",
         protected: "url"
     };
+    let new_data = Object.assign({}, update); // We don't want to make any changes in update object. 
     if (update.deleted) {
         return update;
     }
-    let result = update;
+    let result = Object.assign({},update);
     for (const key in old) {
         if (unionProperty[key]) {
-            if (!update[key]) {
+            if (!new_data[key]) {
                 result[key] = old[key];
             } else {
-                result[key] = _.unionBy(update[key], old[key], unionProperty[key]);
+                //result[key] = _.unionBy(new_data[key], old[key], unionProperty[key]);
+                result[key] = _.values(_.merge(
+                    _.keyBy(old[key], unionProperty[key]),
+                    _.keyBy(new_data[key], unionProperty[key])
+                ));
+                console.log("Key : ", key, " result[key] : ", result[key]);
             }
         } else {
-            if (!update[key]) {
+            if (!new_data[key]) {
                 result[key] = old[key];
             }
         }
     }
     return result;
 }
-
-function syncDS() {
+/*
+const t1 = [{checksum: 1111, deleted: true}, {checksum: 2222}, {checksum: 3333, deleted: true}],
+      t2 = [{checksum: 1111, disabled: true}, {checksum: 3333, deleted: false, disabled: true}, {checksum: 4444}];
+console.log("T1 : ", t1);
+console.log("T2 : ", t2);
+let t3 = _.values(_.merge(
+            _.keyBy(t1, 'checksum'),
+            _.keyBy(t2, 'checksum')
+        ));
+console.log("T3 : ", t3);
+*/
+function syncSPSites() {
     objDefaultSites.getAll(default_data => {
-        console.log("Default Sites : ", default_data);
+        let tmp = default_data;
+        console.log("Default Sites : ", tmp);
         let sites = default_data;
         objCustomSites.getAll(custom_data => {
             console.log("Custom Sites : ", custom_data);
-            //mergeDeep(sites, custom_data);
-            //TODO: mergeDeep won't work for us. It would be good to use lodash.
             custom_data.forEach(x => {
                 let found = default_data.findIndex(y => y.name === x.name);
                 if (found === -1) {
@@ -492,55 +506,49 @@ function syncDS() {
                 }
             });
             SPSites = sites;
-            let activeSites = sites.filter(x => !x.deleted && !x.disabled);
-            console.log("Active Sites : ", activeSites);
-            SPSafeDomains = activeSites.map(x => x.safe).reduce((a,b) => a.concat(b),[]).map(y => y.domain);
-            console.log("SPSafeDomains : ", SPSafeDomains);
-            SPProtectedUrls = activeSites.map(x => {
-                return {"name": x.name, "protected": x.protected};
-            });
-            console.log("SPProtectedList : ", SPProtectedUrls);
-            //let templates = activeSites.map(x => x.templates).reduce((a,b) => a.concat(b),[]);
-            let templates = activeSites.filter(x => x.templates).map(y => {
-                return y.templates.map(z=> {
-                    z.site = y.name;
-                    return z;
-                });
-            }).reduce((a,b) => a.concat(b),[]);
-            console.log("templates : ", templates);
-            let checksumList = templates.map(x => x.checksum);
-            console.log("checksum list : ", checksumList);
-            let garbageTemplates = SPTemplates.filter(x => {
-                return checksumList.indexOf(x.checksum) === -1;
-            }).map(y => y.checksum);
-            console.log("Garbage Templates : ", garbageTemplates);
-            objTemplateList.removeBatch(garbageTemplates); //Cleanup Garbage templates.
-            let newTemplates = templates.filter(x => {
-                return SPTemplates.findIndex(y => x.checksum === y.checksum) === -1;
-            });
-            console.log("New Templates : ", newTemplates);
-            newTemplates.forEach(x => {
-                if (x.image) {
-                    createPatterns(x.image).then(function(result) {
-                        console.log("Template promise result : ", result);
-                        x.base64 = result.base64;
-                        x.patternCorners = result.patternCorners;
-                        x.patternDescriptors = result.patternDescriptors;
-                        objTemplateList.put(x);
-                        SPTemplates.push(x);
-                    }).catch((e) => {
-                        console.log(e);//promise rejected.
-                        return;
-                    });
-                }
-            });
+            console.log("SPSites : ", SPSites);
+            updateTemplateList();
         });
+    });
+}
+
+function updateTemplateList() {
+    let templates = SPSites.filter(x => !x.deleted && x.templates).map(y => {
+        return y.templates.map(z=> {
+            z.site = y.name;
+            return z;
+        });
+    }).reduce((a,b) => a.concat(b),[]);
+    let checksumList = templates.filter(x => !x.deleted).map(y => y.checksum);
+    let garbageTemplates = SPTemplates.filter(x => {
+        return checksumList.indexOf(x.checksum) === -1;
+    }).map(y => y.checksum);
+    console.log("Garbage Templates : ", garbageTemplates);
+    objTemplateList.removeBatch(garbageTemplates, syncTemplateList, errorfn); //Cleanup Garbage templates.
+    let newTemplates = templates.filter(x => {
+        return !x.deleted && SPTemplates.findIndex(y => x.checksum === y.checksum) === -1;
+    });
+    console.log("New Templates : ", newTemplates);
+    newTemplates.forEach(x => {
+        if (x.image) {
+            createPatterns(x.image).then(function(result) {
+                console.log("Template promise result : ", result);
+                x.base64 = result.base64;
+                x.patternCorners = result.patternCorners;
+                x.patternDescriptors = result.patternDescriptors;
+                objTemplateList.put(x);
+                SPTemplates.push(x);
+            }).catch((e) => {
+                console.log(e);//promise rejected.
+                return;
+            });
+        }
     });
 }
 
 function getSiteFromUrl(url) {
     let host = getPathInfo(url).host;
-    let found = SPSites.filter(a => !a.deleted && !a.disabled ).filter(x => {
+    let found = SPSites.filter(a => !a.deleted).filter(x => {
         let domain = x.safe.filter(y => host.endsWith(y.domain));
         if (domain.length > 0) {
             return true;
@@ -556,7 +564,7 @@ function getSiteFromUrl(url) {
 function checkProtectedSite(tab) {
     let url1 = stripQueryParams(tab.url);
     let site = getSiteFromUrl(tab.url);
-    if (site && site.protected) {
+    if (site && !site.disabled && site.protected) {
         let found = site.protected.filter(x =>  !x.deleted && !x.disabled && x.url === url1 );
         if (found.length > 0) {
             found[0].site = site.name;
@@ -564,18 +572,6 @@ function checkProtectedSite(tab) {
         }
     }
     return null;
-}
-
-function checkSafeDomain(url) {
-    let site = getSiteFromUrl(url);
-    let host = getPathInfo(url).host;
-    if (site) {
-        let domain = site.safe.filter(x => !x.deleted && !x.disabled && host.endsWith(x.domain));
-        if (domain.length > 0) {
-            return true;
-        }
-    }
-    return false;
 }
 
 function addToProtectedList(tab, logo, cb) {
@@ -589,8 +585,13 @@ function addToProtectedList(tab, logo, cb) {
     } else {
         data.name = site.name;
         data.src = site.src;
+        if (site.disabled) {
+            data.disabled = false; // If the site is disabled enable it and add the url in protected list
+        }
     }
-    data.protected = [{url: url}];
+    data.protected = [{url: url, disabled: false}];
+    //TODO: If any template is  already assosciated with this url and marked as disabled
+    //We are not doing anything to that. We need to think a workflow for that.
 
     if (logo) {
         createPatterns(logo).then(function(result) {
@@ -601,7 +602,7 @@ function addToProtectedList(tab, logo, cb) {
             pattern.site = data.name;
             pattern.checksum = CryptoJS.SHA256(logo).toString();
             pattern.page = url;
-            objTemplateList.put(pattern);
+            objTemplateList.put(pattern, syncTemplateList, errorfn);
             data.templates = [{page: url, checksum: pattern.checksum}];
             console.log("SHA256 : ", pattern.checksum);
             if (cb !== undefined || cb !== null) {
@@ -618,31 +619,149 @@ function addToProtectedList(tab, logo, cb) {
 
     objCustomSites.get(data.name, (x) => {
         if (x) {
-            let res =mergeSite(data, x);
-            objCustomSites.put(res, syncDS);
+            let res = mergeSite(data, x);
+            console.log("Result : ", res);
+            objCustomSites.put(res, syncSPSites);
         } else {
-            objCustomSites.put(data, syncDS);
+            objCustomSites.put(data, syncSPSites);
         }
     });
 }
 
-function deleteSiteByName(name) {
+function removeFromProtectedList(url, tab) {
+    let site = getSiteFromUrl(url);
+    let indexProtected = site.protected.findIndex(x => x.url === url),
+        indexTemplate = -1;
+    if (indexProtected === -1) {
+        console.log("This is not in protected sites list");
+        return;
+    }
+    if (site.templates) {
+        indexTemplate = site.templates.findIndex(x => x.page && x.page === url);
+    }
+    if (site.src === "user_defined") {
+        if (indexTemplate !== -1) {
+            site.templates.splice(indexTemplate, 1);
+        }
+        site.protected.splice(indexProtected, 1);
+        objCustomSites.put(site, syncSPSites);
+
+    } else { // This is one of the default sites.
+        objCustomSites.get(site.name, (curSite) => {
+            let newSite = {};
+            newSite.name = site.name;
+            newSite.src = site.src;
+            let protected_entry = site.protected[indexProtected];
+            protected_entry.deleted = true;
+            newSite.protected = [protected_entry];
+            if (indexTemplate !== -1) {
+                let template_entry = site.templates[indexTemplate];
+                template_entry.deleted = true;
+                newSite.templates = [template_entry];
+            }
+            if (curSite) {
+                newSite = mergeSite(newSite, curSite);
+            }
+            objCustomSites.put(newSite, syncSPSites);
+        });
+    }
+    if (tab) {
+        tabinfo[tab.id].state = "red_done";
+        setIcon(tabinfo[tab.id], "red_done");
+        tabinfo[tab.id].checkState = false;
+    }
+}
+
+function toggleProtectedUrl(url, enable) {
+    let site = getSiteFromUrl(url);
+    // We are not putting any validation here. We are sure the "url" will definitely hit one of the sites.
+    let protected = site.protected.filter(x => !x.deleted && x.url === url),
+        templates = [];
+    if (protected.length === 0) {
+        //Control will never reach here.
+        console.log("This is not in protected sites list");
+        return;
+    }
+    protected[0].disabled = !enable;
+    if (site.templates) {
+        templates = site.templates.filter(x => x.page && x.page === url);
+    }
+
+    let data = {};
+    data.name = site.name;
+    data.src = site.src;
+    if (templates.length > 0) {
+        data.templates = templates.map(x => {
+            x.disabled = !enable;
+            return x;
+        });
+    }
+    objCustomSites.get(site.name, (curSite) => {
+        if (curSite) {
+            data = mergeSite(data, curSite);
+        }
+        objCustomSites.put(data, syncSPSites);
+    });
+}
+
+function checkSafeDomain(url) {
+    let site = getSiteFromUrl(url);
+    let host = getPathInfo(url).host;
+    if (site) {
+        let domain = site.safe.filter(x => !x.deleted && !x.disabled && host.endsWith(x.domain));
+        if (domain.length > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function removeSiteByName(name) {
     let site = SPSites.filter(x => x.name === name);
     if (site.length > 0) {
         site = site[0];
         if (site.src !== "user_defined") {
-            objCustomSites.put({ name: name, src: site.src, deleted: true}, syncDS);
+            objCustomSites.put({ name: name, src: site.src, deleted: true}, syncSPSites);
         } else {
-            objCustomSites.remove(name, syncDS);
+            objCustomSites.remove(name, syncSPSites);
         }
     } else {
         console.log(name, "is not in DB ");
     }
 }
 
+function toggleSite(name, enable) {
+    //TODO: We are not doing anything with safelist here
+    let site = SPSites.filter(x => !x.deleted && x.name === name);
+    let disable = !enable;
+    if (site.length > 0) {
+        site = site[0];
+        let data = {};
+        data.name = site.name;
+        data.src = site.src;
+        data.disabled = disable;
+        if (site.templates) {
+            data.templates = site.templates.map(x => {
+                x.disabled = disable;
+                return x;
+            });
+        }
+        if (site.protected) {
+            data.protected = site.protected.map(x => {
+                x.disabled = disable;
+                return x;
+            });
+        }
+        objCustomSites.put(data, syncSPSites, errorfn);
+    } else {
+        console.log(name, "is not in DB ");
+    }
+
+}
+
 function addToSafeDomains(domain) {
     let site = null;
-    let found = SPSites.filter(a => !a.deleted && !a.disabled ).filter(x => {
+    let found = SPSites.filter(a => !a.deleted).filter(x => {
         let res = x.safe.filter(y => domain.endsWith(y.domain));
         if (res.length > 0) {
             return true;
@@ -673,7 +792,7 @@ function addToSafeDomains(domain) {
                 if (curSite) {
                     res = mergeSite(res, curSite);
                 }
-                objCustomSites.put(res, syncDS);
+                objCustomSites.put(res, syncSPSites);
             });
         } else {
             console.log("Already in safe list : ", safe[0].domain);
@@ -690,7 +809,7 @@ function removeFromSafeDomainsByURL(url) {
 
     if (site.src === "user_defined") {
         if (!site.protected && !site.templates && site.safe.length === 1) { // It means site has only safe list entry
-            objCustomSites.remove(site.name, syncDS);
+            objCustomSites.remove(site.name, syncSPSites);
         }
         //TODO:
         //In future we may allow the user to add multiple safe domains for a site,
@@ -713,7 +832,7 @@ function removeFromSafeDomainsByURL(url) {
             } else {
                 res = data;
             }
-            objCustomSites.put(res, syncDS);
+            objCustomSites.put(res, syncSPSites);
         });
     }
 }
@@ -730,7 +849,7 @@ function removeFromSafeDomainsBySiteName(name) {
 
     if (site.src === "user_defined") {
         if (!site.protected && !site.templates) { // It means site has only safe list entry
-            objCustomSites.remove(site.name, syncDS);
+            objCustomSites.remove(site.name, syncSPSites);
         }
     } else {
         let data = {};
@@ -748,52 +867,12 @@ function removeFromSafeDomainsBySiteName(name) {
             } else {
                 res = data;
             }
-            objCustomSites.put(res, syncDS);
+            objCustomSites.put(res, syncSPSites);
         });
     }
 }
 
-function removeFromProtectedList(url, tab) {
-    let site = getSiteFromUrl(url);
-    let indexProtected = site.protected.findIndex(x => x.url === url),
-        indexTemplate = -1;
-    if (indexProtected === -1) {
-        console.log("This is not in protected sites list");
-        return;
-    }
-    if (site.templates) {
-        indexTemplate = site.templates.findIndex(x => x.page && x.page === url);
-    }
-    if (site.src === "user_defined") {
-        if (indexTemplate !== -1) {
-            site.templates.splice(indexTemplate, 1);
-        }
-        site.protected.splice(indexProtected, 1);
-        objCustomSites.put(site, syncDS);
 
-    } else { // This is one of the default sites.
-        objCustomSites.get(site.name, (curSite) => {
-            let newSite = {};
-            newSite.name = site.name;
-            newSite.src = site.src;
-            let protected_entry = site.protected[indexProtected];
-            protected_entry.deleted = true;
-            newSite.protected = [protected_entry];
-            if (indexTemplate !== -1) {
-                let template_entry = site.templates[indexTemplate];
-                template_entry.deleted = true;
-                newSite.templates = [template_entry];
-            }
-            if (curSite) {
-                newSite = mergeSite(newSite, curSite);
-            }
-            objCustomSites.put(newSite, syncDS);
-        });
-    }
-    tabinfo[tab.id].state = "red_done";
-    setIcon(tabinfo[tab.id], "red_done");
-    tabinfo[tab.id].checkState = false;
-}
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
@@ -807,6 +886,7 @@ function getProtectedSitesData() {
         }
         return res;
     });
+    console.log("Protected Data : ", data);
     return data;
 }
 
@@ -1153,7 +1233,7 @@ function loadDefaults() {
                 onStoreReady: () => {
                     objTemplateList.getAll((data) => {
                         if (data.length > 0) {
-                            SPTemplates = data.filter(x => !x.disabled);
+                            SPTemplates = data;
                         }
                         resolve("template_list");
                     });
@@ -1167,7 +1247,7 @@ function loadDefaults() {
     }
 
     Promise.all([initTemplates(), initDefaultSites(), initCustomSites()]).then( result => {
-        syncDS();
+        syncSPSites();
         objFeedList = new IDBStore({
             storeName: "feed_list",
             keyPath: "src",
