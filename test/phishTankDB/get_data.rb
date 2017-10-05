@@ -9,8 +9,8 @@ require 'fileutils'
 
 source = "https://data.phishtank.com/data/online-valid.csv"
 
-# download = open(source)
-# IO.copy_stream(download, 'phish_tank_db.csv')
+download = open(source)
+IO.copy_stream(download, 'phish_tank_db.csv')
 customers = CSV.read('phish_tank_db.csv')
 # puts customers.count
 
@@ -44,7 +44,7 @@ CSV.foreach('phish_tank_db.csv') do |row|
          Dir.mkdir("#{MAIN_PATH}/#{row[-1].downcase}")
        end
       if !File.exist? "#{MAIN_PATH}/#{row[-1].downcase}/#{row[0]}.jpg"
-        puts "Downloading... #{row[0]}.jpg"
+        puts "Downloading... #{row[-1].downcase}/#{row[0]}.jpg"
         download_image("http://phishtank-screenshots.e1.usw1.opendns.com.s3-website-us-west-1.amazonaws.com/#{row[0]}.jpg", "#{MAIN_PATH}/#{row[-1].downcase}/#{row[0]}.jpg" )
       end
     end
