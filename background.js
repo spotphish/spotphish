@@ -523,7 +523,7 @@ function addToProtectedList(tab, logo, cb) {
                 cb(true);
             }
         }).catch((e) => {
-            console.log(e);//promise rejected.
+            console.log("Create Pattern Error :", e);//promise rejected.
             if (cb !== undefined || cb !== null) {
                 cb(false);
             }
@@ -791,14 +791,18 @@ function removeFromSafeDomainsBySiteName(name) {
 
 function getProtectedSitesData() {
     let data = SPSites.filter(x => !x.deleted && (x.protected || x.templates)).map( site => {
-        let res = site;
-        if (res.templates) {
-            res.templates.map(template => {
-                template.base64 = SPTemplates.filter(y => y.checksum === template.checksum)[0].base64;
+        if (site.templates) {
+            site.templates.filter(a => !a.deleted).map(template => {
+                let found = SPTemplates.filter(y => !y.deleted && y.checksum === template.checksum);
+                if (found.length) {
+                    template.base64 = SPTemplates.filter(y => y.checksum === template.checksum)[0].base64;
+                } else {
+                    template.deleted = true;
+                }
                 return template;
             });
         }
-        return res;
+        return site;
     });
     console.log("Protected Data : ", data);
     return data;
