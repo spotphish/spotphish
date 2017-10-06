@@ -9,14 +9,9 @@ var update_flag = false;
 let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
     tabInfoList = {},
-    KPWhiteList,
-    KPSkipList,
-    KPTemplates,
-    KPSkipArray,
     SPTemplates = [],
     SPDefaultSites = [],
     SPSites = [],
-    objWhitelist,
     objFeedList,
     objDefaultSites,
     objCustomSites,
@@ -74,7 +69,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
-        //removeFromWhiteList(msg.site, msg.currentTab);
         removeFromProtectedList(msg.site, msg.currentTab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
@@ -89,18 +83,12 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
                         }
                     };
                     addToProtectedList(sender.tab, cropped, cb);
-                    //addToWhiteList(sender.tab, cropped, cb);
                 });
             });
         });
     } else if (msg.op === "add_wh") {
         respond({message: "Added"});
         addToProtectedList(sender.tab, null);
-        //addToWhiteList(sender.tab, null);
-    } else if (msg.op === "add_skip") {
-        let domain = getPathInfo(sender.tab.url).host;
-        addToKPSkipList(domain);
-        respond({message: "added"});
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
         let curTabInfo = sender.tab ? tabinfo[sender.tab.id] : tabinfo[msg.curtab.id];
@@ -119,19 +107,21 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     }
     return true;
 });
-
+//TODO: Check the use of inject and modify accordingly
 function inject (tab, site) {
-    let found = KPWhiteList.filter((x) => {
+    // The first part looks like, it checks for protected url
+    /*let found = KPWhiteList.filter((x) => {
         return x.url === site;
-    });
+    });*/
     let ti = tabinfo[tab.id];
+    //if (found.length == 0) {
+    let found = checkProtectedSites(site);
     if (found.length == 0) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
         ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
     }
 }
-
 
 function init(msg, sender, respond) {
     const ti = tabinfo[sender.tab.id],
@@ -147,7 +137,6 @@ function init(msg, sender, respond) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
         ti.inputFields = msg.inputFields;
-        //let res = checkWhitelist(tab);
         let res = checkProtectedSite(tab);
         console.log("Result check Protected : ", res);
         if (res) {
@@ -202,7 +191,6 @@ function url_change(msg, sender, respond) {
     console.log("url change", tab.url);
 
     respond({action: "nop"});
-    //let res = checkWhitelist(tab);
     let res = checkProtectedSite(tab);
     if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
@@ -243,29 +231,6 @@ function redflag(ti) {
     console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
     snapcheck(ti);
 }
-
-function checkSkip(url) {
-    let urlInfo = getPathInfo(url);
-    let found = KPSkipList.filter(x => urlInfo.host.endsWith(x));
-
-    if (found.length > 0) {
-        debug("SKIP LISTED:", found[0]);
-        return true;
-    }
-    return false;
-}
-
-function checkWhitelist(tab) {
-    const site = stripQueryParams(tab.url);
-    const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y.url === site).length > 0);
-    if (wl.length) {
-        debug("WHITE LISTED:", wl[0]);
-        const wl_url = wl[0].url.filter(x => x.url === site);
-        return {"site":wl[0].site, "green_check": wl_url[0].green_check};
-    }
-    return false;
-}
-
 
 function snapcheck(ti) {
     const tab = ti.tab;
@@ -330,62 +295,6 @@ chrome.runtime.onInstalled.addListener(function(details) {
 });
 
 /* Indexed DB related functions */
-
-function runUpdate(dbData) { 
-    defPatterns.forEach((x) => {
-        let index = dbData.findIndex((y) => {
-            return y.site === x.site;
-        });
-        if (index != -1) {
-            x.templates.forEach((t) => {
-                let tempIndex = dbData[index].templates.findIndex((ind) => {
-                    return t.templateName === ind.templateName;
-                });
-                if (tempIndex === -1) {
-                    dbData[index].templates.push(t);
-                }
-            });
-            x.url.forEach((u) => {
-                let urlIndex = dbData[index].url.findIndex((ind) => {
-                    return u.url === ind.url;
-                });
-                if (urlIndex === -1) {
-                    dbData[index].url.push(u);
-                }
-            });
-        } else {
-            dbData.push(x);
-        }
-    });
-    skipDomains.forEach((x) => {
-        let index = KPSkipArray.findIndex((i) => {
-            return x.name === i.name;
-        });
-        if (index !== -1){
-            x.domains.forEach((y) => {
-                if (!KPSkipArray[index].domains.includes(y)) {
-                    KPSkipArray[index].domains.push(y);
-                }
-            });
-        } else {
-            KPSkipArray.push(x);
-        }
-    });
-    saveKPSkipList();
-    objWhitelist.putBatch(dbData, syncWhiteList);
-}
-
-function initWhitelist() {
-    objWhitelist.getAll((data) => {
-        if (data.length <= 0) {
-            objWhitelist.putBatch(defPatterns, syncWhiteList);
-        } else if (update_flag) {
-            runUpdate(data);
-        } else {
-            syncWhiteList();
-        }
-    });
-}
 
 function initFeedList() {
     objFeedList.getAll((data) => {
@@ -905,263 +814,6 @@ function getSafeDomainsData() {
 }
 
 /*******************/
-
-function syncWhiteList(cb){
-    objWhitelist.getAll(function (dbObj){
-        debug("Object retrived from indexed DB : ", dbObj);
-        var data1 = dbObj.map((x) => {
-            return {id: x.id, url: x.url, type: x.type, site: x.site, templates: x.templates, enabled: x.enabled};
-        });
-        if (cb && typeof(cb) === "function") {
-            cb(data1);
-            return;
-        }
-        var res = [];
-        dbObj.forEach((x) => {
-            x.templates.forEach((y) => {
-                let temp = {};
-                temp.id = x.id;
-                temp.url = x.url;
-                temp.type = x.type;
-                temp.site = x.site;
-                temp.enabled = x.enabled;
-                Object.assign(temp, y);
-                res.push(temp);
-            });
-        });
-        KPTemplates = res.filter((x) => {
-            return x.logo !== undefined && x.enabled === true;
-        }).map((x) => {
-            return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
-        });
-
-        KPWhiteList = dbObj.filter((x) => {
-            return x.url !== undefined;
-        }).map((x) => {
-            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site, domains: x.domains, green_check: x.green_check};
-        });
-
-        debug("syncWhiteList called : ", KPWhiteList, KPTemplates);
-    });
-}
-
-function removeFromWhiteListById(id) {
-    var onSuccess = function(data) {
-        console.log("Data : ", data);
-        data.domains.forEach(x => removeFromKPSkipList(x));
-        objWhitelist.remove(id, syncWhiteList);
-    };
-    var onError = function(error) {
-        console.log("Error updating field : ", error);
-        return;
-    };
-    objWhitelist.get(id, onSuccess, onError);
-}
-
-
-function toggleWhitelistItems(id, state, cb) {
-    var onSuccess = function(data) {
-        data.enabled = state;
-        objWhitelist.put(data, syncWhiteList);
-        if (cb) {
-            cb();
-        }
-    };
-    var onError = function(error) {
-        console.log("Error updating field : ", error);
-        return;
-    };
-    objWhitelist.get(id, onSuccess, onError);
-}
-
-function addToWhiteList(tab, logo, cb) {
-    let url = stripQueryParams(tab.url),
-        site = getPathInfo(url).host,
-        pattern = {};
-    pattern.patternName = site;
-    pattern.url = url;
-    let addToDb = function(pattern) {
-        let data = { type: "custom", site: site, enabled: true};
-        data.templates = [];
-        data.templates.push(pattern);
-        data.domains = [];
-        data.domains.push(data.site);
-        data.url = [];
-        data.url.push({url: url});
-        tabinfo[tab.id].state = "greenflagged";
-        setIcon(tabinfo[tab.id], "greenflagged", {site: site});
-        addToKPSkipList(site, true);
-        objWhitelist.put(data, (x) => {
-            syncWhiteList();
-            debug("Added to DB : ", x);
-        });
-    };
-
-    let appendToDb = function(pattern, index) {
-        let id = KPWhiteList[index].id;
-        var onSuccess = function(obj) {
-            obj.url.push( { url: url} );
-            obj.templates.push(pattern);
-            objWhitelist.put(obj, syncWhiteList);
-            tabinfo[tab.id].state = "greenflagged";
-            setIcon(tabinfo[tab.id], "greenflagged", {site: site});
-            addToKPSkipList(site, true);
-        };
-        var onError = function(error) {
-            console.log("Error updating field : ", error);
-            return;
-        };
-        objWhitelist.get(id, onSuccess, onError);
-    };
-
-
-    var isSiteAdded = KPWhiteList.findIndex((x) => {
-        let y = x.domains.filter((z) => {
-            return site.endsWith(z);
-        });
-        if (y.length > 0) {
-            return true;
-        }
-        return false;
-    });
-
-    if (logo) {
-        createPatterns(logo).then(function(result) {
-            console.log("Template promise result : ", result);
-            pattern.logo = logo;
-            pattern.patternCorners = result.patternCorners;
-            pattern.patternDescriptors = result.patternDescriptors;
-            if (isSiteAdded !== -1) {
-                appendToDb(pattern, isSiteAdded);
-            } else {
-                addToDb(pattern);
-            }
-            if (cb !== undefined || cb !== null) {
-                cb(true);
-            }
-        }).catch((e) => {
-            console.log(e);//promise rejected.
-            if (cb !== undefined || cb !== null) {
-                cb(false);
-            }
-            return;
-        });
-    } else {
-        if (isSiteAdded !== -1) {
-            appendToDb(pattern, isSiteAdded);
-        } else {
-            addToDb(pattern);
-        }
-    }
-}
-
-function removeUrlFromWhiteList(url, id) {
-    var onSuccess = function(data) {
-        let j = data.url.findIndex((x) => {
-            return x.url === url;
-        });
-        if (data.type === "custom" && data.url.length > 1) {
-            data.url.splice(j, 1);
-            let ti = data.templates.findIndex((x) => {
-                return x.url === url;
-            });
-            console.log("template found : ", ti);
-            if (ti !== -1) {
-                data.templates.splice(ti, 1);
-            }
-        } else {
-            data.url.splice(j, 1);
-        }
-
-        objWhitelist.put(data, syncWhiteList);
-    };
-    var onError = function(error) {
-        console.log("Error updating field : ", error);
-        return;
-    };
-    objWhitelist.get(id, onSuccess, onError);
-}
-
-function removeFromWhiteList(site, tab) {
-    let upsertInDb = function(id) {
-        var onSuccess = function(obj) {
-            let i = obj.url.findIndex((x) => {
-                return x.url === site;
-            });
-            if (i === -1) {
-                return;
-            }
-            obj.url.splice(i, 1);
-            let ti = obj.templates.findIndex((x) => {
-                return x.url === site;
-            });
-            if (ti !== -1) {
-                obj.templates.splice(ti, 1);
-            }
-            objWhitelist.put(obj, syncWhiteList);
-        };
-        var onError = function(error) {
-            console.log("Error updating field : ", error);
-            return;
-        };
-        objWhitelist.get(id, onSuccess, onError);
-    };
-
-    let found = KPWhiteList.filter((x) => {
-        return (x.url.filter(y => y.url === site)).length > 0;
-    });
-    if (found.length > 0) {
-        if (found[0].url.length > 1) {
-            upsertInDb(found[0].id);
-        } else {
-            removeFromWhiteListById(found[0].id);
-            debug("Removed from whitelist : ", site);
-        }
-        tabinfo[tab.id].state = "red_done";
-        setIcon(tabinfo[tab.id], "red_done");
-        tabinfo[tab.id].checkState = false;
-    } else {
-        debug("site not Whitelisted : ", site);
-    }
-}
-
-
-function saveKPSkipList() {
-    chrome.storage.local.set({skiplist : KPSkipArray}, () => {
-        console.log("skiplist : ", KPSkipArray);
-        syncSkipList();
-    });
-}
-
-
-function initSkipList() {
-    chrome.storage.local.get("skiplist", function(result) {
-        var data = result.skiplist;
-        debug("Data received : ", data);
-        if (data) {
-            KPSkipArray = data;
-            syncSkipList();
-        } else {
-            KPSkipArray = skipDomains;
-            saveKPSkipList();
-        }
-    });
-}
-
-
-function syncSkipList(){
-    chrome.storage.local.get("skiplist", function(result) {
-        var data = result.skiplist;
-        console.log("Data received : ", data);
-        KPSkipArray = data;
-        KPSkipList = KPSkipArray.map((x) => {
-            return x.domains;
-        }).reduce(function (a,b) {
-            return a.concat(b);
-        }, []);
-    });
-}
-
 function errorfn(err) {
     console.log("Inedexeddb error occured : ", err);
 }
@@ -1182,20 +834,9 @@ function setDefaultSecurityImage(cb) {
 
 function loadDefaults() {
     initAdvConfigs();
-    initSkipList();
     setDefaultSecurityImage();
     //TODO
     //Should we allow users to add multiple entries for the same site?
-    objWhitelist = new IDBStore({
-        storeName: "whitelist",
-        keyPath: "id",
-        autoIncrement: true,
-        onStoreReady: initWhitelist,
-        onError: errorfn,
-        indexes: [
-            { name: "url", keyPath: "url", unique: false, multiEntry: false }
-        ]
-    });
 
     function initDefaultSites () {
         return new Promise((resolve) => {
@@ -1263,48 +904,9 @@ function loadDefaults() {
 
 }
 
-
-function addToKPSkipList(domain, isWhitelisted = false) {
-    console.log("addToSkipList Callled");
-    if (KPSkipList.indexOf(domain) !== -1) {
-        console.log("Skiplist adding failed");
-        return ("Domain already present in skiplist");
-    }
-    var obj = {};
-    obj.site = domain;
-    obj.whiteListed = isWhitelisted;
-    obj.domains = [];
-    obj.domains.push(domain);
-    KPSkipArray.push(obj);
-    saveKPSkipList();
-}
-
-function removeFromKPSkipList(domain) {
-    let found = KPSkipArray.filter((x) => {
-        return !domain.endsWith(x.site);
-    });
-    console.log("Found : ", found);
-    if (found.length === KPSkipArray.length) {
-        console.log("Domain not in skip list : ", domain);
-        return ("Domain not present in skip list");
-    } else {
-        KPSkipArray = found;
-        console.log("Removed from skiplist : ", domain);
-        saveKPSkipList();
-    }
-}
-
-function getKPSkipListSites(cb) {
-    console.log("getSkipListSites Callled");
-    return KPSkipArray.map((x)=> {
-        return {site: x.site, whitelisted: x.whiteListed };});
-}
-
 function cleanDB() {
-    chrome.storage.local.remove(["skiplist", "secure_img"], () => {
-        console.log("skiplist cleaned up");
-    });
-    objWhitelist.clear(loadDefaults);
+    //TODO:
+    //DB Cleanup on factory restore
 }
 
 function initAdvConfigs() {
