@@ -116,7 +116,7 @@ function inject (tab, site) {
     let ti = tabinfo[tab.id];
     //if (found.length == 0) {
     let found = checkProtectedSite(site);
-    if (found.length == 0) {
+    if (!found) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
         ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
@@ -498,9 +498,7 @@ function addToProtectedList(tab, logo, cb) {
             data.disabled = false; // If the site is disabled enable it and add the url in protected list
         }
     }
-    data.protected = [{url: url, disabled: false}];
-    //TODO: If any template is  already assosciated with this url and marked as disabled
-    //We are not doing anything to that. We need to think a workflow for that.
+    data.protected = [{url: url, disabled: false, deleted: false}];
 
     if (logo) {
         createPatterns(logo).then(function(result) {
@@ -535,6 +533,9 @@ function addToProtectedList(tab, logo, cb) {
             objCustomSites.put(data, syncSPSites);
         }
     });
+    tabinfo[tab.id].state = "greenflagged";
+    setIcon(tabinfo[tab.id], "greenflagged");
+    tabinfo[tab.id].checkState = false;
 }
 
 function removeFromProtectedList(url, tab) {
