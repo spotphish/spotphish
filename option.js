@@ -164,7 +164,6 @@ function renderProtectedList() {
     $(".kp-wl-url-row").on("click", function(e){
         e.stopPropagation();
         if ($(e.target).is(".kp-wl-url-delete")) {
-            let name = $(this).data("name");
             let url = $(this).data("url");
             bkg.removeFromProtectedList(url);
             $(this).remove();
