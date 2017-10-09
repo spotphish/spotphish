@@ -605,6 +605,7 @@ function toggleProtectedUrl(url, enable) {
     let data = {};
     data.name = site.name;
     data.src = site.src;
+    data.protected = protected;
     if (templates.length > 0) {
         data.templates = templates.map(x => {
             x.disabled = !enable;

@@ -70,18 +70,18 @@ function templateWhitelist(data) {
                 </tr>`;
         } else {
             protected_urls = protectedList.reduce((a,b) => {
-                let url_disabled = b.disabled? "unchecked ": "checked";
+                let url_disabled = b.disabled? unchecked : checked;
                 var tmp = `
                     <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
                         <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
                         <td>
                             <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
-                              <i class="material-icons kp-wl-url-check">${url_disabled}</i>
+                              <i class="material-icons ${data.disabled? "" : "kp-wl-url-check"}">${url_disabled}</i>
                             </button>
                         </td>
                         <td>
                             <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
-                                <i class="material-icons kp-wl-url-delete">delete</i>
+                                <i class="material-icons ${data.disabled? "" : "kp-wl-url-delete"}">delete</i>
                             </button>
                         </td>
                     </tr>`;
@@ -167,6 +167,19 @@ function renderProtectedList() {
             let url = $(this).data("url");
             bkg.removeFromProtectedList(url);
             $(this).remove();
+        }
+        if ($(e.target).is(".kp-wl-url-check")) {
+            let url = $(this).data("url");
+            const checked = "check_box", unchecked ="check_box_outline_blank";
+            let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+            let value = icon.innerHTML.trim();
+            if (value === checked) {
+                bkg.toggleProtectedUrl(url, false);
+                icon.innerHTML = unchecked;
+            } else {
+                bkg.toggleProtectedUrl(url, true);
+                icon.innerHTML = checked;
+            }
         }
     });
 }
