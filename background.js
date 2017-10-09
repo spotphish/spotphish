@@ -113,7 +113,7 @@ function inject (tab, site) {
     });*/
     let ti = tabinfo[tab.id];
     //if (found.length == 0) {
-    let found = checkProtectedSites(site);
+    let found = checkProtectedSite(site);
     if (found.length == 0) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
@@ -910,12 +910,10 @@ function loadDefaults() {
         });
 
     });
-
 }
 
 function cleanDB() {
-    //TODO:
-    //DB Cleanup on factory restore
+    objCustomSites.clear(syncSPSites, errorfn);
 }
 
 function initAdvConfigs() {
