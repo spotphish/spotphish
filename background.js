@@ -4,6 +4,7 @@ const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
+const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
 let DEBUG = true, basic_mode = false,
@@ -309,6 +310,7 @@ function initFeedList() {
             }
         }
     });
+    setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 }
 
 function syncTemplateList() {
@@ -344,6 +346,8 @@ function updateFeed(feed) {
             }
         } else {
             console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
+            // In case the server is down, our extension should still work with existing data.
+            syncSPSites();
         }
     });
 }
