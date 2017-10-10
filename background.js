@@ -371,7 +371,7 @@ function mergeSite(update, old) {
     let result = Object.assign({},update);
     for (const key in old) {
         if (unionProperty[key]) {
-            if (!new_data[key]) {
+            if (new_data[key] === undefined) {
                 result[key] = old[key];
             } else {
                 //result[key] = _.unionBy(new_data[key], old[key], unionProperty[key]);
@@ -379,10 +379,9 @@ function mergeSite(update, old) {
                     _.keyBy(old[key], unionProperty[key]),
                     _.keyBy(new_data[key], unionProperty[key])
                 ));
-                console.log("Key : ", key, " result[key] : ", result[key]);
             }
         } else {
-            if (!new_data[key]) {
+            if (new_data[key] === undefined) {
                 result[key] = old[key];
             }
         }
@@ -538,7 +537,7 @@ function addToProtectedList(tab, logo, cb) {
         }
     });
     tabinfo[tab.id].state = "greenflagged";
-    setIcon(tabinfo[tab.id], "greenflagged");
+    setIcon(tabinfo[tab.id], "greenflagged", {site: data.name});
     tabinfo[tab.id].checkState = false;
 }
 
