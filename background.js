@@ -494,6 +494,12 @@ function addToProtectedList(tab, logo, cb) {
         if (site.disabled) {
             data.disabled = false; // If the site is disabled enable it and add the url in protected list
         }
+        if (site.templates) {
+            let temp = site.templates.filter(x => x.page === url).map(y => y.checksum);
+            if (temp.length > 0) {
+                objTemplateList.remove(temp[0]);
+            }
+        }
     }
     data.protected = [{url: url, disabled: false, deleted: false}];
 
@@ -540,6 +546,11 @@ function removeFromProtectedList(url, tab) {
         indexTemplate = -1;
     if (indexProtected === -1) {
         console.log("This is not in protected sites list");
+        return;
+    }
+    // Delete the site if it has only one protected URL
+    if (site.protected.filter(x=> !x.deleted) === 1) {
+        removeSiteByName(site.name);
         return;
     }
     if (site.templates) {
@@ -641,29 +652,34 @@ function toggleSite(name, enable) {
     //TODO: We are not doing anything with safelist here
     let site = SPSites.filter(x => !x.deleted && x.name === name);
     let disable = !enable;
-    if (site.length > 0) {
-        site = site[0];
-        let data = {};
-        data.name = site.name;
-        data.src = site.src;
-        data.disabled = disable;
-        if (site.templates) {
-            data.templates = site.templates.map(x => {
-                x.disabled = disable;
-                return x;
-            });
-        }
-        if (site.protected) {
-            data.protected = site.protected.map(x => {
-                x.disabled = disable;
-                return x;
-            });
-        }
-        objCustomSites.put(data, syncSPSites, errorfn);
-    } else {
+    if (site.length <= 0) {
         console.log(name, "is not in DB ");
+        return;
     }
 
+    site = site[0];
+    let data = {};
+    data.name = site.name;
+    data.src = site.src;
+    data.disabled = disable;
+    if (site.templates) {
+        data.templates = site.templates.map(x => {
+            x.disabled = disable;
+            return x;
+        });
+    }
+    if (site.protected) {
+        data.protected = site.protected.map(x => {
+            x.disabled = disable;
+            return x;
+        });
+    }
+    objCustomSites.get(site.name, (curSite) => {
+        if (curSite) {
+            data = mergeSite(data, curSite);
+        }
+        objCustomSites.put(data, syncSPSites);
+    });
 }
 
 function addToSafeDomains(domain) {
