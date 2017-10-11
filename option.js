@@ -129,13 +129,11 @@ function updateImage(data) {
         chrome.storage.local.get("secure_img", function(result) {
             data = result.secure_img;
             $("#secureimage").attr("src", data.src);
-            // suggested
-            // custom
             if (data.type === "custom"){
                 $("#imagegallery #customimage").attr("src", data.src);
                 $("#imagegallery #kp-custom-icons").text("favorite");
                 $("#imageUpload").text("Change Image");
-            } else if (data.type === "suggested"){
+            } else if (data.type === "suggested" || data.type === "default" ){
                 let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
                 $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
             }
@@ -323,6 +321,9 @@ $(document).ready(function() {
             bkg.cleanDB();
             bkg.setDefaultSecurityImage(function () {
                 $("#imagegallery .cutsom-image").remove();
+                $("#imagegallery #customimage").attr("src", "");
+                $("#imagegallery #kp-custom-icons").text("");
+                $("#imageUpload").text("Upload New Image");
                 updateImage();
             });
         }
