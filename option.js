@@ -132,12 +132,12 @@ function updateImage(data) {
             // suggested
             // custom
             if (data.type === "custom"){
-              $("#imagegallery #customimage").attr("src", data.src);
-              $("#imagegallery #kp-custom-icons").text("favorite");
-              $("#imageUpload").text("Change Image");
-            }else if (data.type === "suggested"){
-              let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
-              $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
+                $("#imagegallery #customimage").attr("src", data.src);
+                $("#imagegallery #kp-custom-icons").text("favorite");
+                $("#imageUpload").text("Change Image");
+            } else if (data.type === "suggested"){
+                let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
+                $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
             }
         });
     }
