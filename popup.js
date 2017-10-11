@@ -7,10 +7,10 @@
         if (!response) {
             return;
         }
-        
-        $("#kp-status").css({display: "flex"});
-        $("#kp-status-span").append(`<em>${response.status}</em>`);
-        
+        if (response.status) {
+            $("#kp-status").css({display: "flex"});
+            $("#kp-status-span").append(`<em>${response.status}</em>`);
+        }
         if (response.state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");

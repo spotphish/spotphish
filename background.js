@@ -66,7 +66,6 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
             respond({state: "NA"});
         }
     } else if (msg.op === "addToWhitelist") {
-        console.log("addToWhitelist handled");
         inject(msg.currentTab, msg.site);
         respond({message: "whitelisted"});
     } else if (msg.op === "removeFromWhitelist") {
@@ -139,7 +138,7 @@ function init(msg, sender, respond) {
         ti.topReady = true;
         ti.inputFields = msg.inputFields;
         let res = checkProtectedSite(tab);
-        console.log("Result check Protected : ", res);
+        debug("Result check Protected : ", res);
         if (res) {
             let greenFlag = true;
             if (res.green_check) {
@@ -388,24 +387,14 @@ function mergeSite(update, old) {
     }
     return result;
 }
-/*
-const t1 = [{checksum: 1111, deleted: true}, {checksum: 2222}, {checksum: 3333, deleted: true}],
-      t2 = [{checksum: 1111, disabled: true}, {checksum: 3333, deleted: false, disabled: true}, {checksum: 4444}];
-console.log("T1 : ", t1);
-console.log("T2 : ", t2);
-let t3 = _.values(_.merge(
-            _.keyBy(t1, 'checksum'),
-            _.keyBy(t2, 'checksum')
-        ));
-console.log("T3 : ", t3);
-*/
+
 function syncSPSites() {
     objDefaultSites.getAll(default_data => {
         let tmp = default_data;
-        console.log("Default Sites : ", tmp);
+        debug("Default Sites : ", tmp);
         let sites = default_data;
         objCustomSites.getAll(custom_data => {
-            console.log("Custom Sites : ", custom_data);
+            debug("Custom Sites : ", custom_data);
             custom_data.forEach(x => {
                 let found = default_data.findIndex(y => y.name === x.name);
                 if (found === -1) {
@@ -418,7 +407,7 @@ function syncSPSites() {
                 }
             });
             SPSites = sites;
-            console.log("SPSites : ", SPSites);
+            debug("SPSites : ", SPSites);
             updateTemplateList();
         });
     });
@@ -435,23 +424,23 @@ function updateTemplateList() {
     let garbageTemplates = SPTemplates.filter(x => {
         return checksumList.indexOf(x.checksum) === -1;
     }).map(y => y.checksum);
-    console.log("Garbage Templates : ", garbageTemplates);
+    debug("Garbage Templates : ", garbageTemplates);
     objTemplateList.removeBatch(garbageTemplates, syncTemplateList, errorfn); //Cleanup Garbage templates.
     let newTemplates = templates.filter(x => {
         return !x.deleted && SPTemplates.findIndex(y => x.checksum === y.checksum) === -1;
     });
-    console.log("New Templates : ", newTemplates);
+    debug("New Templates : ", newTemplates);
     newTemplates.forEach(x => {
         if (x.image) {
             createPatterns(x.image).then(function(result) {
-                console.log("Template promise result : ", result);
+                debug("Template promise result : ", result);
                 x.base64 = result.base64;
                 x.patternCorners = result.patternCorners;
                 x.patternDescriptors = result.patternDescriptors;
                 objTemplateList.put(x);
                 SPTemplates.push(x);
             }).catch((e) => {
-                console.log(e);//promise rejected.
+                console.log("Create Pattern Error : ", e);//promise rejected.
                 return;
             });
         }
@@ -514,7 +503,6 @@ function addToProtectedList(tab, logo, cb) {
             pattern.page = url;
             objTemplateList.put(pattern, syncTemplateList, errorfn);
             data.templates = [{page: url, checksum: pattern.checksum}];
-            console.log("SHA256 : ", pattern.checksum);
             if (cb !== undefined || cb !== null) {
                 cb(true);
             }
@@ -790,7 +778,17 @@ function removeFromSafeDomainsBySiteName(name) {
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
-    let data = SPSites.filter(x => !x.deleted && (x.protected || x.templates)).map( site => {
+    let data = SPSites.filter(x => {
+        if (x.deleted) {
+            return false;
+        }
+        let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
+        let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
+        if (protected.length > 0 || templates.length > 0) {
+            return true;
+        }
+        return false;
+    }).map( site => {
         if (site.templates) {
             site.templates.filter(a => !a.deleted).map(template => {
                 let found = SPTemplates.filter(y => !y.deleted && y.checksum === template.checksum);
@@ -804,7 +802,6 @@ function getProtectedSitesData() {
         }
         return site;
     });
-    console.log("Protected Data : ", data);
     return data;
 }
 

@@ -66,7 +66,7 @@ function templateWhitelist(data) {
         if (protectedList.length === 1) {
             protected_urls =`
                 <tr class="kp-wl-url-row" data-name=${data.name}>
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.protected[0].url}</td>
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${protectedList[0].url}</td>
                 </tr>`;
         } else {
             protected_urls = protectedList.reduce((a,b) => {
