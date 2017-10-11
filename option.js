@@ -129,6 +129,16 @@ function updateImage(data) {
         chrome.storage.local.get("secure_img", function(result) {
             data = result.secure_img;
             $("#secureimage").attr("src", data.src);
+            // suggested
+            // custom
+            if (data.type === "custom"){
+              $("#imagegallery #customimage").attr("src", data.src);
+              $("#imagegallery #kp-custom-icons").text("favorite");
+              $("#imageUpload").text("Change Image");
+            }else if (data.type === "suggested"){
+              let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
+              $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
+            }
         });
     }
 }
@@ -261,6 +271,16 @@ $(document).ready(function() {
         $(icon).text("favorite");
     });
 
+    $(".kp-custom-icons").on("click", function(event) {
+        event.preventDefault();
+        var data = {};
+        data.type = "custom";
+        data.src = $("#customimage").attr("src");
+        updateImage(data);
+        $(".kp-active-icons").text("favorite_border");
+        $("#kp-custom-icons").text("favorite");
+    });
+
     $(".img-edit").on("click", function(e) {
         $(".whitelist-container").addClass("hide");
         $(".img-uploader-container").removeClass("hide");
@@ -278,7 +298,7 @@ $(document).ready(function() {
             return;
         }
         if (file.size > 2097154) {
-            alert("The image size size should not be nore than 2MB");
+            alert("The image size should not be more than 2MB");
             return;
         }
         var reader = new FileReader();
@@ -287,8 +307,12 @@ $(document).ready(function() {
             data.type = "custom";
             data.src = reader.result;
             updateImage(data);
-            $("#imagegallery .cutsom-image").remove();
-            $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
+            // $("#imagegallery .cutsom-image").remove();
+            $("#imagegallery #customimage").attr("src", reader.result);
+            $(".kp-active-icons").text("favorite_border");
+            $("#imagegallery #kp-custom-icons").text("favorite");
+            // $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
+            $("#imageUpload").text("Change Image");
         };
         reader.readAsDataURL(file);
 
