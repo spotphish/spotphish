@@ -76,12 +76,12 @@ function templateWhitelist(data) {
                         <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
                         <td>
                             <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
-                              <i class="material-icons ${data.disabled? "" : "kp-wl-url-check"}">${url_disabled}</i>
+                              <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
                             </button>
                         </td>
                         <td>
                             <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
-                                <i class="material-icons ${data.disabled? "" : "kp-wl-url-delete"}">delete</i>
+                                <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
                             </button>
                         </td>
                     </tr>`;
@@ -163,20 +163,32 @@ function renderProtectedList() {
             if (value === checked) {
                 bkg.toggleSite(name, false);
                 icon.innerHTML = unchecked;
+                $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
+                $(this).find("i.kp-wl-url-delete").removeClass("enable");
+                $(this).find("i.kp-wl-url-check").each((i,x) => {
+                    x.innerHTML = unchecked;
+                    $(x).removeClass("enable");
+                });
             } else {
                 bkg.toggleSite(name, true);
+                $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
+                $(this).find("i.kp-wl-url-delete").addClass("enable");
+                $(this).find("i.kp-wl-url-check").each((i,x) => {
+                    x.innerHTML = checked;
+                    $(x).addClass("enable");
+                });
                 icon.innerHTML = checked;
             }
         }
     });
     $(".kp-wl-url-row").on("click", function(e){
         e.stopPropagation();
-        if ($(e.target).is(".kp-wl-url-delete")) {
+        if ($(e.target).is(".kp-wl-url-delete.enable")) {
             let url = $(this).data("url");
             bkg.removeFromProtectedList(url);
             $(this).remove();
         }
-        if ($(e.target).is(".kp-wl-url-check")) {
+        if ($(e.target).is(".kp-wl-url-check.enable")) {
             let url = $(this).data("url");
             const checked = "check_box", unchecked ="check_box_outline_blank";
             let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
@@ -326,6 +338,10 @@ $(document).ready(function() {
                 $("#imageUpload").text("Upload New Image");
                 updateImage();
             });
+            let val = $("#kp-debug-switch").is(":checked");
+            if (val) {
+                $("#kp-debug-switch").click();
+            }
         }
     });
 
