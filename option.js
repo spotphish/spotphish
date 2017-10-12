@@ -19,7 +19,7 @@ function templateImage(src, favorite, imageClass) {
 
 function templateSafeDomain(data) {
     const template = `
-        <li class="mdl-list__item kp-safelist-row" data-name=${data.site}>
+        <li class="mdl-list__item kp-safelist-row" data-name=${data.site} >
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons  mdl-list__item-avatar">public</i>
                 ${data.site}
@@ -65,7 +65,7 @@ function templateWhitelist(data) {
         console.log("Protected List : ", protectedList);
         if (protectedList.length === 1) {
             protected_urls =`
-                <tr class="kp-wl-url-row" data-name=${data.name}>
+                <tr class="kp-wl-url-row" data-name=${data.name} >
                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${protectedList[0].url}</td>
                 </tr>`;
         } else {
@@ -91,7 +91,7 @@ function templateWhitelist(data) {
     }
 
     const site = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name}>
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
                 <div class="mdl-card__title mdl-card--border">
                     <h2 class="mdl-card__title-text">${data.name}</h2>
                 </div>
