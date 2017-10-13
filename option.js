@@ -277,18 +277,31 @@ $(document).ready(function() {
         updateImage(data);
 
         $(".kp-active-icons").text("favorite_border");
+
+        if (data.type != "custom"){
+            if (!$("#customimage").attr("src")){
+                $("#kp-custom-icons").text("");
+            }
+        }
+
         var icon = $(this).find("i")[0];
         $(icon).text("favorite");
     });
 
+    $("#kp-custom-btn-icons").on("click", function(event) {
+      $(".kp-custom-icons").click();
+    });
+
     $(".kp-custom-icons").on("click", function(event) {
-        event.preventDefault();
         var data = {};
+        event.preventDefault();
         data.type = "custom";
         data.src = $("#customimage").attr("src");
-        updateImage(data);
-        $(".kp-active-icons").text("favorite_border");
-        $("#kp-custom-icons").text("favorite");
+        if (data.src) {
+            updateImage(data);
+            $(".kp-active-icons").text("favorite_border");
+            $("#kp-custom-icons").text("favorite");
+        }
     });
 
     $(".img-edit").on("click", function(e) {
