@@ -361,8 +361,8 @@ function checkUpdates() {
 function updateFeed(feed) {
     let ord = Math.floor(Math.random()*100);
     let src = feed.src + "?ord=" + ord;
-    ajax_get(src, (err, data) => {
-        if (!err && data) {
+    $.getJSON(src)
+        .done(data => {
             console.log("Versions feed, data : ", feed.version, data.version);
             if (feed.version !== data.version) {
                 feed.version = data.version;
@@ -371,12 +371,11 @@ function updateFeed(feed) {
                 updateDefaultSitesFromFeedData(data);
                 //TODO: Update the default_sites table and template_list.
             }
-        } else {
+        }).fail(err => {
             console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
             // In case the server is down, our extension should still work with existing data.
             syncSPSites();
-        }
-    });
+        });
 }
 
 function updateDefaultSitesFromFeedData(feed_data) {
