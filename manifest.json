@@ -20,7 +20,7 @@
       "matches": ["<all_urls>"],
       "css":["css/content.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
       "js": [
-        "externalCode/jquery/jquery-1.12.4.min.js",
+        "externalCode/jquery/jquery-3.1.1.min.js",
         "externalCode/jquery.Jcrop.min.js",
         "utils.js",
         "content.js",
@@ -37,6 +37,7 @@
         "externalCode/idbstore.min.js",
         "externalCode/CryptoJs_v3.1.2/core-min.js",
         "externalCode/CryptoJs_v3.1.2/sha256-min.js",
+        "externalCode/jquery/jquery-3.1.1.min.js",
         "externalCode/lodash.min.js",
         "utils.js",
         "screenshot.js",
