@@ -115,6 +115,30 @@ function isstring(obj) {
     return obj instanceof String || typeof obj === "string";
 }
 
+function ajax_get(url, cb) {
+    var request = new XMLHttpRequest(),
+        callback = cb || function() {};
+    request.open("GET", url, true);
+    request.onload = function() {
+        console.log("status : ", request.status);
+        if (request.status >= 200 && request.status < 400) {
+            var data;
+            try {
+                data = JSON.parse(request.responseText);
+            } catch (e) {
+                data = null;
+            }
+            return callback(null, data);
+        } else {
+            callback("ajax_get error");
+        }
+    };
+    request.onerror = function() {
+        return callback("ajax_get error");
+    };
+    request.send();
+}
+
 function isObject(item) {
     return (item && typeof item === "object" && !Array.isArray(item));
 }
