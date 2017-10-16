@@ -26,6 +26,10 @@ function main() {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
                 alert("This site already added to whitelist");
+            } else if (msg.op == "test_match") {
+                showMatch(msg);
+            } else if (msg.op == "test_no_match") {
+                showNoMatch();
             } else {
                 console.log("KP: unknown op", msg);
             }
@@ -177,6 +181,31 @@ function injectCropModal() {
     };
 
     dialog(cropDialog);
+}
+
+function showMatch(msg) {
+    var img = document.createElement("img");
+    img.src = msg.img;
+    const warn = {
+        title: "Template Matched",
+        type: "warning",
+        img: img,
+        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+    };
+    dialog(warn);
+}
+
+function showNoMatch() {
+    const ack1 = {
+        title: "SpotPhish",
+        type: "info",
+        main: "No template matches found for this page.",
+        extra: null,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        dismiss_after: 3000
+    };
+    dialog(ack1);
 }
 
 function scanInputFields() {
