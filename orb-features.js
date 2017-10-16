@@ -209,7 +209,7 @@ function findOrbFeatures(screenShot) {
         var res = {};
         res.corners = scrCorners;
         res.descriptors = scrDescriptors;
-        return Promise.resolve(res);
+        return res;
     });
 }
 
@@ -335,11 +335,11 @@ function matchOrbFeatures(scrCorners, scrDescriptors, patternCorners, patternDes
     return false;
 }
 
-function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, mask, cb) {
+function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, mask) {
     let p1 = loadImage(scrShot);
     //let p2 = loadImage(template.logo);
     let p2 = loadImage(template.base64);
-    Promise.all([p1, p2]).then(res => {
+    return Promise.all([p1, p2]).then(res => {
         let image1 = res[1];
         let image2 = res[0];
 
@@ -366,10 +366,6 @@ function findCorrespondence(scrShot, scrCorners, template, matches, matchCount, 
                 ctx.strokeStyle = "rgb(255,0,0)";
             }
         }
-        var img = canvas.toDataURL("image/png");
-        if (cb !== undefined) {
-            cb(img);
-            return;
-        }
+        return canvas.toDataURL("image/png");
     });
 }
