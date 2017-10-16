@@ -20,6 +20,7 @@
         
         if (tabinfo.state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
+            $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
         } else if (tabinfo.state === "watching" || tabinfo.state === "red_done" || tabinfo.state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
@@ -54,7 +55,7 @@
                 window.close();
             });
             $("#kp-test-now").on("click", e => {
-                chrome.runtime.sendMessage({op: "urgent_check", curtab: curTab});
+                chrome.runtime.sendMessage({op: "test_now", tab: curTab});
                 window.close();
             });
             $("#settingsLink").on("click", e => {

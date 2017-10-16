@@ -91,15 +91,14 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         addToProtectedList(sender.tab, null);
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
-        let curTabInfo = sender.tab ? tabinfo[sender.tab.id] : tabinfo[msg.curtab.id];
+        let curTabInfo = tabinfo[sender.tab.id];
         let tabState = curTabInfo.state;
-        if (sender.tab) {
-            if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-                redflag(curTabInfo);
-            }
-        } else {
-            redflag(curTabInfo, true);
+        if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+            redflagCheck(curTabInfo);
         }
+    } else if (msg.op === "test_now") {
+        const ti = tabinfo[msg.tab.id];
+        redflagCheck(ti, true);
     } else {
         console.log("KPBG: Unknown message", msg);
     }
@@ -219,69 +218,93 @@ function watchdog() {
                 ti.watches.shift();
             }
             if (redcheck) {
-                redflag(ti);
+                redflagCheck(ti);
             }
         }
     });
 }
 
-function redflag(ti, testNow = false) {
+function redflagCheck(ti, testNow) {
     console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
-    snapcheck(ti, testNow);
-}
-
-
-function snapcheck(ti, testNow) {
-    const tab = ti.tab;
-    chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, image => {
-        // image is base64
-
-        var scrCorners = [];
-        var scrDescriptors = [];
-        var normalizedImage;
-        const area = {x: 0, y: 0, w: tab.width, h: tab.height};
-        crop(image, area, ti.dpr, false, cropped => {
-            normalizedImage = cropped;
-            ti.nchecks++;
-            findOrbFeatures(normalizedImage).then(result => {
-                scrCorners = result.corners;
-                scrDescriptors = result.descriptors;
-                let t0 = performance.now();
-                //for (let i = 0; i < KPTemplates.length; i++) {
-                //   const template = KPTemplates[i];
-                let activeTemplates = SPTemplates.filter(x => !x.disabled);
-                for (let i = 0; i < activeTemplates.length; i++) {
-                    const template = activeTemplates[i];
-                    if (!template.disabled) {
-                        const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
-                            template.patternDescriptors, template.site);
-                        if (res) {
-                            let t1 = performance.now();
-                            console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
-                            ti.state = "redflagged";
-                            setIcon(ti, "redflagged", {site: template.site});
-                            findCorrespondence(normalizedImage, scrCorners , template, res.matches, res.matchCount,
-                                res.mask, img => ti.port.postMessage({op: "redflag", site: template.site, img:img}));
-                            matchFound = true;
-                            break;
-                        }
-                    }
+    return scanTab(ti)
+        .then(res => {
+            if (res.match) {
+                const site = res.match.template.site;
+                if (testNow) {
+                    return ti.port.postMessage({op: "test_match", site, img:res.corr_img});
                 }
-
-                if (!matchFound && testNow) {
-                    ti.port.postMessage({op: "no_match"});
+                ti.nchecks++;
+                ti.state = "redflagged";
+                setIcon(ti, "redflagged", {site});
+                return ti.port.postMessage({op: "redflag", site, img:res.corr_img});
+            } else {
+                if (testNow) {
+                    return ti.port.postMessage({op: "test_no_match"});
                 }
-
+                ti.nchecks++;
                 if (ti.state !== "redflagged" && ti.watches.length === 0) {
                     ti.state = "red_done";
                 }
                 if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
-                    console.log("setting icon to checked", ti.nchecks);
                     setIcon(ti, "checked"); // The page is checked atleast once.
                 }
-            });
+            }
         });
-    });
+}
+
+/*
+ * Screenshot a tab and match with all active templates
+ */
+
+function scanTab(ti) {
+    const tab = ti.tab;
+
+    return snapTab(tab)
+        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
+        .then(screenshot => findOrbFeatures(screenshot)
+            .then(features => matchTemplates(features)
+                .then(match => makeCorrespondenceImage(match, screenshot, features)
+                    .then(corr_img => ({match, corr_img})))));
+                
+    function snapTab(tab) {
+        return new Promise((resolve, reject) => {
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
+        });
+    }
+
+    function normalizeScreenshot(image, width, height, dpr) {
+        return new Promise((resolve, reject) => {
+            const area = {x: 0, y: 0, w: width, h: height};
+            crop(image, area, dpr, false, resolve);
+        });
+    }
+
+    function matchTemplates(scrFeatures) {
+        const scrCorners = scrFeatures.corners;
+        const scrDescriptors = scrFeatures.descriptors;
+        let t0 = performance.now();
+        let activeTemplates = SPTemplates.filter(x => !x.disabled);
+        for (let i = 0; i < activeTemplates.length; i++) {
+            const template = activeTemplates[i];
+            const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
+                template.patternDescriptors, template.site);
+            if (res) {
+                let t1 = performance.now();
+                console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
+                res.template = template;
+                return Promise.resolve(res);
+            }
+        }
+        return Promise.resolve(null);
+    }
+
+    function makeCorrespondenceImage(match, screenshot, features) {
+        if (!match) {
+            return Promise.resolve(null);
+        }
+        return findCorrespondence(screenshot, features.corners , match.template, match.matches, match.matchCount,
+            match.mask);
+    }
 }
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
