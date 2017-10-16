@@ -22,7 +22,6 @@
       "js": [
         "externalCode/jquery/jquery-1.12.4.min.js",
         "externalCode/jquery.Jcrop.min.js",
-        "whitelist.js",
         "utils.js",
         "content.js",
         "dialog.js"
@@ -34,7 +33,6 @@
   "background": {
     "scripts": [
         "assets/defaults/pattern.js",
-        "whitelist.js",
         "config.js",
         "externalCode/idbstore.min.js",
         "externalCode/CryptoJs_v3.1.2/core-min.js",
