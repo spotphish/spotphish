@@ -954,6 +954,7 @@ function loadDefaults() {
 
 function cleanDB() {
     objCustomSites.clear(syncSPSites, errorfn);
+    chrome.storage.local.remove("secure_img");
 }
 
 function initAdvConfigs() {
