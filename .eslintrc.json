@@ -57,6 +57,7 @@
         "injectAckModal": false,
         "defaultFeeds": false,
         "_": false,
-        "CryptoJS": false
+        "CryptoJS": false,
+        "DEBUG": true
     }
 }

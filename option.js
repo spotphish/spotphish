@@ -289,7 +289,7 @@ $(document).ready(function() {
     });
 
     $("#kp-custom-btn-icons").on("click", function(event) {
-      $(".kp-custom-icons").click();
+        $(".kp-custom-icons").click();
     });
 
     $(".kp-custom-icons").on("click", function(event) {
