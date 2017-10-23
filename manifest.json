@@ -32,7 +32,6 @@
   ],
   "background": {
     "scripts": [
-        "assets/defaults/pattern.js",
         "config.js",
         "externalCode/idbstore.min.js",
         "externalCode/CryptoJs_v3.1.2/core-min.js",

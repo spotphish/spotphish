@@ -7,7 +7,6 @@ BG_SOURCES = externalCode/idbstore.min.js\
 
 CS_SOURCES = externalCode/jquery/jquery-1.12.4.min.js\
         externalCode/jquery.Jcrop.min.js\
-        whitelist.js\
         utils.js\
         content.js
 
