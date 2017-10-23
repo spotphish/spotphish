@@ -33,20 +33,14 @@
 
         $(document).ready(function() {
             $("#kp-add-to-whitelist").on("click", e => {
-                var site = stripQueryParams(curTab.url);
-                chrome.runtime.sendMessage({ op: "addToWhitelist", currentTab: curTab, site: site}, res => {
-                    if (res.message === "whitelisted") {
-                        /* notify */
-                    }
+                chrome.runtime.sendMessage({op: "protect_page", tab: curTab}, res => {
+                    /* notify */
                 });
                 window.close();
             });
             $("#kp-remove-from-whitelist").on("click", e => {
-                var site = stripQueryParams(curTab.url);
-                chrome.runtime.sendMessage({ op: "removeFromWhitelist", currentTab: curTab, site: site}, res => {
-                    if (res.message === "removed") {
+                chrome.runtime.sendMessage({op: "unprotect_page", tab: curTab}, res => {
                         /* notify */
-                    }
                 });
                 window.close();
             });

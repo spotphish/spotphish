@@ -135,3 +135,48 @@ function mergeDeep(target, ...sources) {
     }
     return mergeDeep(target, ...sources);
 }
+
+/*
+ * Promise wrapper around IDBWrapper around IndexedDB
+ */
+
+class Pdb {
+    constructor(options) {
+        this.ready_promise = new Promise((resolve, reject) => {
+            const o = Object.assign({}, options, {onStoreReady: resolve, onError: reject});
+            this.db = new IDBStore(o);
+        });
+    }
+
+    ready() {
+        return this.ready_promise;
+    }
+
+    put(data) {
+        return new Promise((resolve, reject) => this.db.put(data, resolve, reject));
+    }
+
+    putBatch(data) {
+        return new Promise((resolve, reject) => this.db.putBatch(data, resolve, reject));
+    }
+
+    get(id) {
+        return new Promise((resolve, reject) => this.db.get(id, resolve, reject));
+    }
+
+    getAll() {
+        return new Promise((resolve, reject) => this.db.getAll(resolve, reject));
+    }
+
+    remove(id) {
+        return new Promise((resolve, reject) => this.db.remove(id, resolve, reject));
+    }
+
+    removeBatch(idlist) {
+        return new Promise((resolve, reject) => this.db.removeBatch(idlist, resolve, reject));
+    }
+
+    clear() {
+        return new Promise((resolve, reject) => this.db.clear(resolve, reject));
+    }
+}

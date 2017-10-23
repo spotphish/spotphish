@@ -164,9 +164,8 @@ function injectAckModal(message = "All done") {
 function injectCropModal() {
     function basic() {
         chrome.runtime.sendMessage({
-            op: "add_wh"
+            op: "protect_basic"
         }, function (res) {
-            console.log("resp called");
             setTimeout(x => injectAckModal("Basic protection enabled for this page"), 500);
         });
     }

@@ -58,6 +58,9 @@
         "defaultFeeds": false,
         "_": false,
         "CryptoJS": false,
-        "DEBUG": true
+        "DEBUG": true,
+        "psl": false,
+        "Sites": false,
+        "Pdb": false
     }
 }
