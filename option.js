@@ -63,31 +63,24 @@ function templateWhitelist(data) {
     if (data.protected) {
         let protectedList = data.protected.filter(x => !x.deleted);
         console.log("Protected List : ", protectedList);
-        if (protectedList.length === 1) {
-            protected_urls =`
-                <tr class="kp-wl-url-row" data-name=${data.name} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${protectedList[0].url}</td>
+        protected_urls = protectedList.reduce((a,b) => {
+            let url_disabled = b.disabled? unchecked : checked;
+            var tmp = `
+                <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
+                    <td>
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
+                          <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
+                        </button>
+                    </td>
+                    <td>
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
+                            <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
+                        </button>
+                    </td>
                 </tr>`;
-        } else {
-            protected_urls = protectedList.reduce((a,b) => {
-                let url_disabled = b.disabled? unchecked : checked;
-                var tmp = `
-                    <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
-                        <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
-                        <td>
-                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
-                              <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
-                                <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
-                            </button>
-                        </td>
-                    </tr>`;
-                return a + tmp;
-            },"");
-        }
+            return a + tmp;
+        },"");
     }
 
     const site = `

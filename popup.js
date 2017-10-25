@@ -21,6 +21,7 @@
             $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
         } else if (state === "init") {
+            $("#kp-add-to-whitelist").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
             $("#kp-test-now").css({display: "flex"});
         } else {

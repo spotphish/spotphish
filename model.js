@@ -29,7 +29,7 @@ let Sites = {
             ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
                 (filter === "exists") ? x => !x.deleted : x => true;
         const found = this.sites.filter(ff)
-            .filter(s => !!_.find(s.safe, y => host.endsWith(y.domain)));
+            .filter(s => _.find(s.domains, y => host.endsWith(y)));
         return found[0];
     }, 
 
@@ -210,14 +210,14 @@ let Sites = {
 
     toggleURL: function(url, enable) {
         const site = this.getSite(url),
-            url1 = this.getProtectedURL(url, "exists"),
+            url1 = _.cloneDeep(this.getProtectedURL(url, "exists")),
             templates = site.templates.filter(x => !x.deleted && x.page && x.page === url);
 
         if (!site || !url1) {
             return Promise.reject(new Error(`URL does not exist: ${url}`));
         }
-        const cur = _.find(this.customSites, x => x.name === site.name),
-            out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
+        const cur = _.find(this.customSites, x => x.name === site.name);
+        let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
         url1.disabled = !enable;
         out.protected = [url1];
         if (templates.length) {
@@ -225,7 +225,7 @@ let Sites = {
                 .map(x => (x.disabled = !enable, x));
         }
         if (cur) {
-            mergeSite(out, cur);
+            out = mergeSite(out, cur);
         }
         return this.dbCustomSites.put(out)
             .then(x => this.sync());
@@ -248,6 +248,8 @@ let Sites = {
             site.safe = site.safe || [];
             site.safe = _.uniq(site.safe.concat(site.protected.filter(x => !x.deleted && !x.disabled)
                 .map(p => ({domain: getPathInfo(p.url).host}))));
+            site.domains = _.uniq(site.safe.map(s => s.domain)
+                .concat(site.protected.filter(x => !x.deleted).map(p => getPathInfo(p.url).host)));
             return site;
         }
 
