@@ -28,7 +28,7 @@ let Sites = {
         const host = url.includes("://") ? getPathInfo(url).host : url,
             ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
                 (filter === "exists") ? x => !x.deleted : x => true;
-        const found = this.filter(ff)
+        const found = this.sites.filter(ff)
             .filter(s => !!_.find(s.safe, y => host.endsWith(y.domain)));
         return found[0];
     }, 
@@ -50,6 +50,16 @@ let Sites = {
         const host = url.includes("://") ? getPathInfo(url).host : url;
         return _.find(this.safe, x => host.endsWith(x));
     },
+
+    getSites: function(filter="enabled") {
+        const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
+                (filter === "exists") ? x => !x.deleted : x => true;
+        return this.sites.filter(ff);
+    }, 
+
+    getTemplates: function() {
+        return this.templates;
+    }, 
 
     addSafeDomain: function(domain) {
         const p = psl.parse(domain);
@@ -228,8 +238,9 @@ let Sites = {
             .then(x => defaultSites = x)
             .then(x => this.dbCustomSites.getAll())
             .then(x => customSites = x)
-            .then(syncSites)
-            .then(syncTemplates);
+            .then(syncSites.bind(this))
+            .then(syncTemplates.bind(this))
+            .then(x => (debug("SYNC!", this.sites, this.safe, this.templates), debug("SYNC2", this.defaultSites, this.customSites, this.templateList)));
 
         function prep(site) {
             site.protected = site.protected || [];
@@ -260,6 +271,9 @@ let Sites = {
         }
 
         function syncTemplates() {
+
+            /* Garbage collect deleted templates */
+
             /* flattened list of all templates, annotated by site name */
             const templates = this.sites.filter(x => !x.deleted && x.templates)
                 .map(y => y.templates.map(z => (z.site = y.name, z)))
@@ -268,13 +282,15 @@ let Sites = {
             const checksums = templates.filter(x => !x.deleted).map(y => y.checksum);
             const garbageTemplates = this.templateList.filter(x => checksums.indexOf(x.checksum) === -1)
                 .map(y => y.checksum);
-            const newTemplates = templates.filter(x => !x.deleted &&
-                this.templateList.findIndex(y => y.checksum === x.checksum) === -1);
-
             let res = Promise.resolve(true);
             if (garbageTemplates.length) {
                 res = res.then(x => this.dbTemplateList.removeBatch(garbageTemplates));
             }
+
+            /* Compute patterns for new templates */
+            const newTemplates = templates.filter(x => !x.deleted &&
+                this.templateList.findIndex(y => y.checksum === x.checksum) === -1);
+
             if (newTemplates) {
                 const np = newTemplates.filter(t => !!t.image)
                     .map(x => createPatterns(x.image)
@@ -288,8 +304,20 @@ let Sites = {
                 
                 res = res.then(x => Promise.all(np));
             }
+
+            /* Sync */
             res = res.then(x => this.dbTemplateList.getAll())
-                .then(x => this.templateList = x.filter(x => !x.disabled));
+                .then(x => {
+                    this.templateList = x;
+                    const templates = this.sites.filter(x => !x.deleted && !x.disabled &&
+                        x.templates)
+                        .map(y => y.templates)
+                        .reduce((a,b) => a.concat(b),[]);
+
+                    const checksums = templates.filter(x => !x.deleted && !x.disabed)
+                        .map(y => y.checksum);
+                    this.templates = this.templateList.filter(y => checksums.indexOf(y.checksum) !== -1);
+                });
 
             return res;
         }
@@ -345,7 +373,7 @@ function mergeSite(update, old) {
 
 /*
 
-Feed:
+Sample Feed:
 {
   "name": "default-feed",
   "url": "https://deepak-shinde.github.io/feeds/main/main.json",
@@ -357,20 +385,29 @@ Feed:
       "src": "https://deepak-shinde.github.io/feeds/main/main.json",
       "protected": [
         {
-          "url": "https://accounts.google.com/signin/v2/identifier"
+          "url": "https://accounts.google.com/signin/v2/identifier",
+          "disabled": true
         },
         {
           "url": "https://accounts.google.com/signin/oauth/identifier"
         },
         {
-          "url": "https://accounts.google.com/signin/v2/sl/pwd"
+          "url": "https://accounts.google.com/signin/v2/sl/pwd",
+          "deleted": true
         }
       ],
       "templates": [
         {
+          "name": "Google 2015",
+          "image": "https://deepak-shinde.github.io/feeds/main/images/google-really-old.png",
+          "checksum": "fae2d41d1d199d57ee6515953a143596572f425cb8217cd4912165d535686a9e",
+          "deleted": true
+        },
+        {
           "name": "Google 2016",
           "image": "https://deepak-shinde.github.io/feeds/main/images/google-old.png",
-          "checksum": "eae2d41d1d199d57ee6515953a143596572f425cb8217cd4912165d535686a9d"
+          "checksum": "eae2d41d1d199d57ee6515953a143596572f425cb8217cd4912165d535686a9d",
+          "disabled": true
         },
         {
           "name": "Google mid 2017",
@@ -387,5 +424,17 @@ Feed:
         }
       ]
     },
+    {
+      "name": "Wikipedia",
+      "src": "https://deepak-shinde.github.io/feeds/main/main.json",
+      "safe": [
+        {
+          "domain": "wikipedia.org"
+        }
+    }
     ...
+
+Sample dbDefaultSites entry: same as a sites[x] from above
+
+Sample dbTemplateList entry: 
 */

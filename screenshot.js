@@ -13,42 +13,43 @@ var save = (image) => {
     link.click();
 };
 
-function crop(image, area, dpr, crop, done) {
-    console.log(dpr);
-    var browser = typeof(InstallTrigger) !== "undefined" ? "firefox" : "chrome";
-    dpr = browser === "firefox" ? 1 : dpr;
-    var top = area.y * dpr;
-    var left = area.x * dpr;
-    var width = area.w * dpr;
-    var height = area.h * dpr;
-    var w = area.w;
-    var h = area.h;
-    if (dpr === 1 && !crop) {
-        done(image);
-        return;
-    }
+function crop(image, area, dpr, crop) {
+    return new Promise((resolve, reject) => {
+        console.log(dpr);
+        var browser = typeof(InstallTrigger) !== "undefined" ? "firefox" : "chrome";
+        dpr = browser === "firefox" ? 1 : dpr;
+        var top = area.y * dpr;
+        var left = area.x * dpr;
+        var width = area.w * dpr;
+        var height = area.h * dpr;
+        var w = area.w;
+        var h = area.h;
+        if (dpr === 1 && !crop) {
+            return resolve(image);
+        }
 
-    var canvas = null;
-    if (!canvas) {
-        canvas = document.createElement("canvas");
-        document.body.appendChild(canvas);
-    }
+        var canvas = null;
+        if (!canvas) {
+            canvas = document.createElement("canvas");
+            document.body.appendChild(canvas);
+        }
 
-    canvas.width = w;
-    canvas.height = h;
+        canvas.width = w;
+        canvas.height = h;
 
-    var img = new Image();
-    img.onload = () => {
-        var context = canvas.getContext("2d");
-        context.drawImage(img,
-            left, top,
-            width, height,
-            0, 0,
-            w, h
-        );
+        var img = new Image();
+        img.onload = () => {
+            var context = canvas.getContext("2d");
+            context.drawImage(img,
+                left, top,
+                width, height,
+                0, 0,
+                w, h
+            );
 
-        var cropped = canvas.toDataURL("image/png");
-        done(cropped);
-    };
-    img.src = image;
+            var cropped = canvas.toDataURL("image/png");
+            return resolve(cropped);
+        };
+        img.src = image;
+    });
 }

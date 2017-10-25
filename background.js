@@ -9,14 +9,7 @@ var update_flag = false;
 
 let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
-    tabInfoList = {},
-    SPTemplates = [],
-    SPDefaultSites = [],
-    SPSites = [],
-    objFeedList,
-    objDefaultSites,
-    objCustomSites,
-    objTemplateList;
+    tabInfoList = {};
 
 loadDefaults();
 
@@ -72,18 +65,13 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         removeFromProtectedList(msg.tab);
         respond({message: "removed"});
     } else if (msg.op === "crop_capture") {
-        chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
-                crop(image, msg.area, msg.dpr, true, (cropped) => {
-                    let cb = function(res) {
-                        if (res) {
-                            respond({message: "cropped", image: cropped});
-                        } else {
-                            respond({message: "failed", err: "few_corners"});
-                        }
-                    };
-                    addToProtectedList(sender.tab, cropped, cb);
-                });
+        chrome.tabs.query({active: true, currentWindow: true}, tab => {
+            chrome.tabs.captureVisibleTab(tab.windowId, {format: "png"}, image => {
+                crop(image, msg.area, msg.dpr, true)
+                .then(cropped => {
+                    respond({message: "cropped", image: cropped});
+                    return addToProtectedList(sender.tab, cropped);
+                }).catch(x => respond({message: "failed", err: "few_corners"}));
             });
         });
     } else if (msg.op === "protect_basic") {
@@ -152,7 +140,7 @@ function init(msg, sender, respond) {
         }
     }
 
-    if (Sites.isSafeDomain(tab.url)) {
+    if (Sites.getSafeDomain(tab.url)) {
         ti.state = "safe";
         setIcon(ti, "safe");
         return respond({action: "nop"});
@@ -244,7 +232,7 @@ function redflagCheck(ti, testNow) {
                     setIcon(ti, "checked"); // The page is checked atleast once.
                 }
             }
-        });
+        }).catch(e => console.log("redflagCheck error", e));
 }
 
 /*
@@ -278,7 +266,7 @@ function scanTab(ti) {
         const scrCorners = scrFeatures.corners;
         const scrDescriptors = scrFeatures.descriptors;
         let t0 = performance.now();
-        let activeTemplates = SPTemplates.filter(x => !x.disabled);
+        let activeTemplates = Sites.getTemplates();
         for (let i = 0; i < activeTemplates.length; i++) {
             const template = activeTemplates[i];
             const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
@@ -375,10 +363,7 @@ function updateDefaultSitesFromFeedData(feed_data) {
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
-    let data = SPSites.filter(x => {
-        if (x.deleted) {
-            return false;
-        }
+    let data = Sites.getSites("exists").filter(x => {
         let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
         let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
         if (protected.length > 0 || templates.length > 0) {
@@ -387,10 +372,10 @@ function getProtectedSitesData() {
         return false;
     }).map( site => {
         if (site.templates) {
-            site.templates.filter(a => !a.deleted).map(template => {
-                let found = SPTemplates.filter(y => !y.deleted && y.checksum === template.checksum);
-                if (found.length) {
-                    template.base64 = SPTemplates.filter(y => y.checksum === template.checksum)[0].base64;
+            site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
+                let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+                if (found) {
+                    template.base64 = found.base64;
                 } else {
                     template.deleted = true;
                 }
@@ -403,7 +388,7 @@ function getProtectedSitesData() {
 }
 
 function getSafeDomainsData() {
-    let data = SPSites.filter(x => !x.deleted).filter(y => {
+    let data = Sites.getSites("enabled").filter(y => {
         if (!y.safe) {
             return false;
         }
@@ -443,7 +428,8 @@ function loadDefaults() {
 
 function cleanDB() {
     return Sites.reset()
-    .then(x => chrome.storage.local.remove("secure_img"));
+    .then(x => chrome.storage.local.remove("secure_img"))
+    .catch(e => console.log("cleanDB error", e));
 }
 
 function initAdvConfigs() {
@@ -454,7 +440,7 @@ function initAdvConfigs() {
             DEBUG = data.debug? true : false;
             basic_mode = data.basic_mode ? true : false;
         } else {
-            DEBUG = false;
+            DEBUG = true;
             basic_mode = false;
             saveAdvConfig();
         }
@@ -507,4 +493,27 @@ function setIcon(ti, state, info) {
     chrome.browserAction.setIcon({path, tabId});
     chrome.browserAction.setTitle({title, tabId});
     chrome.browserAction.setBadgeText({text, tabId});
+}
+
+function addToProtectedList(tab, logo) {
+    const url = tab.url;
+
+    return Sites.addProtectedURL(url, logo)
+        .then(x => Sites.getProtectedURL(url))
+        .then(u => {
+            tabinfo[tab.id].state = "greenflagged";
+            setIcon(tabinfo[tab.id], "greenflagged", {site: u.site});
+            tabinfo[tab.id].checkState = false;
+        });
+}
+
+function removeFromProtectedList(tab) {
+    const url = tab.url;
+
+    return Sites.removeProtectedURL(url)
+        .then(x => {
+            tabinfo[tab.id].state = "red_done";
+            setIcon(tabinfo[tab.id], "red_done");
+            tabinfo[tab.id].checkState = false;
+        });
 }

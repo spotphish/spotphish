@@ -153,31 +153,33 @@ function renderProtectedList() {
         if ($(e.target).is(".kp-wl-site-delete")) {
             var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
             if (res) {
-                bkg.removeSiteByName(name);
-                $(this).remove();
+                bkg.Sites.removeSite(name).then(x => $(this).remove())
+                    .catch(x => alert(x.message || `Error removing site: ${name}`));
             }
         } else if ($(e.target).is(".kp-wl-site-check")) {
             const checked = "check_box", unchecked ="check_box_outline_blank";
             var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
             var value = icon.innerHTML.trim();
             if (value === checked) {
-                bkg.toggleSite(name, false);
-                icon.innerHTML = unchecked;
-                $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
-                $(this).find("i.kp-wl-url-delete").removeClass("enable");
-                $(this).find("i.kp-wl-url-check").each((i,x) => {
-                    x.innerHTML = unchecked;
-                    $(x).removeClass("enable");
-                });
+                bkg.Sites.toggleSite(name, false).then(x => {
+                    icon.innerHTML = unchecked;
+                    $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
+                    $(this).find("i.kp-wl-url-delete").removeClass("enable");
+                    $(this).find("i.kp-wl-url-check").each((i,x) => {
+                        x.innerHTML = unchecked;
+                        $(x).removeClass("enable");
+                    });
+                }).catch(x => alert(x.message || `Error disabling site: ${name}`));
             } else {
-                bkg.toggleSite(name, true);
-                $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
-                $(this).find("i.kp-wl-url-delete").addClass("enable");
-                $(this).find("i.kp-wl-url-check").each((i,x) => {
-                    x.innerHTML = checked;
-                    $(x).addClass("enable");
-                });
-                icon.innerHTML = checked;
+                bkg.Sites.toggleSite(name, true).then(x => {
+                    $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
+                    $(this).find("i.kp-wl-url-delete").addClass("enable");
+                    $(this).find("i.kp-wl-url-check").each((i,x) => {
+                        x.innerHTML = checked;
+                        $(x).addClass("enable");
+                    });
+                    icon.innerHTML = checked;
+                }).catch(x => alert(x.message || `Error enabling site: ${name}`));
             }
         }
     });
@@ -185,8 +187,8 @@ function renderProtectedList() {
         e.stopPropagation();
         if ($(e.target).is(".kp-wl-url-delete.enable")) {
             let url = $(this).data("url");
-            bkg.removeFromProtectedList(url);
-            $(this).remove();
+            bkg.Sites.removeProtectedURL(url).then(x => $(this).remove())
+                .catch(x => alert(x.message || `Error removing URL: ${url}`));
         }
         if ($(e.target).is(".kp-wl-url-check.enable")) {
             let url = $(this).data("url");
@@ -194,11 +196,11 @@ function renderProtectedList() {
             let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
             let value = icon.innerHTML.trim();
             if (value === checked) {
-                bkg.toggleProtectedUrl(url, false);
-                icon.innerHTML = unchecked;
+                bkg.Sites.toggleURL(url, false).then(x => icon.innerHTML = unchecked)
+                    .catch(x => alert(x.message || `Error disabling URL: ${url}`));
             } else {
-                bkg.toggleProtectedUrl(url, true);
-                icon.innerHTML = checked;
+                bkg.Sites.toggleURL(url, true).then(x => icon.innerHTML = checked)
+                    .catch(x => alert(x.message || `Error enabling URL: ${url}`));
             }
         }
     });
@@ -226,8 +228,8 @@ function renderSafeDomainTable() {
             var domain = $(this).data("name");
             var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {
-                bkg.removeFromSafeDomainsBySiteName(domain);
-                $(this).remove();
+                bkg.Sites.removeSafeDomain(domain).then(x => $(this).remove())
+                    .catch(e => alert(e.message || `Error removing domain: ${domain}`));
             }
         }
     });
@@ -372,12 +374,8 @@ $(document).ready(function() {
                 alert("Incorrect domain entered, please try again");
                 return;
             }
-            let err = bkg.addToSafeDomains(val);
-            if (err) {
-                alert(err);
-            } else {
-                renderSafeDomainTable();
-            }
+            bkg.Sites.addSafeDomains(val).then(renderSafeDomainTable)
+                .catch(x => alert(x.message || `Error adding safe domain: ${val}`));
         }
         $("#kp-safelist-input").val("");
 
@@ -391,3 +389,4 @@ $(document).ready(function() {
         }
     });
 });
+
