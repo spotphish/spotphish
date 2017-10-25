@@ -11,15 +11,16 @@
             $("#kp-status").css({display: "flex"});
             $("#kp-status-span").append(`<em>${response.status}</em>`);
         }
-        if (response.state === "greenflagged") {
+        const state = response._state;
+        if (state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
             $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (response.state === "watching" || response.state === "red_done" || response.state === "safe") {
+        } else if (state === "watching" || state === "red_done" || state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
             $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (response.state === "init") {
+        } else if (state === "init") {
             $("#kp-status-span").addClass("mdl-color-text--primary");
             $("#kp-test-now").css({display: "flex"});
         } else {

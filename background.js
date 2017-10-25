@@ -1,4 +1,3 @@
-const tabinfo = {};
 const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
@@ -13,37 +12,66 @@ let DEBUG = true, basic_mode = false,
 
 loadDefaults();
 
-chrome.runtime.onConnect.addListener(port => {
-    const id = port.sender.tab.id;
-    initTabinfo(id, port.sender.tab);
-    tabinfo[id].port = port;
+class Tabinfo {
+    constructor(id, tab, port) {
+        this.id = id;
+        this.checkState = false;
+        this.topReady = false;
+        this._state = "init";
+        this.tab = tab;
+        this.watches = [];
+        this.dpr = 1;
+        this.port = port;
+        this.nchecks = 0;
+        this.status = "";
+        Tabinfo.instances[id] = this;
+    }
 
-});
+    get state() {
+        return this._state;
+    }
 
-function initTabinfo(id, tab) {
-    tabinfo[id] = {
-        checkState: false,
-        topReady: false,
-        state: "init",
-        tab,
-        watches: [],
-        dpr: 1,
-        port: null,
-        nchecks: 0,
-        status: ""
-    };
-    setIcon(tabinfo[id], "init");
+    set state(val) {
+        //debug("SET", this.id, this.tab.url, `${this._state} --> ${val}`);
+        this._state = val;
+        return this._state;
+    }
+
+    update(tab) {
+        this.tab = tab;
+    }
 }
+
+Tabinfo.instances = {};
+Tabinfo.get = function(id) {
+    return Tabinfo.instances[id];
+};
+
+Tabinfo.remove = function(id) {
+    delete Tabinfo.instances[id];
+};
+
+/* Dump state for debugging */
+Tabinfo.show = function() {
+    for (const x in Tabinfo.instances) {
+        const ti = Tabinfo.get(x);
+        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
+    }
+};
+
+chrome.runtime.onConnect.addListener(port => {
+    const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
+    setIcon(ti, "init");
+});
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-function updateTabinfo(id, tab) {
-    tabinfo[id].tab = tab;
-}
-
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     if (sender.tab) {
-        updateTabinfo(sender.tab.id, sender.tab);
+        const ti = Tabinfo.get(sender.tab.id);
+        if (ti) {
+            ti.update(sender.tab);
+        }
     }
     if (msg.op === "init") {
         init(msg, sender, respond);
@@ -52,9 +80,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "url_change") {
         url_change(msg, sender, respond);
     } else if (msg.op === "get_tabinfo") {
-        var tab = msg.curtab;
-        if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond(tabinfo[tab.id]);
+        const tab = msg.curtab,
+            ti = Tabinfo.get(tab.id);
+        if (ti && ti.tab.url === tab.url) {
+            respond(ti);
         } else {
             respond({state: "NA"});
         }
@@ -62,31 +91,46 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         inject(msg.tab);
         respond({message: "whitelisted"});
     } else if (msg.op === "unprotect_page") {
-        removeFromProtectedList(msg.tab);
-        respond({message: "removed"});
+        removeFromProtectedList(msg.tab)
+            .then(x => respond({message: "removed"}))
+            .catch(x => respond({message: "failed", err: x.message}));
     } else if (msg.op === "crop_capture") {
         chrome.tabs.query({active: true, currentWindow: true}, tab => {
             chrome.tabs.captureVisibleTab(tab.windowId, {format: "png"}, image => {
+                let cropped;
                 crop(image, msg.area, msg.dpr, true)
-                .then(cropped => {
-                    respond({message: "cropped", image: cropped});
-                    return addToProtectedList(sender.tab, cropped);
-                }).catch(x => respond({message: "failed", err: "few_corners"}));
+                .then(x => cropped = x)
+                .then(cropped => addToProtectedList(sender.tab, cropped))
+                .then(x => respond({message: "cropped", image: cropped}))
+                .catch(x => respond({message: "failed", err: "few_corners"}));
             });
         });
     } else if (msg.op === "protect_basic") {
-        respond({message: "Added"});
-        addToProtectedList(sender.tab, null);
+        addToProtectedList(sender.tab, null)
+            .then(x => respond({message: "Added"}))
+            .catch(x => respond({message: "failed", err: x.message}));
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
-        let curTabInfo = tabinfo[sender.tab.id];
-        let tabState = curTabInfo.state;
+        let ti = Tabinfo.get(sender.tab.id);
+        let tabState = ti.state;
         if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-            redflagCheck(curTabInfo);
+            redflagCheck(ti);
         }
     } else if (msg.op === "test_now") {
-        const ti = tabinfo[msg.tab.id];
+        const ti = Tabinfo.get(msg.tab.id);
         redflagCheck(ti, true);
+    } else if (msg.op === "remove_site") {
+        removeSite(msg.site, respond);
+    } else if (msg.op === "toggle_site") {
+        toggleSite(msg.site, msg.enable, respond);
+    } else if (msg.op === "remove_url") {
+        removeURL(msg.url, respond);
+    } else if (msg.op === "toggle_url") {
+        toggleURL(msg.url, msg.enable, respond);
+    } else if (msg.op === "remove_safe_domain") {
+        removeSafeDomain(msg.domain, respond);
+    } else if (msg.op === "add_safe_domain") {
+        addSafeDomain(msg.domain, respond);
     } else {
         console.log("KPBG: Unknown message", msg);
     }
@@ -94,7 +138,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
 });
 
 function inject (tab) {
-    let ti = tabinfo[tab.id];
+    let ti = Tabinfo.get(tab.id);
     let found = Sites.getProtectedURL(tab.url);
     if (!found) {
         ti.port.postMessage({op: "crop_template", data: {}});
@@ -104,7 +148,7 @@ function inject (tab) {
 }
 
 function init(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
     //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
     if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
@@ -154,7 +198,7 @@ function init(msg, sender, respond) {
 
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
-    const ti = tabinfo[sender.tab.id];
+    const ti = Tabinfo.get(sender.tab.id);
     if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || ti.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
@@ -165,7 +209,7 @@ function checkdata(msg, sender, respond) {
 }
 
 function url_change(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
 
     console.log("url change", tab.url);
@@ -180,18 +224,11 @@ function url_change(msg, sender, respond) {
     }
 }
 
-function showTabinfo() {
-    for (const x in tabinfo) {
-        const ti = tabinfo[x];
-        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
-    }
-}
-
 function watchdog() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         if (!tabs.length) return;
         const id = tabs[0].id,
-            ti = tabinfo[id] || {};
+            ti = Tabinfo.get(id) || {};
         const now = Date.now();
         if (ti.state === "watching" && ti.topReady) {
             assert("watchdog.2", ti.watches.length > 0);
@@ -211,6 +248,7 @@ function redflagCheck(ti, testNow) {
     console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
     return scanTab(ti)
         .then(res => {
+            //console.log("SCAN", ti.tab.url, ti.tab.state, res);
             if (res.match) {
                 const site = res.match.template.site;
                 if (testNow) {
@@ -241,13 +279,17 @@ function redflagCheck(ti, testNow) {
 
 function scanTab(ti) {
     const tab = ti.tab;
+    let screenshot, features, match;
 
     return snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
-        .then(screenshot => findOrbFeatures(screenshot)
-            .then(features => matchTemplates(features)
-                .then(match => makeCorrespondenceImage(match, screenshot, features)
-                    .then(corr_img => ({match, corr_img})))));
+        .then(x => screenshot = x)
+        .then(screenshot => findOrbFeatures(screenshot))
+        .then(x => features = x)
+        .then(features => matchTemplates(features))
+        .then(x => match = x)
+        .then(match => makeCorrespondenceImage(match, screenshot, features))
+        .then(corr_img => ({match, corr_img}));
                 
     function snapTab(tab) {
         return new Promise((resolve, reject) => {
@@ -256,10 +298,8 @@ function scanTab(ti) {
     }
 
     function normalizeScreenshot(image, width, height, dpr) {
-        return new Promise((resolve, reject) => {
-            const area = {x: 0, y: 0, w: width, h: height};
-            crop(image, area, dpr, false, resolve);
-        });
+        const area = {x: 0, y: 0, w: width, h: height};
+        return crop(image, area, dpr, false);
     }
 
     function matchTemplates(scrFeatures) {
@@ -291,9 +331,7 @@ function scanTab(ti) {
 }
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
-    if (tabinfo[tabid]) {
-        delete tabinfo[tabid];
-    }
+    Tabinfo.remove(tabid);
 });
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -501,9 +539,10 @@ function addToProtectedList(tab, logo) {
     return Sites.addProtectedURL(url, logo)
         .then(x => Sites.getProtectedURL(url))
         .then(u => {
-            tabinfo[tab.id].state = "greenflagged";
-            setIcon(tabinfo[tab.id], "greenflagged", {site: u.site});
-            tabinfo[tab.id].checkState = false;
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "greenflagged";
+            setIcon(ti, "greenflagged", {site: u.site});
+            ti.checkState = false;
         });
 }
 
@@ -512,8 +551,45 @@ function removeFromProtectedList(tab) {
 
     return Sites.removeProtectedURL(url)
         .then(x => {
-            tabinfo[tab.id].state = "red_done";
-            setIcon(tabinfo[tab.id], "red_done");
-            tabinfo[tab.id].checkState = false;
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "red_done";
+            setIcon(ti, "red_done");
+            ti.checkState = false;
         });
+}
+
+function removeSite(name, respond) {
+    return Sites.removeSite(name)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleSite(name, enable, respond) {
+    return Sites.toggleSite(name, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeURL(url, respond) {
+    return Sites.removeProtectedURL(url)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleURL(url, enable, respond) {
+    return Sites.toggleURL(url, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeSafeDomain(domain, respond) {
+    return Sites.removeSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function addSafeDomain(domain, respond) {
+    return Sites.addSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
 }

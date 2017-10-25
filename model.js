@@ -33,6 +33,12 @@ let Sites = {
         return found[0];
     }, 
 
+    getSiteByName: function(name, filter="enabled") {
+        const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
+                (filter === "exists") ? x => !x.deleted : x => true;
+        return _.find(this.sites.filter(ff), x => x.name === name);
+    }, 
+
     getProtectedURL: function(url, filter="enabled") {
         const url1 = stripQueryParams(url),
             ff = (filter === "enabled") ? x => !x.deleted && !x.disabled && x.url === url1:
@@ -64,11 +70,11 @@ let Sites = {
     addSafeDomain: function(domain) {
         const p = psl.parse(domain);
         if (!p.domain) {
-            throw new Error(`Invalid domain ${domain}`);
+            return Promise.reject(new Error(`Invalid domain ${domain}`));
         }
         const exists = !!this.getSafeDomain(domain);
         if (exists) {
-            throw new Error(`Domain already marked safe: ${domain}`);
+            return Promise.reject(new Error(`Domain already marked safe: ${domain}`));
         }
         const site = this.getSite(domain, "all");
         const cur = _.cloneDeep(this.customSites.find(s => s.name === site.name));
@@ -89,7 +95,7 @@ let Sites = {
     removeSafeDomain: function(domain) {
         const site = _.find(this.customSites, s => s.safe && _.find(s.safe, x => x.domain === domain));
         if (!site) {
-            throw new Error(`Safe domain not found: ${domain}`);
+            return Promise.reject(new Error(`Safe domain not found: ${domain}`));
         }
         const data = _.cloneDeep(site);
         site.safe = site.safe.filter(x => x.domain !== domain);
@@ -106,7 +112,7 @@ let Sites = {
         if (!site) {
             const p = psl.parse(host);
             if (!p.sld) {
-                throw new Error(`Invalid hostname ${host}`);
+                return Promise.reject(new Error(`Invalid hostname ${host}`));
             }
             data = {name: _.capitalize(p.sld), src: "user_defined"};
         } else {
@@ -117,11 +123,13 @@ let Sites = {
         data.protected = [{url: url1, disabled: false, deleted: false}];
 
         let res = Promise.resolve(true);
+        const cur = _.find(this.customSites, x => x.name === data.name) || {};
 
         if (logo) {
+            let pattern;
             res = res.then(x => createPatterns(logo))
                 .then(result => {
-                    const pattern = {
+                    pattern = {
                         base64: logo,
                         patternCorners: result.patternCorners,
                         patternDescriptors: result.patternDescriptors,
@@ -130,66 +138,59 @@ let Sites = {
                         checksum: CryptoJS.SHA256(logo).toString()
                     };
                     return this.dbTemplateList.put(pattern);
+                }).then(x => {
+                    data.templates = [{page: url1, checksum: pattern.checksum}];
+                    const out = mergeSite(data, cur);
+                    return this.dbCustomSites.put(out);
                 });
+        } else {
+            const out = mergeSite(data, cur);
+            res = res.then(x => this.dbCustomSites.put(out));
         }
 
-        const cur = this.customSites.filter(x => x.name === data.name) || {},
-            out = mergeSite(data, cur);
-        res = res.then(x => this.dbCustomSites.put(out))
-            .then(x => this.sync());
+        res = res.then(x => this.sync());
         return res;
     },
 
     removeProtectedURL: function(url) {
         const url1 = stripQueryParams(url),
             site = this.getSite(url1);
-        let indexTemplate = -1,
-            indexProtected = site.protected.findIndex(x => x.url === url1);
 
         if (!site) {
-            throw new Error(`Site not found for URL ${url1}`);
+            return Promise.reject(new Error(`Site not found for URL ${url1}`));
         }
-        if (indexProtected === -1) {
-            throw new Error(`Protected URL not found: ${url1}`);
+        if (!_.find(site.protected, x => x.url === url1)) {
+            return Promise.reject(new Error(`Protected URL not found: ${url1}`));
         }
-        if (site.templates) {
-            indexTemplate = site.templates.findIndex(x => x.page && x.page === url);
-        }
-        let res = Promise.resolve(true);
-        if (site.src === "user_defined") {
-            const out = _.cloneDeep(site);
-            if (indexTemplate !== -1) {
-                //const checksum = out.templates[indexTemplate].checksum;
-                out.templates.splice(indexTemplate, 1);
-                //res = res.then(x => this.dbTemplateList.remove(checksum))
-                //    .then(x => this.syncTemplates());
-            }
-            out.protected.splice(indexProtected, 1);
-            res = res.then(x => this.dbCustomSites.put(out))
-                .then(x => this.sync());
-        } else { // This is one of the default sites.
-            const cur = _.find(this.customSites, x => x.name === site.name);
-            let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
-            out.protected = [_.cloneDeep(site.protected[indexProtected])];
-            out.protected[0].deleted = true;
-            if (indexTemplate !== -1) {
-                out.templates = [_.cloneDeep(site.templates[indexTemplate])];
-                out.templates[0].deleted = true;
-            }
-            if (cur) {
-                out = mergeSite(out, cur);
-            }
-            res = res.then(x => this.dbCustomSites.put(out))
-                .then(x => this.sync());
-        }
+        const csite = _.cloneDeep(_.find(this.customSites, x => x.url === url1)) ||
+                {name: site.name, src: site.src};
 
-        return res;
+        csite.protected = csite.protected || [];
+        csite.templates = csite.templates || [];
+
+        if (_.find(csite.protected, x => x.url === url1)) {
+            csite.protected = csite.protected.filter(x => x.url !== url1);
+        } else {
+            csite.protected = [{url: url1, deleted: true}];
+        }
+        
+        if (_.find(csite.templates, x => x.page && x.page === url1)) {
+            csite.templates = csite.templates.filter(x => !(x.page && x.page === url1));
+        } else {
+            const t = _.cloneDeep(_.find(site.templates, x => x.page && x.page === url1));
+            if (t) {
+                t.deleted = true;
+                csite.templates = [t];
+            }
+        }
+        return this.dbCustomSites.put(csite)
+            .then(x => this.sync());
     },
 
     removeSite: function(name) {
-        const site = this.getSite(name, "exists");
+        const site = this.getSiteByName(name, "exists");
         if (!site) {
-            throw new Error(`Site does not exist: ${name}`);
+            return Promise.reject(new Error(`Site does not exist: ${name}`));
         }
         let res = (site.src === "user_defined") ? this.dbCustomSites.remove(name) :
             this.dbCustomSites.put({name, src: site.src, deleted: true});
@@ -197,9 +198,9 @@ let Sites = {
     },
 
     toggleSite: function(name, enable) {
-        const site = this.getSite(name, "exists");
+        const site = this.getSiteByName(name, "exists");
         if (!site) {
-            throw new Error(`Site does not exist: ${name}`);
+            return Promise.reject(new Error(`Site does not exist: ${name}`));
         }
         const cur = _.find(this.customSites, x => x.name === site.name);
         let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
@@ -214,7 +215,7 @@ let Sites = {
             templates = site.templates.filter(x => !x.deleted && x.page && x.page === url);
 
         if (!site || !url1) {
-            throw new Error(`URL does not exist: ${url}`);
+            return Promise.reject(new Error(`URL does not exist: ${url}`));
         }
         const cur = _.find(this.customSites, x => x.name === site.name),
             out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
@@ -246,7 +247,8 @@ let Sites = {
             site.protected = site.protected || [];
             site.templates = site.templates || [];
             site.safe = site.safe || [];
-            site.safe = _.uniq(site.safe.concat(site.protected.map(p => ({domain: getPathInfo(p.url).host}))));
+            site.safe = _.uniq(site.safe.concat(site.protected.filter(x => !x.deleted && !x.disabled)
+                .map(p => ({domain: getPathInfo(p.url).host}))));
             return site;
         }
 

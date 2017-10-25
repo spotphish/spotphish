@@ -149,7 +149,8 @@ function rpc(msg) {
     });
 }
 
-function injectAckModal(message = "All done") {
+function injectAckModal(message = "All done", image) {
+    var img = document.createElement("img");
     const ack = {
         title: "SpotPhish",
         type: "info",
@@ -158,6 +159,10 @@ function injectAckModal(message = "All done") {
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
         dismiss_after: 3000
     };
+    if (image) {
+        img.src = image;
+        ack.img = img;
+    }
     dialog(ack);
 }
 

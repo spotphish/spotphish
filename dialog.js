@@ -176,7 +176,7 @@ function crop() {
                     if (res.message === "failed") {
                         injectErrorModal();
                     } else {
-                        injectAckModal("Enhanced protection enabled for this page");
+                        injectAckModal("Enhanced protection enabled for this page", res.image);
                     }
                 });
             } else {
