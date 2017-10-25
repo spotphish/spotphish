@@ -426,17 +426,16 @@ function getProtectedSitesData() {
 }
 
 function getSafeDomainsData() {
-    let data = Sites.getSites("enabled").filter(y => {
-        if (!y.safe) {
-            return false;
-        }
-        let found = y.safe.filter(z => !z.deleted);
-        if (found.length > 0) {
-            return true;
-        }
-        return false;
-    });
-    return data;
+
+    function flatten(sites) {
+        return sites.filter(y => !y.deleted && !y.disabled && y.safe && y.safe.length)
+            .map(x => x.safe)
+            .reduce((a,b) => _.cloneDeep(a).concat(_.cloneDeep(b)),[]);
+    }
+    let cdata = flatten(Sites.customSites),
+        ddata = flatten(Sites.defaultSites).map(s => (s.protected = true, s));
+
+    return cdata.concat(ddata);
 }
 
 /*******************/

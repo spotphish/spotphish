@@ -19,10 +19,10 @@ function templateImage(src, favorite, imageClass) {
 
 function templateSafeDomain(data) {
     const template = `
-        <li class="mdl-list__item kp-safelist-row" data-name=${data.site} >
+        <li class="mdl-list__item kp-safelist-row" data-name=${data.domain} >
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons  mdl-list__item-avatar">public</i>
-                ${data.site}
+                ${data.domain}
             </span>
             <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.protected? "disabled" :""}>
             <i class="material-icons ${data.protected? "" : "kp-sl-delete"}">delete</i>
@@ -232,16 +232,8 @@ function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let safeSites = bkg.getSafeDomainsData();
 
-    safeSites.forEach((x, index)=> {
-        let data = {};
-        data.site = x.name;
-        data.safe = x.safe; // Needed if we plan to expand the list of safe sites.
-        if (x.protected && x.protected.length > 0) {
-            data.protected = true;
-        } else {
-            data.protected = false;
-        }
-        $(".kp-safelist").append(templateSafeDomain(data));
+    safeSites.forEach(x => {
+        $(".kp-safelist").append(templateSafeDomain(x));
     });
 
     $(".kp-safelist-row").on("click", function(e) {

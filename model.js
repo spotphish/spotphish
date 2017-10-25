@@ -77,18 +77,17 @@ let Sites = {
             return Promise.reject(new Error(`Domain already marked safe: ${domain}`));
         }
         const site = this.getSite(domain, "all");
-        const cur = _.cloneDeep(this.customSites.find(s => s.name === site.name));
         let out = {
             name: site ? site.name : _.capitalize(p.sld),
-            src: site ? site.src : "user_defined", safe: [{domain}]
+            src: site ? site.src : "user_defined", safe:
+            [{domain}]
         };
+        const cur = _.cloneDeep(this.customSites.find(s => s.name === out.name)) || {};
         if (site && site.deleted) {
             out.deleted = false;
         }
-        if (cur) {
-            out = mergeSite(out, cur);
-        }
-        return this.dbCustomSafe.put(out)
+        out = mergeSite(out, cur);
+        return this.dbCustomSites.put(out)
             .then(x => this.sync());
     },
 
@@ -98,8 +97,8 @@ let Sites = {
             return Promise.reject(new Error(`Safe domain not found: ${domain}`));
         }
         const data = _.cloneDeep(site);
-        site.safe = site.safe.filter(x => x.domain !== domain);
-        return this.dbCustomSafe.put(data)
+        data.safe = site.safe.filter(x => x.domain !== domain);
+        return this.dbCustomSites.put(data)
             .then(x => this.sync());
     },
 
