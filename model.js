@@ -66,11 +66,38 @@ let Sites = {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
                 (filter === "exists") ? x => !x.deleted : x => true;
         return this.sites.filter(ff);
-    }, 
+    },
 
     getTemplates: function() {
         return this.templates;
-    }, 
+    },
+
+    getFeeds: function(filter="enabled") {
+        const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
+            (filter === "exists") ? x => !x.deleted : x => true;
+        return this.feedList.filter(ff);
+    },
+
+    updateFeedList: function(data) {
+        if (Array.isArray(data)) {
+            return this.dbFeedList.putBatch(data)
+                .then(x => this.syncFeeds());
+        } else {
+            return this.dbFeedList.put(data)
+                .then(x => this.syncFeeds());
+        }
+
+    },
+
+    updateDefaultSites: function(data) {
+        if (Array.isArray(data)) {
+            return  this.dbDefaultSites.putBatch(data)
+                .then(x => this.sync());
+        } else {
+            return  this.dbDefaultSites.put(data)
+                .then(x => this.sync());
+        }
+    },
 
     addSafeDomain: function(domain) {
         const p = psl.parse(domain);
@@ -177,7 +204,7 @@ let Sites = {
         } else {
             csite.protected = [{url: url1, deleted: true}];
         }
-        
+
         if (_.find(csite.templates, x => x.page && x.page === url1)) {
             csite.templates = csite.templates.filter(x => !(x.page && x.page === url1));
         } else {
@@ -332,14 +359,21 @@ let Sites = {
         }
     },
 
+    syncFeeds: function() {
+        return this.dbFeedList.getAll()
+            .then(x => this.feedList = x);
+    },
+
     init: function() {
         this.dbDefaultSites = new Pdb({storeName: "default_sites", keyPath: "name"});
         this.dbCustomSites = new Pdb({storeName: "custom_sites", keyPath: "name"});
         this.dbTemplateList = new Pdb({storeName: "template_list", keyPath: "checksum"});
+        this.dbFeedList = new Pdb({storeName: "feed_list", keyPath: "src"});
 
         return Promise.all([this.dbDefaultSites.ready(), this.dbCustomSites.ready(),
-            this.dbTemplateList.ready()])
-            .then(x => this.sync());
+            this.dbTemplateList.ready(), this.dbFeedList.ready()])
+            .then(x => this.sync())
+            .then(x => this.syncFeeds());
     },
 
     reset: function() {

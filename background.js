@@ -16,6 +16,7 @@ let DEBUG = true, basic_mode = false,
     tabInfoList = {};
 
 loadDefaults();
+setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 
 class Tabinfo {
     constructor(id, tab, port) {
@@ -348,31 +349,19 @@ chrome.runtime.onInstalled.addListener(function(details) {
     }
 });
 
-/*
- * Scheduled for conversion
-
-function initFeedList() {
-    objFeedList.getAll((data) => {
-        if (data.length <= 0) {
-            objFeedList.putBatch(defaultFeeds, checkUpdates);
-        } else {
-            var newFeeds = defaultFeeds.filter(x => data.map(y => y.src).indexOf(x.src));
-            if (newFeeds.length) {
-                objFeedList.putBatch(newFeeds, checkUpdates);
-            } else {
-                checkUpdates();
-            }
-        }
-    });
-    setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
-}
-
 function checkUpdates() {
-    objFeedList.getAll((data) => {
-        var activeFeeds = data.filter(x => !x.deleted && !x.disabled);
-        console.log(" Active Feed List : ", activeFeeds);
+    let activeFeeds =  Sites.getFeeds();
+    let res = Promise.resolve(true);
+    if (activeFeeds.length === 0) {
+        res = res.then(x => {
+             return Sites.updateFeedList(defaultFeeds)
+            .then(x => {activeFeeds = Sites.getFeeds(); debug(activeFeeds);});
+        });
+    }
+    res.then(x => {
         activeFeeds.forEach((x) => {
-            updateFeed(x);
+            console.log(x);
+          updateFeed(x);
         });
     });
 }
@@ -386,23 +375,14 @@ function updateFeed(feed) {
             if (feed.version !== data.version) {
                 feed.version = data.version;
                 feed.last_updated = new Date().toUTCString();
-                objFeedList.put(feed);
-                updateDefaultSitesFromFeedData(data);
-                //TODO: Update the default_sites table and template_list.
+                Sites.updateDefaultSites(data.sites)
+                    .then(x => Sites.updateFeedList(feed));
             }
         }).fail(err => {
             console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
-            // In case the server is down, our extension should still work with existing data.
-            syncSPSites();
         });
 }
 
-function updateDefaultSitesFromFeedData(feed_data) {
-    let sites = feed_data.sites;
-    objDefaultSites.putBatch(sites, syncSPSites, errorfn);
-}
-
-*/
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
@@ -465,7 +445,8 @@ function setDefaultSecurityImage(cb) {
 function loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
-    return Sites.init();
+    return Sites.init()
+    .then(x => checkUpdates());
 }
 
 function cleanDB() {
