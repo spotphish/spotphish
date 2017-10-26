@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 const POLL_INTERVAL = 2000; /* Periodicity of redflag candidate check */
 const MAX_POLLS = 30; /* Give up after polling x times */
 

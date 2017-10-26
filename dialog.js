@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 function dialog(obj={}) {
     const icon = chrome.extension.getURL("assets/icons/icon128.png"),
         d = Object.assign({}, {title: "SpotPhish",

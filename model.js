@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 let Sites = {
 
     safe: [], /* flattened list of strings, all enabled safe domains */
@@ -216,6 +221,7 @@ let Sites = {
         if (!site || !url1) {
             return Promise.reject(new Error(`URL does not exist: ${url}`));
         }
+        delete url1["site"];
         const cur = _.find(this.customSites, x => x.name === site.name);
         let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
         url1.disabled = !enable;
