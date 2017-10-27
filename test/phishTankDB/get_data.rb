@@ -14,7 +14,7 @@ IO.copy_stream(download, 'phish_tank_db.csv')
 customers = CSV.read('phish_tank_db.csv')
 # puts customers.count
 
-DEFAULT_SEARCH = ["Facebook", "PayPal", "Dropbox", "Google", "Amazon" ]
+DEFAULT_SEARCH = ["Facebook", "PayPal", "Dropbox", "Google", "Amazon.com" ]
 PHISHTANK_IMG_URL = "https://d1750zhbc38ec0.cloudfront.net"
 facebook = []
 paypal = []
