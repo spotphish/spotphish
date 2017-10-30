@@ -185,3 +185,11 @@ class Pdb {
         return new Promise((resolve, reject) => this.db.clear(resolve, reject));
     }
 }
+
+function ajax_get(url) {
+    return new Promise((resolve, reject) => {
+        $.getJSON(url)
+            .done(x => resolve(x))
+            .fail(e => reject(e));
+    });
+}

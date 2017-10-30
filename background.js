@@ -352,34 +352,42 @@ chrome.runtime.onInstalled.addListener(function(details) {
 function checkUpdates() {
     let activeFeeds =  Sites.getFeeds();
     let res = Promise.resolve(true);
+
     if (activeFeeds.length === 0) {
-        res = res.then(x => {
-             return Sites.updateFeedList(defaultFeeds)
+        res = res.then(x => Sites.updateFeedList(defaultFeeds))
             .then(x => {activeFeeds = Sites.getFeeds(); debug(activeFeeds);});
-        });
     }
     res.then(x => {
-        activeFeeds.forEach((x) => {
-            console.log(x);
-          updateFeed(x);
-        });
+        let result = activeFeeds.reduce((p, feed) => {
+            return p.then(x => {
+                return updateFeed(feed);
+            });
+        }, Promise.resolve());
+        result.then(x => debug("Resolved "));
     });
 }
 
 function updateFeed(feed) {
+    debug("Executing ", feed.src);
     let ord = Math.floor(Math.random()*100);
     let src = feed.src + "?ord=" + ord;
-    $.getJSON(src)
-        .done(data => {
-            console.log("Versions feed, data : ", feed.version, data.version);
+    return ajax_get(src)
+        .then(data => {
+            let res = Promise.resolve(true);
+            debug("Versions feed, data : ", feed.version, data.version);
             if (feed.version !== data.version) {
                 feed.version = data.version;
                 feed.last_updated = new Date().toUTCString();
-                Sites.updateDefaultSites(data.sites)
+                res = res.then( x => Sites.updateDefaultSites(data.sites))
                     .then(x => Sites.updateFeedList(feed));
             }
-        }).fail(err => {
-            console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
+            //return res;
+            return res.then(x => {
+                debug("Updated ", feed.src);
+            });
+        })
+        .catch(err => {
+            debug("Error for feed : ", feed.src, "  Error Msg : ", err);
         });
 }
 
@@ -446,13 +454,13 @@ function loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
     return Sites.init()
-    .then(x => checkUpdates());
+        .then(x => checkUpdates());
 }
 
 function cleanDB() {
     return Sites.reset()
-    .then(x => chrome.storage.local.remove("secure_img"))
-    .catch(e => console.log("cleanDB error", e));
+        .then(x => chrome.storage.local.remove("secure_img"))
+        .catch(e => console.log("cleanDB error", e));
 }
 
 function initAdvConfigs() {
