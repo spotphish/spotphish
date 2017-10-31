@@ -267,7 +267,9 @@ let Sites = {
     sync: function() {
         let defaultSites, customSites;
 
-        return this.dbDefaultSites.getAll()
+        return this.dbTemplateList.getAll()
+            .then(x => this.templateList = x)
+            .then (x => this.dbDefaultSites.getAll())
             .then(x => defaultSites = x)
             .then(x => this.dbCustomSites.getAll())
             .then(x => customSites = x)

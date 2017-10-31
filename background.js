@@ -359,9 +359,7 @@ function checkUpdates() {
     }
     res.then(x => {
         let result = activeFeeds.reduce((p, feed) => {
-            return p.then(x => {
-                return updateFeed(feed);
-            });
+            return p.then(x => updateFeed(feed));
         }, Promise.resolve());
         result.then(x => debug("Resolved "));
     });
