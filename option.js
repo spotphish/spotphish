@@ -260,9 +260,10 @@ function initAdvanceTab() {
 $(document).ready(function() {
     $(".mdl-layout__tab").on("click", function(e){
         let href = $(this).attr("href");
-        if (href === "#scroll-tab-safedomain") {
+        window.location.hash = href;
+        if (href === "#tab-safedomain") {
             renderSafeDomainTable();
-        } else if (href === "#scroll-tab-whitelist") {
+        } else if (href === "#tab-whitelist") {
             //bkg.syncWhiteList(renderWhitelistTable);
             renderProtectedList();
         }
