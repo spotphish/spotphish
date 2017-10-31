@@ -16,7 +16,7 @@ let Sites = {
     dbFeedList: null,
 
     /* db caches, used to compute updates */
-    defaultSites: [], 
+    defaultSites: [],
     customSites: [],
     feedList: [],
     templateList: [],
@@ -36,13 +36,13 @@ let Sites = {
         const found = this.sites.filter(ff)
             .filter(s => _.find(s.domains, y => host.endsWith(y)));
         return found[0];
-    }, 
+    },
 
     getSiteByName: function(name, filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
                 (filter === "exists") ? x => !x.deleted : x => true;
         return _.find(this.sites.filter(ff), x => x.name === name);
-    }, 
+    },
 
     getProtectedURL: function(url, filter="enabled") {
         const url1 = stripQueryParams(url),
@@ -328,8 +328,8 @@ let Sites = {
                 this.templateList.findIndex(y => y.checksum === x.checksum) === -1);
 
             if (newTemplates) {
-                const np = newTemplates.filter(t => !!t.image)
-                    .map(x => createPatterns(x.image)
+                const np = newTemplates.filter(t => t.image || t.base64)
+                    .map(x => createPatterns(img = x.image || x.base64 )
                         .then(result => {
                             x.base64 = result.base64;
                             x.patternCorners = result.patternCorners;
@@ -337,7 +337,7 @@ let Sites = {
                             return x;
                         }).then(x => this.dbTemplateList.put(x))
                         .catch(x => (console.log(x), null)));
-                
+
                 res = res.then(x => Promise.all(np));
             }
 
@@ -379,7 +379,41 @@ let Sites = {
     reset: function() {
         return this.dbCustomSites.clear()
             .then(x => this.sync());
+    },
+
+    backup: function() {
+        let customData = [];
+        this.customSites.forEach(csite => {
+            if (csite.templates) {
+                csite.templates.forEach(ctemp => {
+                   let imageTemplete =  this.templateList.filter(x => x.checksum === ctemp.checksum)[0];
+                   if (imageTemplete) {
+                       if (imageTemplete.image) {
+                        ctemp["image"] = imageTemplete.image;
+                       }
+                       if (imageTemplete.base64) {
+                         ctemp["base64"] = imageTemplete.base64;
+                       }
+                       if (imageTemplete.name) {
+                         ctemp["name"] = imageTemplete.name;
+                       }
+                       if (imageTemplete.site) {
+                         ctemp["site"] = imageTemplete.site;
+                       }
+                    }
+                })
+            }
+            customData.push(csite);
+        })
+        return customData
+    },
+
+    backupResotre: function(data) {
+        return this.dbCustomSites.clear()
+            .then(x => this.dbCustomSites.putBatch(data))
+            .then(x => this.sync());
     }
+
 };
 
 function mergeSite(update, old) {
@@ -479,5 +513,5 @@ Sample Feed:
 
 Sample dbDefaultSites entry: same as a sites[x] from above
 
-Sample dbTemplateList entry: 
+Sample dbTemplateList entry:
 */

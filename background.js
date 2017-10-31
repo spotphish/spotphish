@@ -296,7 +296,7 @@ function scanTab(ti) {
         .then(x => match = x)
         .then(match => makeCorrespondenceImage(match, screenshot, features))
         .then(corr_img => ({match, corr_img}));
-                
+
     function snapTab(tab) {
         return new Promise((resolve, reject) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
@@ -461,6 +461,16 @@ function cleanDB() {
     return Sites.reset()
         .then(x => chrome.storage.local.remove("secure_img"))
         .catch(e => console.log("cleanDB error", e));
+}
+
+function backupDB(responsd) {
+    return Sites.backup()
+}
+
+function restoreBackup(data, respond) {
+    return Sites.backupResotre(data)
+    .then(x =>  respond())
+    .catch(x => respond({message: x.message}));
 }
 
 function initAdvConfigs() {

@@ -331,6 +331,32 @@ $(document).ready(function() {
     $("#imageUpload").on("click", function(e) {
         $("#custom-img").click();
     });
+    $("#backupFileUpload").on("click", function(e) {
+        $("#backup-file").click();
+    });
+
+    $("#backup-file").change(function(e) {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.onloadend = function() {
+            let fileData = reader.result
+            bkg.restoreBackup(JSON.parse(fileData), function(error){
+                let msg = ""
+                let color = ""
+                if (error){
+                    msg = "Something went wrong, Error: " + error.message;
+                    color = "#FF5722";
+                } else {
+                    msg = "Restore data completed successfully.";
+                    color = "#4CAF50";
+                }
+                $("#notifications").text(msg).css("visibility", "visible").css("color", color);;
+                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 6000)
+            });
+
+        };
+        reader.readAsText(file);
+    });
 
     $("#custom-img").change(function(e) {
 
@@ -376,6 +402,30 @@ $(document).ready(function() {
             }
         }
     });
+
+    // get backup of all the custom settings
+    $("#sp-backup").on("click", function(e) {
+        let backupData = bkg.backupDB();
+        if (Object.keys(backupData).length != 0){
+            download(backupData);
+            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
+            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
+        } else {
+            $("#notifications").text("Not found any custom changes.").css("visibility", "visible").css("color", "red");
+            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
+        }
+
+    });
+
+    // download db backup file
+    function download(content) {
+        let a = document.createElement('a');
+        let blob = new Blob([JSON.stringify(content, null, 4)], {'type': "application/json"});
+        a.href = window.URL.createObjectURL(blob);
+        a.download = "SpotPhish-DB-Backup.json";
+        a.click();
+    }
+
 
     $(".kp-safelist-add-btn").on("click", function(e) {
         var input = $("#kp-safelist-input").val().trim();
