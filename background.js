@@ -455,9 +455,10 @@ function loadDefaults() {
         .then(x => checkUpdates());
 }
 
-function cleanDB() {
+function cleanDB(respond) {
     return Sites.reset()
         .then(x => chrome.storage.local.remove("secure_img"))
+        .then(x => respond())
         .catch(e => console.log("cleanDB error", e));
 }
 

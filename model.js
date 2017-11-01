@@ -40,7 +40,7 @@ let Sites = {
 
     getSiteByName: function(name, filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
-                (filter === "exists") ? x => !x.deleted : x => true;
+            (filter === "exists") ? x => !x.deleted : x => true;
         return _.find(this.sites.filter(ff), x => x.name === name);
     },
 
@@ -64,7 +64,7 @@ let Sites = {
 
     getSites: function(filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
-                (filter === "exists") ? x => !x.deleted : x => true;
+            (filter === "exists") ? x => !x.deleted : x => true;
         return this.sites.filter(ff);
     },
 
@@ -331,7 +331,7 @@ let Sites = {
 
             if (newTemplates) {
                 const np = newTemplates.filter(t => t.image || t.base64)
-                    .map(x => createPatterns(img = x.image || x.base64 )
+                    .map(x => createPatterns((x.image || x.base64))
                         .then(result => {
                             x.base64 = result.base64;
                             x.patternCorners = result.patternCorners;
@@ -388,26 +388,26 @@ let Sites = {
         this.customSites.forEach(csite => {
             if (csite.templates) {
                 csite.templates.forEach(ctemp => {
-                   let imageTemplete =  this.templateList.filter(x => x.checksum === ctemp.checksum)[0];
-                   if (imageTemplete) {
-                       if (imageTemplete.image) {
-                        ctemp["image"] = imageTemplete.image;
-                       }
-                       if (imageTemplete.base64) {
-                         ctemp["base64"] = imageTemplete.base64;
-                       }
-                       if (imageTemplete.name) {
-                         ctemp["name"] = imageTemplete.name;
-                       }
-                       if (imageTemplete.site) {
-                         ctemp["site"] = imageTemplete.site;
-                       }
+                    let imageTemplete =  this.templateList.filter(x => x.checksum === ctemp.checksum)[0];
+                    if (imageTemplete) {
+                        if (imageTemplete.image) {
+                            ctemp["image"] = imageTemplete.image;
+                        }
+                        if (imageTemplete.base64) {
+                            ctemp["base64"] = imageTemplete.base64;
+                        }
+                        if (imageTemplete.name) {
+                            ctemp["name"] = imageTemplete.name;
+                        }
+                        if (imageTemplete.site) {
+                            ctemp["site"] = imageTemplete.site;
+                        }
                     }
-                })
+                });
             }
             customData.push(csite);
-        })
-        return customData
+        });
+        return customData;
     },
 
     backupResotre: function(data) {

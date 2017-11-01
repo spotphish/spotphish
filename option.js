@@ -388,18 +388,19 @@ $(document).ready(function() {
 
     $("#kp-restore-factory").on("click", function(e) {
         if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
-            bkg.cleanDB();
-            bkg.setDefaultSecurityImage(function () {
-                $("#imagegallery .cutsom-image").remove();
-                $("#imagegallery #customimage").attr("src", "");
-                $("#imagegallery #kp-custom-icons").text("");
-                $("#imageUpload").text("Upload New Image");
-                updateImage();
+            bkg.cleanDB(function(){
+                 bkg.setDefaultSecurityImage(function () {
+                    $("#imagegallery .cutsom-image").remove();
+                    $("#imagegallery #customimage").attr("src", "");
+                    $("#imagegallery #kp-custom-icons").text("");
+                    $("#imageUpload").text("Upload New Image");
+                    updateImage();
+                });
+                let val = $("#kp-debug-switch").is(":checked");
+                if (val) {
+                    $("#kp-debug-switch").click();
+                }
             });
-            let val = $("#kp-debug-switch").is(":checked");
-            if (val) {
-                $("#kp-debug-switch").click();
-            }
         }
     });
 
