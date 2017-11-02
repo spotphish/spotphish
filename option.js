@@ -337,6 +337,12 @@ $(document).ready(function() {
 
     $("#backup-file").change(function(e) {
         let file = e.target.files[0];
+
+        if (file.type.indexOf("json") < 0) {
+            $("#notifications").text("Please upload a valid format file.").css("visibility", "visible").css("color", "red");;
+            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 6000)
+            return;
+        }
         let reader = new FileReader();
         reader.onloadend = function() {
             let fileData = reader.result
@@ -408,17 +414,10 @@ $(document).ready(function() {
 
     // get backup of all the custom settings
     $("#sp-backup").on("click", function(e) {
-        bkg.backupDB(function(backupData){
-            console.log(backupData);
-            if (Object.keys(backupData).length != 0){
-                download(backupData);
-                $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
-                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
-            } else {
-                $("#notifications").text("Not found any custom changes.").css("visibility", "visible").css("color", "red");
-                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
-            }
-
+        bkg.backupDB(function(backupData) {
+            download(backupData);
+            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
+            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
         });
     });
 
