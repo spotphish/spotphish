@@ -427,7 +427,9 @@ $(document).ready(function() {
         let a = document.createElement('a');
         let blob = new Blob([JSON.stringify(content, null, 4)], {'type': "application/json"});
         a.href = window.URL.createObjectURL(blob);
-        a.download = "SpotPhish-DB-Backup.json";
+        let date =  new Date();
+        let datetime = date.getMonth() + "-" +  date.getDate() + "-" + date.getFullYear();
+        a.download = `SpotPhish-backup-${datetime}.json`;
         a.click();
     }
 
