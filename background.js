@@ -475,8 +475,12 @@ function cleanDB(respond) {
 
 function backupDB(respond) {
     getSecurityImage(function(image) {
-        let customSites = Sites.backup();
-        respond({sites: customSites, secureImage: image })
+        let subscribedFeeds = [];
+        Sites.dbFeedList.getAll().then(feedList => {
+            feedList.forEach(feed => subscribedFeeds.push(feed));
+            let customSites = Sites.backup();
+            respond({subscribedFeeds : subscribedFeeds, sites: customSites, secureImage: image });
+        });
     })
 }
 

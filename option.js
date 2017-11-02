@@ -428,7 +428,7 @@ $(document).ready(function() {
         let blob = new Blob([JSON.stringify(content, null, 4)], {'type': "application/json"});
         a.href = window.URL.createObjectURL(blob);
         let date =  new Date();
-        let datetime = date.getMonth() + "-" +  date.getDate() + "-" + date.getFullYear();
+        let datetime = date.getFullYear().toString() + (date.getMonth() + 1).toString() +  date.getDate().toString() + date.getHours().toString() + date.getMinutes().toString() + date.getSeconds().toString();
         a.download = `SpotPhish-backup-${datetime}.json`;
         a.click();
     }
