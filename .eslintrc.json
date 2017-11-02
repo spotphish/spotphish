@@ -59,6 +59,7 @@
         "DEBUG": true,
         "psl": false,
         "Sites": false,
-        "Pdb": false
+        "Pdb": false,
+        "ajax_get": false
     }
 }

@@ -193,3 +193,77 @@ function ajax_get(url) {
             .fail(e => reject(e));
     });
 }
+
+
+//Reference: https://github.com/akiomik/chrome-storage-promise/blob/master/src/chrome-storage-promise.js
+chrome.storage.promise = {
+    // local
+    local: {
+        get: (keys) => {
+            let promise = new Promise((resolve, reject) => {
+                chrome.storage.local.get(keys, (items) => {
+                    let err = chrome.runtime.lastError;
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(items);
+                    }
+                });
+            });
+            return promise;
+        },
+        set: (items) => {
+            let promise = new Promise((resolve, reject) => {
+                chrome.storage.local.set(items, () => {
+                    let err = chrome.runtime.lastError;
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            return promise;
+        },
+        getBytesInUse: (keys) => {
+            let promise = new Promise((resolve, reject) => {
+                chrome.storage.local.getBytesInUse(keys, (items) => {
+                    let err = chrome.runtime.lastError;
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(items);
+                    }
+                });
+            });
+            return promise;
+        },
+        remove: (keys) => {
+            let promise = new Promise((resolve, reject) => {
+                chrome.storage.local.remove(keys, () => {
+                    let err = chrome.runtime.lastError;
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            return promise;
+        },
+        clear: () => {
+            let promise = new Promise((resolve, reject) => {
+                chrome.storage.local.clear(() => {
+                    let err = chrome.runtime.lastError;
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            return promise;
+        }
+    }
+}
+

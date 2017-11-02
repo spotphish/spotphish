@@ -7,7 +7,6 @@
 
 (function () {
     var curTab;
-
     var handleTabInfo = function(response) {
         if (!response) {
             return;
@@ -16,10 +15,15 @@
             $("#kp-status").css({display: "flex"});
             $("#kp-status-span").append(`<em>${response.status}</em>`);
         }
+        chrome.storage.promise.local.get("adv_config")
+            .then(x => {
+                if (x.adv_config.debug) {
+                    $("#kp-test-now").css({display: "flex"});
+                }
+            });
         const state = response._state;
         if (state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
-            $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
         } else if (state === "watching" || state === "red_done" || state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
@@ -44,7 +48,7 @@
             });
             $("#kp-remove-from-whitelist").on("click", e => {
                 chrome.runtime.sendMessage({op: "unprotect_page", tab: curTab}, res => {
-                        /* notify */
+                    /* notify */
                 });
                 window.close();
             });

@@ -339,17 +339,17 @@ $(document).ready(function() {
         let file = e.target.files[0];
 
         if (file.type.indexOf("json") < 0) {
-            $("#notifications").text("Please upload a valid format file.").css("visibility", "visible").css("color", "red");;
-            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 6000)
+            $("#notifications").text("Please upload a valid format file.").css("visibility", "visible").css("color", "red");
+            setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
             return;
         }
         let reader = new FileReader();
         reader.onloadend = function() {
-            let fileData = reader.result
+            let fileData = reader.result;
             bkg.restoreBackup(JSON.parse(fileData), function(error){
 
-                let msg = ""
-                let color = ""
+                let msg = "",
+                    color = "";
                 if (error){
                     msg = "Something went wrong, Error: " + error.message;
                     color = "#FF5722";
@@ -358,8 +358,8 @@ $(document).ready(function() {
                     msg = "Restore data completed successfully.";
                     color = "#4CAF50";
                 }
-                $("#notifications").text(msg).css("visibility", "visible").css("color", color);;
-                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 6000)
+                $("#notifications").text(msg).css("visibility", "visible").css("color", color);
+                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
             });
 
         };
@@ -397,7 +397,7 @@ $(document).ready(function() {
     $("#kp-restore-factory").on("click", function(e) {
         if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
             bkg.cleanDB(function(){
-                 bkg.setDefaultSecurityImage(function () {
+                bkg.setDefaultSecurityImage(function () {
                     $("#imagegallery .cutsom-image").remove();
                     $("#imagegallery #customimage").attr("src", "");
                     $("#imagegallery #kp-custom-icons").text("");
@@ -416,15 +416,15 @@ $(document).ready(function() {
     $("#sp-backup").on("click", function(e) {
         bkg.backupDB(function(backupData) {
             download(backupData);
-            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
-            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
+            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");
+            setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 5000);
         });
     });
 
     // download db backup file
     function download(content) {
-        let a = document.createElement('a');
-        let blob = new Blob([JSON.stringify(content, null, 4)], {'type': "application/json"});
+        let a = document.createElement("a");
+        let blob = new Blob([JSON.stringify(content, null, 4)], {"type": "application/json"});
         a.href = window.URL.createObjectURL(blob);
         let date =  new Date();
         let datetime = date.getFullYear().toString() + (date.getMonth() + 1).toString() +  date.getDate().toString() + date.getHours().toString() + date.getMinutes().toString() + date.getSeconds().toString();

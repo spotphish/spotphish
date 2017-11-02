@@ -105,10 +105,10 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
             chrome.tabs.captureVisibleTab(tab.windowId, {format: "png"}, image => {
                 let cropped;
                 crop(image, msg.area, msg.dpr, true)
-                .then(x => cropped = x)
-                .then(cropped => addToProtectedList(sender.tab, cropped))
-                .then(x => respond({message: "cropped", image: cropped}))
-                .catch(x => respond({message: "failed", err: "few_corners"}));
+                    .then(x => cropped = x)
+                    .then(cropped => addToProtectedList(sender.tab, cropped))
+                    .then(x => respond({message: "cropped", image: cropped}))
+                    .catch(x => respond({message: "failed", err: "few_corners"}));
             });
         });
     } else if (msg.op === "protect_basic") {
@@ -436,7 +436,7 @@ function errorfn(err) {
 
 function getSecurityImage(cb) {
     chrome.storage.local.get("secure_img", function(result) {
-        cb(result.secure_img)
+        cb(result.secure_img);
     });
 }
 
@@ -481,15 +481,15 @@ function backupDB(respond) {
             let customSites = Sites.backup();
             respond({subscribedFeeds : subscribedFeeds, sites: customSites, secureImage: image });
         });
-    })
+    });
 }
 
 
 function restoreBackup(data, respond) {
     return Sites.backupResotre(data.sites)
-    .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage)} })
-    .then(x =>  respond())
-    .catch(x => respond({message: x.message}));
+        .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage);}})
+        .then(x =>  respond())
+        .catch(x => respond({message: x.message}));
 }
 
 function initAdvConfigs() {
@@ -558,7 +558,6 @@ function setIcon(ti, state, info) {
 
 function addToProtectedList(tab, logo) {
     const url = tab.url;
-
     return Sites.addProtectedURL(url, logo)
         .then(x => Sites.getProtectedURL(url))
         .then(u => {
