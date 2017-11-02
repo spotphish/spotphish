@@ -434,6 +434,17 @@ function errorfn(err) {
     console.log("Inedexeddb error occured : ", err);
 }
 
+function getSecurityImage(cb) {
+    chrome.storage.local.get("secure_img", function(result) {
+        cb(result.secure_img)
+    });
+}
+
+function setSecurityImage(image){
+    chrome.storage.local.set({ "secure_img": image }, function() {
+    });
+}
+
 function setDefaultSecurityImage(cb) {
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
@@ -462,12 +473,17 @@ function cleanDB(respond) {
         .catch(e => console.log("cleanDB error", e));
 }
 
-function backupDB(responsd) {
-    return Sites.backup()
+function backupDB(respond) {
+    getSecurityImage(function(image) {
+        let customSites = Sites.backup();
+        respond({sites: customSites, secureImage: image })
+    })
 }
 
+
 function restoreBackup(data, respond) {
-    return Sites.backupResotre(data)
+    return Sites.backupResotre(data.sites)
+    .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage)} })
     .then(x =>  respond())
     .catch(x => respond({message: x.message}));
 }
