@@ -185,7 +185,7 @@ async function testImageData(imageUrl) {
     //         t.matchCount = t.matchCount + 1
     //     }
     // }
-    console.log(stats)
+    // console.log(stats)
     console.log('\x1b[0m', `Total Image Count : ${totalImages}, Total Match Count:  ${matchFound}, Wrong Match: ${wrongMatch}`);
     await page.screenshot({ path: 'spotphish_test.png' });
     browser.close();
@@ -241,3 +241,4 @@ forEahImages(images)
 
 // TO run
 // node spotphish_test.js screenshots/ "<FILTER true or false>" <template name>
+// result in stats.json file
