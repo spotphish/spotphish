@@ -25,16 +25,16 @@
       <span class="mdl-layout-title"><img class="kp-title-icon" src="assets/icons/icon128.png"> &nbsp;SpotPhish</span>
     </div>
     <!-- Tabs -->
-    <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
-      <a href="#scroll-tab-secure-img" class="mdl-layout__tab is-active">Security Image</a>
-      <a href="#scroll-tab-whitelist" class="mdl-layout__tab">Protected Pages</a>
-      <a href="#scroll-tab-safedomain" class="mdl-layout__tab" id="safedomain">Safe Domains</a>
-      <a href="#scroll-tab-advanced" class="mdl-layout__tab">Advanced</a>
-      <a href="#scroll-tab-help" class="mdl-layout__tab">Help</a>
+    <div class="mdl-navigation mdl-layout__tab-bar mdl-js-ripple-effect">
+      <a href="#tab-secure-img" class="mdl-layout__tab is-active">Security Image</a>
+      <a href="#tab-whitelist" class="mdl-layout__tab">Protected Pages</a>
+      <a href="#tab-safedomain" class="mdl-layout__tab" id="safedomain">Safe Domains</a>
+      <a href="#tab-advanced" class="mdl-layout__tab">Advanced</a>
+      <a href="#tab-help" class="mdl-layout__tab">Help</a>
     </div>
   </header>
   <main class="mdl-layout__content">
-    <section class="mdl-layout__tab-panel is-active" id="scroll-tab-secure-img">
+    <section class="mdl-layout__tab-panel is-active" id="tab-secure-img">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
                 <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet kp-security-image">
@@ -81,7 +81,7 @@
             </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-whitelist">
+    <section class="mdl-layout__tab-panel" id="tab-whitelist">
         <div class="mdl-grid kp-max-width kp-wl-main">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>Protected Pages</h3>
@@ -89,7 +89,7 @@
             </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-safedomain">
+    <section class="mdl-layout__tab-panel" id="tab-safedomain">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>Safe Domains</h3>
@@ -116,11 +116,12 @@
             </div>
         </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-advanced">
+    <section class="mdl-layout__tab-panel" id="tab-advanced">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>Advanced Settings</h3>
             </div>
+            <span class="mdl-textfield" id="notifications" style="visibility: hidden;"> Hello</span>
             <div class="mdl-cell mdl-cell--9-col mdl-grid">
                 <ul class="mdl-list kp-settings-list">
                     <!--
@@ -153,6 +154,35 @@
                             </label>
                         </span>
                     </li>
+                     <li class="mdl-list__item mdl-list__item--three-line">
+                        <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                            <i class="material-icons kp-settings-icon">backup</i>
+                            <span>Backup your Data</span>
+                            <span class="mdl-list__item-text-body">
+                                Backup captures a copy of the all custom settings.
+                            </span>
+                        </span>
+                        <span class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                            <button class="mdl-button mdl-button mdl-js-button mdl-button--raised" id="sp-backup">Backup</button>
+                        </span>
+                    </li>
+                     <li class="mdl-list__item mdl-list__item--three-line">
+                        <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                            <i class="material-icons kp-settings-icon">settings_backup_restore</i>
+                            <span> Restore Data From Backup File</span>
+                            <span class="mdl-list__item-text-body">
+                                Restore your custom settings from backup file.
+                            </span>
+                        </span>
+                         <span class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                              <div style="height:0px;overflow:hidden">
+                                  <input type="file" id="backup-file" name="fileInput" />
+                            </div>
+                             <button class="mdl-button mdl-button mdl-js-button mdl-button--raised" id="backupFileUpload">
+                                Upload File
+                            </button>
+                        </span>
+                    </li>
                     <li class="mdl-list__item mdl-list__item--three-line">
                         <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
                             <i class="material-icons kp-settings-icon">restore</i>
@@ -165,10 +195,11 @@
                             <button class="mdl-button mdl-button--accent mdl-js-button mdl-button--raised" id="kp-restore-factory">Restore</button>
                         </span>
                     </li>
+
                 </ul>
             </div>
     </section>
-    <section class="mdl-layout__tab-panel" id="scroll-tab-help">
+    <section class="mdl-layout__tab-panel" id="tab-help">
         <div class="mdl-grid kp-max-width">
             <div class="mdl-cell mdl-cell--12-col">
                 <h3>About</h3>

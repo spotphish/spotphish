@@ -1,4 +1,8 @@
-const tabinfo = {};
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
@@ -9,48 +13,71 @@ var update_flag = false;
 
 let DEBUG = true, basic_mode = false,
     globalCurrentTabId,
-    tabInfoList = {},
-    SPTemplates = [],
-    SPDefaultSites = [],
-    SPSites = [],
-    objFeedList,
-    objDefaultSites,
-    objCustomSites,
-    objTemplateList;
+    tabInfoList = {};
 
 loadDefaults();
+setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
+
+class Tabinfo {
+    constructor(id, tab, port) {
+        this.id = id;
+        this.checkState = false;
+        this.topReady = false;
+        this._state = "init";
+        this.tab = tab;
+        this.watches = [];
+        this.dpr = 1;
+        this.port = port;
+        this.nchecks = 0;
+        this.status = "";
+        Tabinfo.instances[id] = this;
+    }
+
+    get state() {
+        return this._state;
+    }
+
+    set state(val) {
+        //debug("SET", this.id, this.tab.url, `${this._state} --> ${val}`);
+        this._state = val;
+        return this._state;
+    }
+
+    update(tab) {
+        this.tab = tab;
+    }
+}
+
+Tabinfo.instances = {};
+Tabinfo.get = function(id) {
+    return Tabinfo.instances[id];
+};
+
+Tabinfo.remove = function(id) {
+    delete Tabinfo.instances[id];
+};
+
+/* Dump state for debugging */
+Tabinfo.show = function() {
+    for (const x in Tabinfo.instances) {
+        const ti = Tabinfo.get(x);
+        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
+    }
+};
 
 chrome.runtime.onConnect.addListener(port => {
-    const id = port.sender.tab.id;
-    initTabinfo(id, port.sender.tab);
-    tabinfo[id].port = port;
-
+    const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
+    setIcon(ti, "init");
 });
-
-function initTabinfo(id, tab) {
-    tabinfo[id] = {
-        checkState: false,
-        topReady: false,
-        state: "init",
-        tab,
-        watches: [],
-        dpr: 1,
-        port: null,
-        nchecks: 0,
-        status: ""
-    };
-    setIcon(tabinfo[id], "init");
-}
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-function updateTabinfo(id, tab) {
-    tabinfo[id].tab = tab;
-}
-
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     if (sender.tab) {
-        updateTabinfo(sender.tab.id, sender.tab);
+        const ti = Tabinfo.get(sender.tab.id);
+        if (ti) {
+            ti.update(sender.tab);
+        }
     }
     if (msg.op === "init") {
         init(msg, sender, respond);
@@ -59,69 +86,75 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "url_change") {
         url_change(msg, sender, respond);
     } else if (msg.op === "get_tabinfo") {
-        var tab = msg.curtab;
-        if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond({tabinfo: tabinfo[tab.id], debug: DEBUG });
+        const tab = msg.curtab,
+            ti = Tabinfo.get(tab.id);
+        if (ti && ti.tab.url === tab.url) {
+            respond(ti);
         } else {
             respond({state: "NA"});
         }
-    } else if (msg.op === "addToWhitelist") {
-        inject(msg.currentTab, msg.site);
+    } else if (msg.op === "protect_page") {
+        inject(msg.tab);
         respond({message: "whitelisted"});
-    } else if (msg.op === "removeFromWhitelist") {
-        removeFromProtectedList(msg.site, msg.currentTab);
-        respond({message: "removed"});
+    } else if (msg.op === "unprotect_page") {
+        removeFromProtectedList(msg.tab)
+            .then(x => respond({message: "removed"}))
+            .catch(x => respond({message: "failed", err: x.message}));
     } else if (msg.op === "crop_capture") {
-        chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
-                crop(image, msg.area, msg.dpr, true, (cropped) => {
-                    let cb = function(res) {
-                        if (res) {
-                            respond({message: "cropped", image: cropped});
-                        } else {
-                            respond({message: "failed", err: "few_corners"});
-                        }
-                    };
-                    addToProtectedList(sender.tab, cropped, cb);
-                });
+        chrome.tabs.query({active: true, currentWindow: true}, tab => {
+            chrome.tabs.captureVisibleTab(tab.windowId, {format: "png"}, image => {
+                let cropped;
+                crop(image, msg.area, msg.dpr, true)
+                .then(x => cropped = x)
+                .then(cropped => addToProtectedList(sender.tab, cropped))
+                .then(x => respond({message: "cropped", image: cropped}))
+                .catch(x => respond({message: "failed", err: "few_corners"}));
             });
         });
-    } else if (msg.op === "add_wh") {
-        respond({message: "Added"});
-        addToProtectedList(sender.tab, null);
+    } else if (msg.op === "protect_basic") {
+        addToProtectedList(sender.tab, null)
+            .then(x => respond({message: "Added"}))
+            .catch(x => respond({message: "failed", err: x.message}));
     } else if (msg.op === "urgent_check") {
         respond({action: "nop"});
-        let curTabInfo = tabinfo[sender.tab.id];
-        let tabState = curTabInfo.state;
+        let ti = Tabinfo.get(sender.tab.id);
+        let tabState = ti.state;
         if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-            redflagCheck(curTabInfo);
+            redflagCheck(ti);
         }
     } else if (msg.op === "test_now") {
-        const ti = tabinfo[msg.tab.id];
+        const ti = Tabinfo.get(msg.tab.id);
         redflagCheck(ti, true);
+    } else if (msg.op === "remove_site") {
+        removeSite(msg.site, respond);
+    } else if (msg.op === "toggle_site") {
+        toggleSite(msg.site, msg.enable, respond);
+    } else if (msg.op === "remove_url") {
+        removeURL(msg.url, respond);
+    } else if (msg.op === "toggle_url") {
+        toggleURL(msg.url, msg.enable, respond);
+    } else if (msg.op === "remove_safe_domain") {
+        removeSafeDomain(msg.domain, respond);
+    } else if (msg.op === "add_safe_domain") {
+        addSafeDomain(msg.domain, respond);
     } else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;
 });
-//TODO: Check the use of inject and modify accordingly
-function inject (tab, site) {
-    // The first part looks like, it checks for protected url
-    /*let found = KPWhiteList.filter((x) => {
-        return x.url === site;
-    });*/
-    let ti = tabinfo[tab.id];
-    //if (found.length == 0) {
-    let found = checkProtectedSite(site);
+
+function inject (tab) {
+    let ti = Tabinfo.get(tab.id);
+    let found = Sites.getProtectedURL(tab.url);
     if (!found) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
-        ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
+        console.log("Already protected: ", tab.url);
     }
 }
 
 function init(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
     //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
     if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
@@ -134,7 +167,7 @@ function init(msg, sender, respond) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
         ti.inputFields = msg.inputFields;
-        let res = checkProtectedSite(tab);
+        let res = Sites.getProtectedURL(tab.url);
         debug("Result check Protected : ", res);
         if (res) {
             let greenFlag = true;
@@ -157,7 +190,7 @@ function init(msg, sender, respond) {
         }
     }
 
-    if (checkSafeDomain(tab.url)) {
+    if (Sites.getSafeDomain(tab.url)) {
         ti.state = "safe";
         setIcon(ti, "safe");
         return respond({action: "nop"});
@@ -171,7 +204,7 @@ function init(msg, sender, respond) {
 
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
-    const ti = tabinfo[sender.tab.id];
+    const ti = Tabinfo.get(sender.tab.id);
     if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || ti.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
@@ -182,13 +215,13 @@ function checkdata(msg, sender, respond) {
 }
 
 function url_change(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
 
     console.log("url change", tab.url);
 
     respond({action: "nop"});
-    let res = checkProtectedSite(tab);
+    let res = Sites.getProtectedURL(tab.url);
     if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
@@ -197,18 +230,11 @@ function url_change(msg, sender, respond) {
     }
 }
 
-function showTabinfo() {
-    for (const x in tabinfo) {
-        const ti = tabinfo[x];
-        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
-    }
-}
-
 function watchdog() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         if (!tabs.length) return;
         const id = tabs[0].id,
-            ti = tabinfo[id] || {};
+            ti = Tabinfo.get(id) || {};
         const now = Date.now();
         if (ti.state === "watching" && ti.topReady) {
             assert("watchdog.2", ti.watches.length > 0);
@@ -228,6 +254,7 @@ function redflagCheck(ti, testNow) {
     console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
     return scanTab(ti)
         .then(res => {
+            //console.log("SCAN", ti.tab.url, ti.tab.state, res);
             if (res.match) {
                 const site = res.match.template.site;
                 if (testNow) {
@@ -249,7 +276,7 @@ function redflagCheck(ti, testNow) {
                     setIcon(ti, "checked"); // The page is checked atleast once.
                 }
             }
-        });
+        }).catch(e => console.log("redflagCheck error", e));
 }
 
 /*
@@ -258,14 +285,18 @@ function redflagCheck(ti, testNow) {
 
 function scanTab(ti) {
     const tab = ti.tab;
+    let screenshot, features, match;
 
     return snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
-        .then(screenshot => findOrbFeatures(screenshot)
-            .then(features => matchTemplates(features)
-                .then(match => makeCorrespondenceImage(match, screenshot, features)
-                    .then(corr_img => ({match, corr_img})))));
-                
+        .then(x => screenshot = x)
+        .then(screenshot => findOrbFeatures(screenshot))
+        .then(x => features = x)
+        .then(features => matchTemplates(features))
+        .then(x => match = x)
+        .then(match => makeCorrespondenceImage(match, screenshot, features))
+        .then(corr_img => ({match, corr_img}));
+
     function snapTab(tab) {
         return new Promise((resolve, reject) => {
             chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
@@ -273,17 +304,15 @@ function scanTab(ti) {
     }
 
     function normalizeScreenshot(image, width, height, dpr) {
-        return new Promise((resolve, reject) => {
-            const area = {x: 0, y: 0, w: width, h: height};
-            crop(image, area, dpr, false, resolve);
-        });
+        const area = {x: 0, y: 0, w: width, h: height};
+        return crop(image, area, dpr, false);
     }
 
     function matchTemplates(scrFeatures) {
         const scrCorners = scrFeatures.corners;
         const scrDescriptors = scrFeatures.descriptors;
         let t0 = performance.now();
-        let activeTemplates = SPTemplates.filter(x => !x.disabled);
+        let activeTemplates = Sites.getTemplates();
         for (let i = 0; i < activeTemplates.length; i++) {
             const template = activeTemplates[i];
             const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
@@ -308,9 +337,7 @@ function scanTab(ti) {
 }
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
-    if (tabinfo[tabid]) {
-        delete tabinfo[tabid];
-    }
+    Tabinfo.remove(tabid);
 });
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -322,509 +349,50 @@ chrome.runtime.onInstalled.addListener(function(details) {
     }
 });
 
-/* Indexed DB related functions */
-
-function initFeedList() {
-    objFeedList.getAll((data) => {
-        if (data.length <= 0) {
-            objFeedList.putBatch(defaultFeeds, checkUpdates);
-        } else {
-            var newFeeds = defaultFeeds.filter(x => data.map(y => y.src).indexOf(x.src));
-            if (newFeeds.length) {
-                objFeedList.putBatch(newFeeds, checkUpdates);
-            } else {
-                checkUpdates();
-            }
-        }
-    });
-    setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
-}
-
-function syncTemplateList() {
-    objTemplateList.getAll((data) => {
-        if (data.length > 0) {
-            SPTemplates = data.filter(x => !x.disabled);
-        }
-    });
-}
-
 function checkUpdates() {
-    objFeedList.getAll((data) => {
-        var activeFeeds = data.filter(x => !x.deleted && !x.disabled);
-        console.log(" Active Feed List : ", activeFeeds);
-        activeFeeds.forEach((x) => {
-            updateFeed(x);
-        });
+    let activeFeeds =  Sites.getFeeds();
+    let res = Promise.resolve(true);
+
+    if (activeFeeds.length === 0) {
+        res = res.then(x => Sites.updateFeedList(defaultFeeds))
+            .then(x => {activeFeeds = Sites.getFeeds(); debug(activeFeeds);});
+    }
+    res.then(x => {
+        let result = activeFeeds.reduce((p, feed) => {
+            return p.then(x => updateFeed(feed));
+        }, Promise.resolve());
+        result.then(x => debug("Resolved "));
     });
 }
 
 function updateFeed(feed) {
+    debug("Executing ", feed.src);
     let ord = Math.floor(Math.random()*100);
     let src = feed.src + "?ord=" + ord;
-    $.getJSON(src)
-        .done(data => {
-            console.log("Versions feed, data : ", feed.version, data.version);
+    return ajax_get(src)
+        .then(data => {
+            let res = Promise.resolve(true);
+            debug("Versions feed, data : ", feed.version, data.version);
             if (feed.version !== data.version) {
                 feed.version = data.version;
                 feed.last_updated = new Date().toUTCString();
-                objFeedList.put(feed);
-                updateDefaultSitesFromFeedData(data);
-                //TODO: Update the default_sites table and template_list.
+                res = res.then( x => Sites.updateDefaultSites(data.sites))
+                    .then(x => Sites.updateFeedList(feed));
             }
-        }).fail(err => {
-            console.log("Error for feed : ", feed.src, "  Error Msg : ", err);
-            // In case the server is down, our extension should still work with existing data.
-            syncSPSites();
-        });
-}
-
-function updateDefaultSitesFromFeedData(feed_data) {
-    let sites = feed_data.sites;
-    objDefaultSites.putBatch(sites, syncSPSites, errorfn);
-}
-
-
-function mergeSite(update, old) {
-    const unionProperty = {
-        templates : "checksum",
-        safe: "domain",
-        protected: "url"
-    };
-    let new_data = Object.assign({}, update); // We don't want to make any changes in update object. 
-    if (update.deleted) {
-        return update;
-    }
-    let result = Object.assign({},update);
-    for (const key in old) {
-        if (unionProperty[key]) {
-            if (new_data[key] === undefined) {
-                result[key] = old[key];
-            } else {
-                //result[key] = _.unionBy(new_data[key], old[key], unionProperty[key]);
-                result[key] = _.values(_.merge(
-                    _.keyBy(old[key], unionProperty[key]),
-                    _.keyBy(new_data[key], unionProperty[key])
-                ));
-            }
-        } else {
-            if (new_data[key] === undefined) {
-                result[key] = old[key];
-            }
-        }
-    }
-    return result;
-}
-
-function syncSPSites() {
-    objDefaultSites.getAll(default_data => {
-        let tmp = default_data;
-        debug("Default Sites : ", tmp);
-        let sites = default_data;
-        objCustomSites.getAll(custom_data => {
-            debug("Custom Sites : ", custom_data);
-            custom_data.forEach(x => {
-                let found = default_data.findIndex(y => y.name === x.name);
-                if (found === -1) {
-                    //Entry only on custom_sites.
-                    sites.push(x);
-                } else {
-                    // Index of the site in sites should be same as the index of the site in default_site
-                    let merged_site = mergeSite(x,default_data[found]);
-                    sites[found] = merged_site;
-                }
+            //return res;
+            return res.then(x => {
+                debug("Updated ", feed.src);
             });
-            SPSites = sites;
-            debug("SPSites : ", SPSites);
-            updateTemplateList();
+        })
+        .catch(err => {
+            debug("Error for feed : ", feed.src, "  Error Msg : ", err);
         });
-    });
 }
-
-function updateTemplateList() {
-    let templates = SPSites.filter(x => !x.deleted && x.templates).map(y => {
-        return y.templates.map(z=> {
-            z.site = y.name;
-            return z;
-        });
-    }).reduce((a,b) => a.concat(b),[]);
-    let checksumList = templates.filter(x => !x.deleted).map(y => y.checksum);
-    let garbageTemplates = SPTemplates.filter(x => {
-        return checksumList.indexOf(x.checksum) === -1;
-    }).map(y => y.checksum);
-    debug("Garbage Templates : ", garbageTemplates);
-    objTemplateList.removeBatch(garbageTemplates, syncTemplateList, errorfn); //Cleanup Garbage templates.
-    let newTemplates = templates.filter(x => {
-        return !x.deleted && SPTemplates.findIndex(y => x.checksum === y.checksum) === -1;
-    });
-    debug("New Templates : ", newTemplates);
-    newTemplates.forEach(x => {
-        if (x.image) {
-            createPatterns(x.image).then(function(result) {
-                debug("Template promise result : ", result);
-                x.base64 = result.base64;
-                x.patternCorners = result.patternCorners;
-                x.patternDescriptors = result.patternDescriptors;
-                objTemplateList.put(x);
-                SPTemplates.push(x);
-            }).catch((e) => {
-                console.log("Create Pattern Error : ", e);//promise rejected.
-                return;
-            });
-        }
-    });
-}
-
-function getSiteFromUrl(url) {
-    let host = getPathInfo(url).host;
-    let found = SPSites.filter(a => !a.deleted).filter(x => {
-        let domain = x.safe.filter(y => host.endsWith(y.domain));
-        if (domain.length > 0) {
-            return true;
-        }
-        return false;
-    });
-    if (found.length > 0) {
-        return found[0];
-    }
-    return null;
-}
-
-function checkProtectedSite(tab) {
-    let url1 = stripQueryParams(tab.url);
-    let site = getSiteFromUrl(tab.url);
-    if (site && !site.disabled && site.protected) {
-        let found = site.protected.filter(x =>  !x.deleted && !x.disabled && x.url === url1 );
-        if (found.length > 0) {
-            found[0].site = site.name;
-            return found[0];
-        }
-    }
-    return null;
-}
-
-function addToProtectedList(tab, logo, cb) {
-    let url = stripQueryParams(tab.url),
-        site = getSiteFromUrl(url),
-        pattern = {}, data = {};
-    if (!site) {
-        data.name = getPathInfo(url).host;
-        data.src = "user_defined";
-        data.safe = [{domain: data.name}];
-    } else {
-        data.name = site.name;
-        data.src = site.src;
-        if (site.disabled) {
-            data.disabled = false; // If the site is disabled enable it and add the url in protected list
-        }
-        if (site.templates) {
-            let temp = site.templates.filter(x => x.page === url).map(y => y.checksum);
-            if (temp.length > 0) {
-                objTemplateList.remove(temp[0]);
-            }
-        }
-    }
-    data.protected = [{url: url, disabled: false, deleted: false}];
-
-    if (logo) {
-        createPatterns(logo).then(function(result) {
-            console.log("Template promise result : ", result);
-            pattern.base64 = logo;
-            pattern.patternCorners = result.patternCorners;
-            pattern.patternDescriptors = result.patternDescriptors;
-            pattern.site = data.name;
-            pattern.checksum = CryptoJS.SHA256(logo).toString();
-            pattern.page = url;
-            objTemplateList.put(pattern, syncTemplateList, errorfn);
-            data.templates = [{page: url, checksum: pattern.checksum}];
-            if (cb !== undefined || cb !== null) {
-                cb(true);
-            }
-        }).catch((e) => {
-            console.log("Create Pattern Error :", e);//promise rejected.
-            if (cb !== undefined || cb !== null) {
-                cb(false);
-            }
-            return;
-        });
-    }
-
-    objCustomSites.get(data.name, (x) => {
-        if (x) {
-            let res = mergeSite(data, x);
-            console.log("Result : ", res);
-            objCustomSites.put(res, syncSPSites);
-        } else {
-            objCustomSites.put(data, syncSPSites);
-        }
-    });
-    tabinfo[tab.id].state = "greenflagged";
-    setIcon(tabinfo[tab.id], "greenflagged", {site: data.name});
-    tabinfo[tab.id].checkState = false;
-}
-
-function removeFromProtectedList(url, tab) {
-    let site = getSiteFromUrl(url);
-    let indexProtected = site.protected.findIndex(x => x.url === url),
-        indexTemplate = -1;
-    if (indexProtected === -1) {
-        console.log("This is not in protected sites list");
-        return;
-    }
-    // Delete the site if it has only one protected URL
-    if (site.protected.filter(x=> !x.deleted) === 1) {
-        removeSiteByName(site.name);
-        return;
-    }
-    if (site.templates) {
-        indexTemplate = site.templates.findIndex(x => x.page && x.page === url);
-    }
-    if (site.src === "user_defined") {
-        if (indexTemplate !== -1) {
-            site.templates.splice(indexTemplate, 1);
-        }
-        site.protected.splice(indexProtected, 1);
-        objCustomSites.put(site, syncSPSites);
-
-    } else { // This is one of the default sites.
-        objCustomSites.get(site.name, (curSite) => {
-            let newSite = {};
-            newSite.name = site.name;
-            newSite.src = site.src;
-            let protected_entry = site.protected[indexProtected];
-            protected_entry.deleted = true;
-            newSite.protected = [protected_entry];
-            if (indexTemplate !== -1) {
-                let template_entry = site.templates[indexTemplate];
-                template_entry.deleted = true;
-                newSite.templates = [template_entry];
-            }
-            if (curSite) {
-                newSite = mergeSite(newSite, curSite);
-            }
-            objCustomSites.put(newSite, syncSPSites);
-        });
-    }
-    if (tab) {
-        tabinfo[tab.id].state = "red_done";
-        setIcon(tabinfo[tab.id], "red_done");
-        tabinfo[tab.id].checkState = false;
-    }
-}
-
-function toggleProtectedUrl(url, enable) {
-    let site = getSiteFromUrl(url);
-    // We are not putting any validation here. We are sure the "url" will definitely hit one of the sites.
-    let protected = site.protected.filter(x => !x.deleted && x.url === url),
-        templates = [];
-    if (protected.length === 0) {
-        //Control will never reach here.
-        console.log("This is not in protected sites list");
-        return;
-    }
-    protected[0].disabled = !enable;
-    if (site.templates) {
-        templates = site.templates.filter(x => x.page && x.page === url);
-    }
-
-    let data = {};
-    data.name = site.name;
-    data.src = site.src;
-    data.protected = protected;
-    if (templates.length > 0) {
-        data.templates = templates.map(x => {
-            x.disabled = !enable;
-            return x;
-        });
-    }
-    objCustomSites.get(site.name, (curSite) => {
-        if (curSite) {
-            data = mergeSite(data, curSite);
-        }
-        objCustomSites.put(data, syncSPSites);
-    });
-}
-
-function checkSafeDomain(url) {
-    let site = getSiteFromUrl(url);
-    let host = getPathInfo(url).host;
-    if (site) {
-        let domain = site.safe.filter(x => !x.deleted && !x.disabled && host.endsWith(x.domain));
-        if (domain.length > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function removeSiteByName(name) {
-    let site = SPSites.filter(x => x.name === name);
-    if (site.length > 0) {
-        site = site[0];
-        if (site.src !== "user_defined") {
-            objCustomSites.put({ name: name, src: site.src, deleted: true}, syncSPSites);
-        } else {
-            objCustomSites.remove(name, syncSPSites);
-        }
-    } else {
-        console.log(name, "is not in DB ");
-    }
-}
-
-function toggleSite(name, enable) {
-    //TODO: We are not doing anything with safelist here
-    let site = SPSites.filter(x => !x.deleted && x.name === name);
-    let disable = !enable;
-    if (site.length <= 0) {
-        console.log(name, "is not in DB ");
-        return;
-    }
-
-    site = site[0];
-    let data = {};
-    data.name = site.name;
-    data.src = site.src;
-    data.disabled = disable;
-    if (site.templates) {
-        data.templates = site.templates.map(x => {
-            x.disabled = disable;
-            return x;
-        });
-    }
-    if (site.protected) {
-        data.protected = site.protected.map(x => {
-            x.disabled = disable;
-            return x;
-        });
-    }
-    objCustomSites.get(site.name, (curSite) => {
-        if (curSite) {
-            data = mergeSite(data, curSite);
-        }
-        objCustomSites.put(data, syncSPSites);
-    });
-}
-
-function addToSafeDomains(domain) {
-    let site = null;
-    let found = SPSites.filter(a => !a.deleted).filter(x => {
-        let res = x.safe.filter(y => domain.endsWith(y.domain));
-        if (res.length > 0) {
-            return true;
-        }
-        return false;
-    });
-    if (found.length > 0) {
-        site = found[0];
-    }
-    if (!site) {
-        let data = {};
-        data.name = domain;
-        data.safe = [{domain: data.name}];
-        data.src = "user_defined";
-        objCustomSites.put(data);
-        SPSites.push(data);
-    } else {
-        let safe = site.safe.filter(x => domain.endsWith(x.domain));
-        if (safe[0].deleted ) {
-            // Make deleted = false and push to the objCustomSite
-            objCustomSites.get(site.name, curSite => {
-                let res = {};
-                res.name = site.name;
-                res.src = site.src;
-                let tmp = safe[0];
-                tmp.deleted = false;
-                res.safe = [tmp];
-                if (curSite) {
-                    res = mergeSite(res, curSite);
-                }
-                objCustomSites.put(res, syncSPSites);
-            });
-        } else {
-            console.log("Already in safe list : ", safe[0].domain);
-            return "Already in safe list : " +  safe[0].domain;
-        }
-    }
-}
-
-function removeFromSafeDomainsByURL(url) {
-    let site = getSiteFromUrl(url);
-    if (!site) {
-        console.log("This url does not belong to safe domains");
-    }
-
-    if (site.src === "user_defined") {
-        if (!site.protected && !site.templates && site.safe.length === 1) { // It means site has only safe list entry
-            objCustomSites.remove(site.name, syncSPSites);
-        }
-        //TODO:
-        //In future we may allow the user to add multiple safe domains for a site,
-        //so we need to handle that. Secondly we should not allow the user to delete
-        //an entry if any of its page in protected list.(In ideal case we won't get
-        //this option, as we disable delete option of safe domains for the sites
-        //which has protected lists)
-    } else {
-        let data = {},
-            host = getPathInfo(url).host;
-        data.name = site.name;
-        let safe_entry = site.safe.filter(x => x.domain === host);
-        safe_entry[0].deleted = true;
-        data.safe = safe_entry;
-        data.src = site.src;
-        objCustomSites.get(site.name, curSite => {
-            let res;
-            if (curSite) {
-                res = mergeSite(data, curSite);
-            } else {
-                res = data;
-            }
-            objCustomSites.put(res, syncSPSites);
-        });
-    }
-}
-
-function removeFromSafeDomainsBySiteName(name) {
-    let sites = SPSites.filter(x => x.name === name);
-    let site;
-    if ( sites.length > 0) {
-        site = sites[0];
-    } else {
-        console.log("Site ", name, " is not in the list");
-        return;
-    }
-
-    if (site.src === "user_defined") {
-        if (!site.protected && !site.templates) { // It means site has only safe list entry
-            objCustomSites.remove(site.name, syncSPSites);
-        }
-    } else {
-        let data = {};
-        data.name = site.name;
-        let safe_entry = site.safe.map(x => {
-            x.deleted = true;
-            return x;
-        });
-        data.safe = safe_entry;
-        data.src = site.src;
-        objCustomSites.get(site.name, curSite => {
-            let res;
-            if (curSite) {
-                res = mergeSite(data, curSite);
-            } else {
-                res = data;
-            }
-            objCustomSites.put(res, syncSPSites);
-        });
-    }
-}
-
 
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
-    let data = SPSites.filter(x => {
-        if (x.deleted) {
-            return false;
-        }
+    let data = Sites.getSites("exists").filter(x => {
         let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
         let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
         if (protected.length > 0 || templates.length > 0) {
@@ -833,10 +401,10 @@ function getProtectedSitesData() {
         return false;
     }).map( site => {
         if (site.templates) {
-            site.templates.filter(a => !a.deleted).map(template => {
-                let found = SPTemplates.filter(y => !y.deleted && y.checksum === template.checksum);
-                if (found.length) {
-                    template.base64 = SPTemplates.filter(y => y.checksum === template.checksum)[0].base64;
+            site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
+                let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+                if (found) {
+                    template.base64 = found.base64;
                 } else {
                     template.deleted = true;
                 }
@@ -849,17 +417,16 @@ function getProtectedSitesData() {
 }
 
 function getSafeDomainsData() {
-    let data = SPSites.filter(x => !x.deleted).filter(y => {
-        if (!y.safe) {
-            return false;
-        }
-        let found = y.safe.filter(z => !z.deleted);
-        if (found.length > 0) {
-            return true;
-        }
-        return false;
-    });
-    return data;
+
+    function flatten(sites) {
+        return sites.filter(y => !y.deleted && !y.disabled && y.safe && y.safe.length)
+            .map(x => x.safe)
+            .reduce((a,b) => _.cloneDeep(a).concat(_.cloneDeep(b)),[]);
+    }
+    let cdata = flatten(Sites.customSites),
+        ddata = flatten(Sites.defaultSites).map(s => (s.protected = true, s));
+
+    return cdata.concat(ddata);
 }
 
 /*******************/
@@ -884,77 +451,25 @@ function setDefaultSecurityImage(cb) {
 function loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
-    //TODO
-    //Should we allow users to add multiple entries for the same site?
-
-    function initDefaultSites () {
-        return new Promise((resolve) => {
-            objDefaultSites = new IDBStore({
-                storeName: "default_sites",
-                keyPath: "name",
-                onStoreReady: () => {resolve("default_site");},
-                onError: errorfn,
-                indexes: [
-                    { name: "name", keyPath: "name", unique: false, multiEntry: false }
-                ]
-            });
-        });
-    }
-    function initCustomSites () {
-        return new Promise((resolve) => {
-            objCustomSites = new IDBStore({
-                storeName: "custom_sites",
-                keyPath: "name",
-                onStoreReady: () => {resolve("custom_site");},
-                onError: errorfn,
-                indexes: [
-                    { name: "name", keyPath: "name", unique: false, multiEntry: false }
-                ]
-            });
-        });
-    }
-
-    function initTemplates() {
-        return new Promise((resolve) => {
-            objTemplateList = new IDBStore({
-                storeName: "template_list",
-                keyPath: "checksum",
-                unique: true,
-                onStoreReady: () => {
-                    objTemplateList.getAll((data) => {
-                        if (data.length > 0) {
-                            SPTemplates = data;
-                        }
-                        resolve("template_list");
-                    });
-                },
-                onError: errorfn,
-                indexes: [
-                    { name: "name", keyPath: "name", unique: false, multiEntry: true }
-                ]
-            });
-        });
-    }
-
-    Promise.all([initTemplates(), initDefaultSites(), initCustomSites()]).then( result => {
-        syncSPSites();
-        objFeedList = new IDBStore({
-            storeName: "feed_list",
-            keyPath: "src",
-            unique: true,
-            onStoreReady: initFeedList,
-            onError: errorfn,
-            indexes: [
-                { name: "name", keyPath: "name", unique: false, multiEntry: true }
-            ]
-        });
-
-    });
+    return Sites.init()
+        .then(x => checkUpdates());
 }
 
-function cleanDB() {
-    objCustomSites.clear(syncSPSites, errorfn);
-    chrome.storage.local.remove("secure_img");
+function cleanDB(respond) {
+    return Sites.reset()
+        .then(x => chrome.storage.local.remove("secure_img"))
+        .then(x => respond())
+        .catch(e => console.log("cleanDB error", e));
+}
+
+function backupDB(responsd) {
+    return Sites.backup()
+}
+
+function restoreBackup(data, respond) {
+    return Sites.backupResotre(data)
+    .then(x =>  respond())
+    .catch(x => respond({message: x.message}));
 }
 
 function initAdvConfigs() {
@@ -965,7 +480,7 @@ function initAdvConfigs() {
             DEBUG = data.debug? true : false;
             basic_mode = data.basic_mode ? true : false;
         } else {
-            DEBUG = false;
+            DEBUG = true;
             basic_mode = false;
             saveAdvConfig();
         }
@@ -983,15 +498,6 @@ function setDebugFlag(enable) {
 
 function getDebugFlag() {
     return DEBUG;
-}
-
-function setBsicMode(enable) {
-    basic_mode = enable;
-    saveAdvConfig();
-}
-
-function getBsicMode() {
-    return basic_mode;
 }
 
 function setIcon(ti, state, info) {
@@ -1028,4 +534,65 @@ function setIcon(ti, state, info) {
     chrome.browserAction.setIcon({path, tabId});
     chrome.browserAction.setTitle({title, tabId});
     chrome.browserAction.setBadgeText({text, tabId});
+}
+
+function addToProtectedList(tab, logo) {
+    const url = tab.url;
+
+    return Sites.addProtectedURL(url, logo)
+        .then(x => Sites.getProtectedURL(url))
+        .then(u => {
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "greenflagged";
+            setIcon(ti, "greenflagged", {site: u.site});
+            ti.checkState = false;
+        });
+}
+
+function removeFromProtectedList(tab) {
+    const url = tab.url;
+
+    return Sites.removeProtectedURL(url)
+        .then(x => {
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "red_done";
+            setIcon(ti, "red_done");
+            ti.checkState = false;
+        });
+}
+
+function removeSite(name, respond) {
+    return Sites.removeSite(name)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleSite(name, enable, respond) {
+    return Sites.toggleSite(name, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeURL(url, respond) {
+    return Sites.removeProtectedURL(url)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleURL(url, enable, respond) {
+    return Sites.toggleURL(url, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeSafeDomain(domain, respond) {
+    return Sites.removeSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function addSafeDomain(domain, respond) {
+    return Sites.addSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
 }

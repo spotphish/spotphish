@@ -10,7 +10,7 @@ CS_SOURCES = externalCode/jquery/jquery-1.12.4.min.js\
         utils.js\
         content.js
 
-CHECK_SOURCES = background.js orb-features.js content.js popup.js option.js dialog.js screenshot.js utils.js
+CHECK_SOURCES = background.js model.js orb-features.js content.js popup.js option.js dialog.js screenshot.js utils.js
 
 BACKGROUND = js/bg.js
 CONTENT = js/cs.js

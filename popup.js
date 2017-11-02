@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 /*global chrome */
 
 (function () {
@@ -7,25 +12,20 @@
         if (!response) {
             return;
         }
-        //TODO: handle error condition where state = NA
-        let tabinfo = response.tabinfo;
-        console.log(response);
-        
-        $("#kp-status").css({display: "flex"});
-        $("#kp-status-span").append(`<em>${tabinfo.status}</em>`);
-
-        if (response.debug) {
-            $("#kp-test-now").css({display: "flex"}); 
-        };
-        
-        if (tabinfo.state === "greenflagged") {
+        if (response.status) {
+            $("#kp-status").css({display: "flex"});
+            $("#kp-status-span").append(`<em>${response.status}</em>`);
+        }
+        const state = response._state;
+        if (state === "greenflagged") {
             $("#kp-remove-from-whitelist").css({display: "flex"});
             $("#kp-test-now").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (tabinfo.state === "watching" || tabinfo.state === "red_done" || tabinfo.state === "safe") {
+        } else if (state === "watching" || state === "red_done" || state === "safe") {
             $("#kp-add-to-whitelist").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
-        } else if (tabinfo.state === "init") {
+        } else if (state === "init") {
+            $("#kp-add-to-whitelist").css({display: "flex"});
             $("#kp-status-span").addClass("mdl-color-text--primary");
         } else {
             $("#kp-status-span").addClass("mdl-color-text--accent");
@@ -37,20 +37,14 @@
 
         $(document).ready(function() {
             $("#kp-add-to-whitelist").on("click", e => {
-                var site = stripQueryParams(curTab.url);
-                chrome.runtime.sendMessage({ op: "addToWhitelist", currentTab: curTab, site: site}, res => {
-                    if (res.message === "whitelisted") {
-                        /* notify */
-                    }
+                chrome.runtime.sendMessage({op: "protect_page", tab: curTab}, res => {
+                    /* notify */
                 });
                 window.close();
             });
             $("#kp-remove-from-whitelist").on("click", e => {
-                var site = stripQueryParams(curTab.url);
-                chrome.runtime.sendMessage({ op: "removeFromWhitelist", currentTab: curTab, site: site}, res => {
-                    if (res.message === "removed") {
+                chrome.runtime.sendMessage({op: "unprotect_page", tab: curTab}, res => {
                         /* notify */
-                    }
                 });
                 window.close();
             });
