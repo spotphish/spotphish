@@ -341,12 +341,14 @@ $(document).ready(function() {
         reader.onloadend = function() {
             let fileData = reader.result
             bkg.restoreBackup(JSON.parse(fileData), function(error){
+
                 let msg = ""
                 let color = ""
                 if (error){
                     msg = "Something went wrong, Error: " + error.message;
                     color = "#FF5722";
                 } else {
+                    updateImage();
                     msg = "Restore data completed successfully.";
                     color = "#4CAF50";
                 }
@@ -406,16 +408,18 @@ $(document).ready(function() {
 
     // get backup of all the custom settings
     $("#sp-backup").on("click", function(e) {
-        let backupData = bkg.backupDB();
-        if (Object.keys(backupData).length != 0){
-            download(backupData);
-            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
-            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
-        } else {
-            $("#notifications").text("Not found any custom changes.").css("visibility", "visible").css("color", "red");
-            setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
-        }
+        bkg.backupDB(function(backupData){
+            console.log(backupData);
+            if (Object.keys(backupData).length != 0){
+                download(backupData);
+                $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");;
+                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
+            } else {
+                $("#notifications").text("Not found any custom changes.").css("visibility", "visible").css("color", "red");
+                setTimeout(function(){ $("#notifications").css('visibility','hidden'); }, 5000)
+            }
 
+        });
     });
 
     // download db backup file
