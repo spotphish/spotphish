@@ -193,16 +193,15 @@ let Sites = {
         if (!_.find(site.protected, x => x.url === url1)) {
             return Promise.reject(new Error(`Protected URL not found: ${url1}`));
         }
-        const csite = _.cloneDeep(_.find(this.customSites, x => x.url === url1)) ||
+        const csite = _.cloneDeep(_.find(this.customSites, x => x.name === site.name)) ||
                 {name: site.name, src: site.src};
-
         csite.protected = csite.protected || [];
         csite.templates = csite.templates || [];
 
         if (_.find(csite.protected, x => x.url === url1)) {
             csite.protected = csite.protected.filter(x => x.url !== url1);
         } else {
-            csite.protected = [{url: url1, deleted: true}];
+            csite.protected.push({url: url1, deleted: true});
         }
 
         if (_.find(csite.templates, x => x.page && x.page === url1)) {
@@ -211,11 +210,11 @@ let Sites = {
             const t = _.cloneDeep(_.find(site.templates, x => x.page && x.page === url1));
             if (t) {
                 t.deleted = true;
-                csite.templates = [t];
+                csite.templates.push(t);
             }
         }
         return this.dbCustomSites.put(csite)
-            .then(x => this.sync());
+            .then( x => this.sync());
     },
 
     removeSite: function(name) {
@@ -266,7 +265,6 @@ let Sites = {
 
     sync: function() {
         let defaultSites, customSites;
-
         return this.dbTemplateList.getAll()
             .then(x => this.templateList = x)
             .then (x => this.dbDefaultSites.getAll())

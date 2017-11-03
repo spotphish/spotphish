@@ -265,5 +265,5 @@ chrome.storage.promise = {
             return promise;
         }
     }
-}
+};
 
