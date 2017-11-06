@@ -200,6 +200,9 @@ let Sites = {
 
         if (_.find(csite.protected, x => x.url === url1)) {
             csite.protected = csite.protected.filter(x => x.url !== url1);
+            if (csite.src !== "user_defined") {
+                csite.protected.push({url: url1, deleted: true});
+            }
         } else {
             csite.protected.push({url: url1, deleted: true});
         }

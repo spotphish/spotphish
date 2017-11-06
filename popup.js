@@ -43,14 +43,14 @@
             $("#kp-add-to-whitelist").on("click", e => {
                 chrome.runtime.sendMessage({op: "protect_page", tab: curTab}, res => {
                     /* notify */
+                    window.close();
                 });
-                window.close();
             });
             $("#kp-remove-from-whitelist").on("click", e => {
                 chrome.runtime.sendMessage({op: "unprotect_page", tab: curTab}, res => {
                     /* notify */
+                    window.close();
                 });
-                window.close();
             });
             $("#kp-test-now").on("click", e => {
                 chrome.runtime.sendMessage({op: "test_now", tab: curTab});
