@@ -238,6 +238,8 @@ let Sites = {
         const cur = _.find(this.customSites, x => x.name === site.name);
         let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
         out.disabled = !enable;
+        let protected  = site.protected.map(x => x.disabled = !enable);
+        out.protected = protected;
         return this.dbCustomSites.put(out)
             .then(x => this.sync());
     },
