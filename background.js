@@ -11,7 +11,7 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
-let DEBUG = true, basic_mode = false,
+let DEBUG = false,
     globalCurrentTabId,
     tabInfoList = {};
 
@@ -498,17 +498,14 @@ function initAdvConfigs() {
         debug("Data received : ", data);
         if (data) {
             DEBUG = data.debug? true : false;
-            basic_mode = data.basic_mode ? true : false;
         } else {
-            DEBUG = true;
-            basic_mode = false;
             saveAdvConfig();
         }
     });
 }
 
 function saveAdvConfig() {
-    chrome.storage.local.set({adv_config : {debug: DEBUG, basic_mode: basic_mode}});
+    chrome.storage.local.set({adv_config : {debug: DEBUG}});
 }
 
 function setDebugFlag(enable) {
