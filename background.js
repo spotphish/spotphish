@@ -401,7 +401,7 @@ function getProtectedSitesData() {
         return false;
     }).map( site => {
         if (site.templates) {
-            site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
+            site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
                 let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
                 if (found) {
                     template.base64 = found.base64;

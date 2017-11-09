@@ -358,7 +358,7 @@ let Sites = {
                         .map(y => y.templates)
                         .reduce((a,b) => a.concat(b),[]);
 
-                    const checksums = templates.filter(x => !x.deleted && !x.disabed)
+                    const checksums = templates.filter(x => !x.deleted && !x.disabled)
                         .map(y => y.checksum);
                     this.templates = this.templateList.filter(y => checksums.indexOf(y.checksum) !== -1);
                 });

@@ -67,7 +67,6 @@ function templateWhitelist(data) {
 
     if (data.protected) {
         let protectedList = data.protected.filter(x => !x.deleted);
-        console.log("Protected List : ", protectedList);
         protected_urls = protectedList.reduce((a,b) => {
             let url_disabled = b.disabled? unchecked : checked;
             var tmp = `
@@ -142,7 +141,7 @@ function updateImage(data) {
 function renderProtectedList() {
     let data = bkg.getProtectedSitesData();
     $(".kp-wl-site").remove();
-    console.log("IDB-data", data);
+    //console.log("Protected-data", data);
     data.forEach((x) => {
         $(".kp-wl-main").append(templateWhitelist(x));
     });
