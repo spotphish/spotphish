@@ -336,16 +336,20 @@ $(document).ready(function() {
 
     $("#backup-file").change(function(e) {
         let file = e.target.files[0];
-
-        if (file.type.indexOf("json") < 0) {
-            $("#notifications").text("Please upload a valid format file.").css("visibility", "visible").css("color", "red");
-            setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
-            return;
-        }
         let reader = new FileReader();
         reader.onloadend = function() {
             let fileData = reader.result;
-            bkg.restoreBackup(JSON.parse(fileData), function(error){
+            let jsonData;
+            try {
+                jsonData = JSON.parse(fileData)
+            }
+            catch(err) {
+                $("#notifications").text("Please upload a valid file").css("visibility", "visible").css("color", "red");
+                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+                return;
+            }
+
+            bkg.restoreBackup(jsonData, function(error){
 
                 let msg = "",
                     color = "";
