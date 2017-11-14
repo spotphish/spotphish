@@ -249,12 +249,12 @@ let Sites = {
 
     toggleURL: function(url, enable) {
         const site = this.getSite(url),
-            url1 = _.cloneDeep(this.getProtectedURL(url, "exists")),
-            templates = site.templates.filter(x => !x.deleted && x.page && x.page === url);
+            url1 = _.cloneDeep(this.getProtectedURL(url, "exists"));
 
         if (!site || !url1) {
-            return Promise.reject(new Error(`URL does not exist: ${url}`));
+            return Promise.reject(new Error(` Site is disabled or URL does not exist: ${url} \n\n Refresh the page and try again`));
         }
+        const templates = site.templates.filter(x => !x.deleted && x.page && x.page === url);
         delete url1["site"];
         const cur = _.find(this.customSites, x => x.name === site.name);
         let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
@@ -266,6 +266,9 @@ let Sites = {
         }
         if (cur) {
             out = mergeSite(out, cur);
+        }
+        if (!enable && !site.disabled && site.protected.filter(x => !x.deleted && !x.disabled).length === 1) {
+            out.disabled = true;
         }
         return this.dbCustomSites.put(out)
             .then(x => this.sync());
