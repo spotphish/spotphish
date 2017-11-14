@@ -7,11 +7,10 @@ BG_SOURCES = externalCode/idbstore.min.js\
 
 CS_SOURCES = externalCode/jquery/jquery-1.12.4.min.js\
         externalCode/jquery.Jcrop.min.js\
-        whitelist.js\
         utils.js\
         content.js
 
-CHECK_SOURCES = background.js orb-features.js content.js popup.js option.js dialog.js
+CHECK_SOURCES = background.js model.js orb-features.js content.js popup.js option.js dialog.js screenshot.js utils.js
 
 BACKGROUND = js/bg.js
 CONTENT = js/cs.js
@@ -32,5 +31,11 @@ css: .PHONY
 
 clean:
 	rm $(BACKGROUND) $(CONTENT)
+
+firefox:
+	 sed -i -e 's/chrome-extension/moz-extension/g' css/iconfont/material-icons.css
+
+chrome:
+	 sed -i -e 's/moz-extension/chrome-extension/g' css/iconfont/material-icons.css
 
 .PHONY:

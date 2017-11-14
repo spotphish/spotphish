@@ -25,7 +25,7 @@
         .mdl-list {
             margin: 0;
         }
-        .mdl-list__item:hover {
+        .kp-action:hover {
             background-color: rgb(238, 238, 238);
         }
         .kp-title-icon {
@@ -45,29 +45,46 @@
         #kp-remove-from-whitelist {
             display: none;
         }
+        #kp-test-now {
+            display: none;
+        }
+        #kp-status {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            display: none;
+        }
     </style>
     <title>SpotPhish</title>
   </head>
   <body id="body">
-    <ul class="mdl-list">
+    <ul class="demo-list-two mdl-list">
         <li class="mdl-list__item mdl-color--primary mdl-color-text--primary-contrast">
             <span class="mdl-list__item-primary-content">
-            <img class="kp-title-icon" src="assets/icons/icon128.png"> &nbsp; SpotPhish
+                <img class="kp-title-icon" src="assets/icons/icon128.png"></img><span>&nbsp SpotPhish</span>
             </span>
         </li>
-        <li class="mdl-list__item" id="kp-add-to-whitelist">
+        <li class="mdl-list__item" id="kp-status">
+            <span class="mdl-list__item-primary-content" id="kp-status-span">
+            </span>
+        </li>
+        <li class="mdl-list__item kp-action" id="kp-test-now">
+            <span class="mdl-list__item-primary-content">
+                <i class="material-icons mdl-list__item-icon">find_in_page</i>
+                Test now
+            </span>
+        </li>
+        <li class="mdl-list__item kp-action" id="kp-add-to-whitelist">
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons mdl-list__item-icon">security</i>
                 Protect Page
             </span>
         </li>
-        <li class="mdl-list__item" id="kp-remove-from-whitelist">
+        <li class="mdl-list__item kp-action" id="kp-remove-from-whitelist">
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons mdl-list__item-icon">lock_open</i>
                 Unprotect Page
             </span>
         </li>
-        <li class="mdl-list__item" id="settingsLink">
+        <li class="mdl-list__item kp-action" id="settingsLink">
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons mdl-list__item-icon">build</i>
                 Settings

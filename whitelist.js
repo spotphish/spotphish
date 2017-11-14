@@ -5,10 +5,10 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://www.facebook.com/",
-        "https://www.facebook.com/login/",
-        "https://www.facebook.com/reg/",
-        "https://www.facebook.com/login.php"
+        { url: "https://www.facebook.com/", green_check: { password: 2 } },
+        { url: "https://www.facebook.com/login/" },
+        { url: "https://www.facebook.com/reg/" },
+        { url: "https://www.facebook.com/login.php" }
     ],
     "templates": [{
         "templateName": "Facebook",
@@ -22,45 +22,24 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://www.paypal.com/in/signin",
-        "https://www.paypal.com/us/cgi-bin",
-        "https://www.paypal.com/signin",
-        "https://www.paypal.com/jp/signin",
-        "https://www.paypal.com/signin/authorize"
+        { url: "https://www.paypal.com/in/signin" },
+        { url: "https://www.paypal.com/us/cgi-bin" },
+        { url: "https://www.paypal.com/signin" },
+        { url: "https://www.paypal.com/jp/signin" },
+        { url: "https://www.paypal.com/signin/authorize" }
     ],
     "templates": [{
         "templateName": "Paypal",
         "logo": "assets/img/paypal-linux.png"
     }]
-}, {
-    "site":"ICICI Bank",
-    "enabled": true,
-    "type": "default",
-    "url": [
-        "https://infinity.icicibank.com/corp/AuthenticationController"
-    ],
-    "templates": [{
-        "templateName": "ICICI bank",
-        "logo": "assets/img/icici-shot.png"
-    }]
-}, {
-    "site":"IDBI Bank",
-    "enabled": true,
-    "type": "default",
-    "url": [
-        "https://inet.idbibank.co.in/corp/BANKAWAY"
-    ],
-    "templates": [{
-        "templateName": "IDBI bank",
-        "logo":"assets/img/idbi-linux.png"
-    }],
-},{ 
+} ,{
     "site": "Google",
     "enabled": true,
     "type": "default",
     "url": [
-        "https://accounts.google.com/signin/v2/identifier",
-        "https://accounts.google.com/signin/oauth/identifier"
+        { url: "https://accounts.google.com/signin/v2/identifier" },
+        { url: "https://accounts.google.com/signin/oauth/identifier" },
+        { url: "https://accounts.google.com/signin/v2/sl/pwd" }
     ],
     "templates": [{
         "templateName": "Google 2016",
@@ -74,21 +53,21 @@ var redFlagSites =[{
     "enabled": true,
     "type": "default",
     "url": [
-        "https://www.amazon.in/ap/signin",
-        "https://www.amazon.com/ap/signin",
-        "https://www.amazon.co.uk/ap/signin",
-        "https://www.amazon.com.au/ap/signin",
-        "https://www.amazon.co.jp/ap/signin",
-        "https://www.amazon.cn/ap/signin",
-        "https://www.amazon.sg/ap/signin",
-        "https://www.amazon.fr/ap/signin",
-        "https://www.amazon.de/ap/signin",
-        "https://www.amazon.it/ap/signin",
-        "https://www.amazon.nl/ap/signin",
-        "https://www.amazon.es/ap/signin",
-        "https://www.amazon.ca/ap/signin",
-        "https://www.amazon.com.mx/ap/signin",
-        "https://www.amazon.com.br/ap/signin"
+        { url: "https://www.amazon.in/ap/signin" },
+        { url: "https://www.amazon.com/ap/signin" },
+        { url: "https://www.amazon.co.uk/ap/signin" },
+        { url: "https://www.amazon.com.au/ap/signin" },
+        { url: "https://www.amazon.co.jp/ap/signin" },
+        { url: "https://www.amazon.cn/ap/signin" },
+        { url: "https://www.amazon.sg/ap/signin" },
+        { url: "https://www.amazon.fr/ap/signin" },
+        { url: "https://www.amazon.de/ap/signin" },
+        { url: "https://www.amazon.it/ap/signin" },
+        { url: "https://www.amazon.nl/ap/signin" },
+        { url: "https://www.amazon.es/ap/signin" },
+        { url: "https://www.amazon.ca/ap/signin" },
+        { url: "https://www.amazon.com.mx/ap/signin" },
+        { url: "https://www.amazon.com.br/ap/signin" }
     ],
     "templates": [{
         "templateName": "Amazon",
@@ -97,7 +76,22 @@ var redFlagSites =[{
         "templateName":"AWS",
         "logo":"assets/img/aws-logo.png"
     }]
-}]
+}, {
+    "site": "Dropbox",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: "https://www.dropbox.com/"},
+        {url: "https://www.dropbox.com/business"}
+    ],
+    "templates": [{
+        "templateName": "Dropbox-1",
+        "logo": "assets/img/db1.png"
+    }, {
+        "templateName":"Dropbox-2",
+        "logo":"assets/img/db2.png"
+    }]
+}];
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ {
@@ -109,22 +103,12 @@ var skipDomains = [ {
                         "name": "Facebook",
                         "site": "facebook.com",
                         "whiteListed":true,
-                        "domains": ["facebook.com"]
+                        "domains": ["facebook.com"],
                     }, {
                         "name": "Paypal",
                         "site": "paypal.com",
                         "whiteListed":true,
                         "domains": ["paypal.com"]
-                    }, {
-                        "name": "ICICI Bank",
-                        "site": "icicibank.com",
-                        "whiteListed":true,
-                        "domains": ["icicibank.com"]
-                    }, {
-                        "name" : "IDBI Bank",
-                        "site": "inet.idbibank.co.in",
-                        "whiteListed":true,
-                        "domains": ["inet.idbibank.co.in", "www.idbi.com"]
                     }, {
                         "name" : "Amazon",
                         "site": "amazon.com",
@@ -146,4 +130,10 @@ var skipDomains = [ {
                                     "amazon.com.mx",
                                     "amazon.com.br"
                                     ]
-                    }];
+                    }, {
+                        "name": "Dropbox",
+                        "site": "dropbox.com",
+                        "whiteListed":true,
+                        "domains": ["dropbox.com"]
+                    }
+];

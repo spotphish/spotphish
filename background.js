@@ -1,49 +1,83 @@
-const tabinfo = {};
-const watches = [0, 4000, 20000];
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
+const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
+const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
+var update_flag = false;
 
-let DEBUG = true, basic_mode = false,
+let DEBUG = false,
     globalCurrentTabId,
-    tabInfoList = {},
-    KPWhiteList,
-    KPSkipList,
-    KPTemplates,
-    KPSkipArray,
-    objWhitelist;
+    tabInfoList = {};
 
 loadDefaults();
+setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
+
+class Tabinfo {
+    constructor(id, tab, port) {
+        this.id = id;
+        this.checkState = false;
+        this.topReady = false;
+        this._state = "init";
+        this.tab = tab;
+        this.watches = [];
+        this.dpr = 1;
+        this.port = port;
+        this.nchecks = 0;
+        this.status = "";
+        Tabinfo.instances[id] = this;
+    }
+
+    get state() {
+        return this._state;
+    }
+
+    set state(val) {
+        //debug("SET", this.id, this.tab.url, `${this._state} --> ${val}`);
+        this._state = val;
+        return this._state;
+    }
+
+    update(tab) {
+        this.tab = tab;
+    }
+}
+
+Tabinfo.instances = {};
+Tabinfo.get = function(id) {
+    return Tabinfo.instances[id];
+};
+
+Tabinfo.remove = function(id) {
+    delete Tabinfo.instances[id];
+};
+
+/* Dump state for debugging */
+Tabinfo.show = function() {
+    for (const x in Tabinfo.instances) {
+        const ti = Tabinfo.get(x);
+        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
+    }
+};
 
 chrome.runtime.onConnect.addListener(port => {
-    const id = port.sender.tab.id;
-    initTabinfo(id, port.sender.tab);
-    tabinfo[id].port = port;
-
+    const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
+    setIcon(ti, "init");
 });
-
-function initTabinfo(id, tab) {
-    tabinfo[id] = {
-        checkState: false,
-        topReady: false,
-        state: "init",
-        tab,
-        watches: [],
-        dpr: 1,
-        port: null
-    };
-}
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-function updateTabinfo(id, tab) {
-    tabinfo[id].tab = tab;
-}
- 
 chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     if (sender.tab) {
-        updateTabinfo(sender.tab.id, sender.tab);
+        const ti = Tabinfo.get(sender.tab.id);
+        if (ti) {
+            ti.update(sender.tab);
+        }
     }
     if (msg.op === "init") {
         init(msg, sender, respond);
@@ -52,70 +86,78 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
     } else if (msg.op === "url_change") {
         url_change(msg, sender, respond);
     } else if (msg.op === "get_tabinfo") {
-        var tab = msg.curtab;
-        if (tabinfo[tab.id] && tabinfo[tab.id].tab.url === tab.url) {
-            respond({status: tabinfo[tab.id].state});
+        const tab = msg.curtab,
+            ti = Tabinfo.get(tab.id);
+        if (ti && ti.tab.url === tab.url) {
+            respond(ti);
         } else {
-            respond({status: "NA"});
+            respond({state: "NA"});
         }
-
-    } else if (msg.op === "addToWhitelist") {
-        console.log("addToWhitelist handled");
-        inject(msg.currentTab, msg.site);
+    } else if (msg.op === "protect_page") {
+        inject(msg.tab);
         respond({message: "whitelisted"});
-    } else if (msg.op === "removeFromWhitelist") {
-        removeFromWhiteList(msg.site, msg.currentTab);
-        respond({message: "removed"});
+    } else if (msg.op === "unprotect_page") {
+        removeFromProtectedList(msg.tab)
+            .then(x => respond({message: "removed"}))
+            .catch(x => respond({message: "failed", err: x.message}));
     } else if (msg.op === "crop_capture") {
-        chrome.tabs.getSelected(null, (tab) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (image) => {
-                crop(image, msg.area, msg.dpr, true, (cropped) => {
-                    let cb = function(res) {
-                        if (res) {
-                            respond({message: "cropped", image: cropped});
-                        } else {
-                            respond({message: "failed", err: "few_corners"});
-                        }
-                    };
-
-                    var url = stripQueryParams(sender.tab.url);
-                    console.log ("URL: ", url, " tab: ", sender.tab);
-                    addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, cropped, cb);
-                });
+        chrome.tabs.query({active: true, currentWindow: true}, tab => {
+            chrome.tabs.captureVisibleTab(tab.windowId, {format: "png"}, image => {
+                let cropped;
+                crop(image, msg.area, msg.dpr, true)
+                    .then(x => cropped = x)
+                    .then(cropped => addToProtectedList(sender.tab, cropped))
+                    .then(x => respond({message: "cropped", image: cropped}))
+                    .catch(x => respond({message: "failed", err: "few_corners"}));
             });
         });
-    } else if (msg.op === "add_wh") {
-        var url = stripQueryParams(sender.tab.url);
-        respond({message: "Added"});
-        console.log ("URL: ", url, " tab: ", sender.tab);
-        addToWhiteList({ url: [url], type: "custom", site: getPathInfo(url).host, enabled: true}, sender.tab, null);
-    } else if (msg.op === "add_skip") {
-        let domain = getPathInfo(sender.tab.url).host;
-        addToKPSkipList(domain);
-        respond({message: "added"});
+    } else if (msg.op === "protect_basic") {
+        addToProtectedList(sender.tab, null)
+            .then(x => respond({message: "Added"}))
+            .catch(x => respond({message: "failed", err: x.message}));
+    } else if (msg.op === "urgent_check") {
+        respond({action: "nop"});
+        let ti = Tabinfo.get(sender.tab.id);
+        let tabState = ti.state;
+        if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+            redflagCheck(ti);
+        }
+    } else if (msg.op === "test_now") {
+        const ti = Tabinfo.get(msg.tab.id);
+        redflagCheck(ti, true);
+    } else if (msg.op === "remove_site") {
+        removeSite(msg.site, respond);
+    } else if (msg.op === "toggle_site") {
+        toggleSite(msg.site, msg.enable, respond);
+    } else if (msg.op === "remove_url") {
+        removeURL(msg.url, respond);
+    } else if (msg.op === "toggle_url") {
+        toggleURL(msg.url, msg.enable, respond);
+    } else if (msg.op === "remove_safe_domain") {
+        removeSafeDomain(msg.domain, respond);
+    } else if (msg.op === "add_safe_domain") {
+        addSafeDomain(msg.domain, respond);
     } else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;
 });
 
-function inject (tab, site) {
-    let found = KPWhiteList.filter((x) => {
-        return x.url === site;
-    });
-    let ti = tabinfo[tab.id];
-    if (found.length == 0) {
+function inject (tab) {
+    let ti = Tabinfo.get(tab.id);
+    let found = Sites.getProtectedURL(tab.url);
+    if (!found) {
         ti.port.postMessage({op: "crop_template", data: {}});
     } else {
-        ti.port.postMessage({op: "crop_duplicate", data: {}});//This should ideally never happen
+        console.log("Already protected: ", tab.url);
     }
 }
 
-
 function init(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
-    console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
     if (END_STATES.indexOf(ti.state) !== -1) {
         return respond({action: "nop"});
@@ -124,18 +166,33 @@ function init(msg, sender, respond) {
     if (msg.top) {
         ti.dpr = msg.dpr;
         ti.topReady = true;
-        let res = checkWhitelist(tab);
+        ti.inputFields = msg.inputFields;
+        let res = Sites.getProtectedURL(tab.url);
+        debug("Result check Protected : ", res);
         if (res) {
-            respond({action: "nop"});
-            debug("greenflagging", tab.id, tab.url);
-            ti.state = "greenflagged";
-            ti.port.postMessage({op: "greenflag", site: res.site});
-            return;
+            let greenFlag = true;
+            if (res.green_check) {
+                let rules = res.green_check;
+                for ( let key in rules) {
+                    if (!ti.inputFields[key] || ti.inputFields[key] !== rules[key]) {
+                        greenFlag = false;
+                        break;
+                    }
+                }
+            }
+            if (greenFlag) {
+                respond({action: "nop"});
+                ti.state = "greenflagged";
+                setIcon(ti, "greenflagged", {site: res.site});
+                ti.port.postMessage({op: "greenflag", site: res.site});
+                return;
+            }
         }
     }
 
-    if (checkSkip(tab.url)) {
+    if (Sites.getSafeDomain(tab.url)) {
         ti.state = "safe";
+        setIcon(ti, "safe");
         return respond({action: "nop"});
     }
 
@@ -147,7 +204,7 @@ function init(msg, sender, respond) {
 
 function checkdata(msg, sender, respond) {
     respond({action: "nop"});
-    const ti = tabinfo[sender.tab.id];
+    const ti = Tabinfo.get(sender.tab.id);
     if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || ti.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
@@ -158,24 +215,18 @@ function checkdata(msg, sender, respond) {
 }
 
 function url_change(msg, sender, respond) {
-    const ti = tabinfo[sender.tab.id],
+    const ti = Tabinfo.get(sender.tab.id),
         tab = ti.tab;
 
     console.log("url change", tab.url);
 
     respond({action: "nop"});
-    let res = checkWhitelist(tab);
+    let res = Sites.getProtectedURL(tab.url);
     if (ti.state !== "greenflagged" && res) {
         debug("greenflagging after url change", tab.id, tab.url);
         ti.state = "greenflagged";
+        setIcon(ti, "greenflagged", {site: res.site});
         ti.port.postMessage({op: "greenflag", site: res.site});
-    }
-}
-
-function showTabinfo() {
-    for (const x in tabinfo) {
-        const ti = tabinfo[x];
-        console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
     }
 }
 
@@ -183,7 +234,7 @@ function watchdog() {
     chrome.tabs.query({active: true, currentWindow: true}, tabs => {
         if (!tabs.length) return;
         const id = tabs[0].id,
-            ti = tabinfo[id] || {};
+            ti = Tabinfo.get(id) || {};
         const now = Date.now();
         if (ti.state === "watching" && ti.topReady) {
             assert("watchdog.2", ti.watches.length > 0);
@@ -193,342 +244,205 @@ function watchdog() {
                 ti.watches.shift();
             }
             if (redcheck) {
-                redflag(ti);
+                redflagCheck(ti);
             }
         }
     });
 }
 
-function redflag(ti) {
-    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.watches);
-    snapcheck(ti);
-    if (ti.watches.length === 0) {
-        ti.state = "red_done";
-    }
-}
-
-function checkSkip(url) {
-    let urlInfo = getPathInfo(url);
-    let found = KPSkipList.filter(x => urlInfo.host.endsWith(x));
-
-    if (found.length > 0) {
-        debug("SKIP LISTED:", found[0]);
-        return true;
-    }
-    return false;
-}
-
-function checkWhitelist(tab) {
-    const site = stripQueryParams(tab.url);
-    const wl = KPWhiteList.filter(x => x.enabled && x.url.filter(y => y === site).length > 0);
-    if (wl.length) {
-        debug("WHITE LISTED:", wl[0]);
-        return {"site":wl[0].site};
-    }
-    return false;
-}
-
-
-function snapcheck(ti) {
-    const tab = ti.tab;
-    chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, image => {
-        // image is base64
-
-        var scrCorners = [];
-        var scrDescriptors = [];
-        var normalizedImage;
-        const area = {x: 0, y: 0, w: tab.width, h: tab.height};
-        crop(image, area, ti.dpr, false, cropped => {
-            normalizedImage = cropped;
-            findOrbFeatures(normalizedImage).then(result => {
-                scrCorners = result.corners;
-                scrDescriptors = result.descriptors;
-                console.log("KPTemplates : ", KPTemplates);
-                let t0 = performance.now();
-                for (let i = 0; i < KPTemplates.length; i++) {
-                    const template = KPTemplates[i];
-                    if (template.enabled) {
-                        const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
-                            template.patternDescriptors, template.site);
-                        if (res) {
-                            let t1 = performance.now();
-                            console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
-                            ti.state = "redflagged";
-                            findCorrespondence(normalizedImage, scrCorners , template, res.matches, res.matchCount,
-                                res.mask, img => ti.port.postMessage({op: "redflag", site: template.site, img:img}));
-                            break;
-                        }
-                    }
+function redflagCheck(ti, testNow) {
+    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
+    return scanTab(ti)
+        .then(res => {
+            //console.log("SCAN", ti.tab.url, ti.tab.state, res);
+            if (res.match) {
+                const site = res.match.template.site;
+                if (testNow) {
+                    return ti.port.postMessage({op: "test_match", site, img:res.corr_img});
                 }
-            });
+                ti.nchecks++;
+                ti.state = "redflagged";
+                setIcon(ti, "redflagged", {site});
+                return ti.port.postMessage({op: "redflag", site, img:res.corr_img});
+            } else {
+                if (testNow) {
+                    return ti.port.postMessage({op: "test_no_match"});
+                }
+                ti.nchecks++;
+                if (ti.state !== "redflagged" && ti.watches.length === 0) {
+                    ti.state = "red_done";
+                }
+                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
+                    setIcon(ti, "checked"); // The page is checked atleast once.
+                }
+            }
+        }).catch(e => console.log("redflagCheck error", e));
+}
+
+/*
+ * Screenshot a tab and match with all active templates
+ */
+
+function scanTab(ti) {
+    const tab = ti.tab;
+    let screenshot, features, match;
+
+    return snapTab(tab)
+        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
+        .then(x => screenshot = x)
+        .then(screenshot => findOrbFeatures(screenshot))
+        .then(x => features = x)
+        .then(features => matchTemplates(features))
+        .then(x => match = x)
+        .then(match => makeCorrespondenceImage(match, screenshot, features))
+        .then(corr_img => ({match, corr_img}));
+
+    function snapTab(tab) {
+        return new Promise((resolve, reject) => {
+            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
         });
-    });
+    }
+
+    function normalizeScreenshot(image, width, height, dpr) {
+        const area = {x: 0, y: 0, w: width, h: height};
+        return crop(image, area, dpr, false);
+    }
+
+    function matchTemplates(scrFeatures) {
+        const scrCorners = scrFeatures.corners;
+        const scrDescriptors = scrFeatures.descriptors;
+        let t0 = performance.now();
+        let activeTemplates = Sites.getTemplates();
+        for (let i = 0; i < activeTemplates.length; i++) {
+            const template = activeTemplates[i];
+            const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
+                template.patternDescriptors, template.site);
+            if (res) {
+                let t1 = performance.now();
+                console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
+                res.template = template;
+                return Promise.resolve(res);
+            }
+        }
+        return Promise.resolve(null);
+    }
+
+    function makeCorrespondenceImage(match, screenshot, features) {
+        if (!match) {
+            return Promise.resolve(null);
+        }
+        return findCorrespondence(screenshot, features.corners , match.template, match.matches, match.matchCount,
+            match.mask);
+    }
 }
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
-    if (tabinfo[tabid]) {
-        delete tabinfo[tabid];
-    }
+    Tabinfo.remove(tabid);
 });
 
 chrome.runtime.onInstalled.addListener(function(details) {
     if (details.reason === "install") {
         chrome.tabs.create({ url: "option.html" });
     }
+    if (details.reason === "update") {
+        update_flag = true;
+    }
 });
 
-/* Indexed DB related functions */
+function checkUpdates() {
+    let activeFeeds =  Sites.getFeeds();
+    let res = Promise.resolve(true);
 
-function initWhitelist() {
-    objWhitelist.getAll((data) => {
-        if (data.length <= 0) {
-            objWhitelist.putBatch(defPatterns, syncWhiteList);
-        } else {
-            syncWhiteList();
-        }
+    if (activeFeeds.length === 0) {
+        res = res.then(x => Sites.updateFeedList(defaultFeeds))
+            .then(x => {activeFeeds = Sites.getFeeds(); debug(activeFeeds);});
+    }
+    res.then(x => {
+        let result = activeFeeds.reduce((p, feed) => {
+            return p.then(x => updateFeed(feed));
+        }, Promise.resolve());
+        result.then(x => debug("Resolved "));
     });
 }
 
-function syncWhiteList(cb){
-    objWhitelist.getAll(function (dbObj){
-        debug("Object retrived from indexed DB : ", dbObj);
-        var data1 = dbObj.map((x) => {
-            return {id: x.id, url: x.url, type: x.type, site: x.site, templates: x.templates, enabled: x.enabled};
-        });
-        if (cb && typeof(cb) === "function") {
-            cb(data1);
-            return;
-        }
-        var res = [];
-        dbObj.forEach((x) => {
-            x.templates.forEach((y) => {
-                let temp = {};
-                temp.id = x.id;
-                temp.url = x.url;
-                temp.type = x.type;
-                temp.site = x.site;
-                temp.enabled = x.enabled;
-                Object.assign(temp, y);
-                res.push(temp);
+function updateFeed(feed) {
+    debug("Executing ", feed.src);
+    let ord = Math.floor(Math.random()*100);
+    let src = feed.src + "?ord=" + ord;
+    return ajax_get(src)
+        .then(data => {
+            let res = Promise.resolve(true);
+            debug("Versions feed, data : ", feed.version, data.version);
+            if (feed.version !== data.version) {
+                feed.version = data.version;
+                feed.last_updated = new Date().toUTCString();
+                res = res.then( x => Sites.updateDefaultSites(data.sites))
+                    .then(x => Sites.updateFeedList(feed));
+            }
+            //return res;
+            return res.then(x => {
+                debug("Updated ", feed.src);
             });
+        })
+        .catch(err => {
+            debug("Error for feed : ", feed.src, "  Error Msg : ", err);
         });
-        KPTemplates = res.filter((x) => {
-            return x.logo !== undefined && x.enabled === true;
-        }).map((x) => {
-            return {id: x.id, url: x.url, site: x.site, logo: x.logo, enabled: x.enabled, patternCorners: x.patternCorners, patternDescriptors: x.patternDescriptors};
-        });
-        KPWhiteList = dbObj.filter((x) => {
-            return x.url !== undefined;
-        }).map((x) => {
-            return {id: x.id, url: x.url, type: x.type, enabled: x.enabled, site: x.site, domains:x.domains};
-        });
-
-        debug("syncWhiteList called : ", KPWhiteList, KPTemplates);
-    });
 }
 
-function removeFromWhiteListById(id) {
-    objWhitelist.remove(id, syncWhiteList);
-}
+/********* Functions for Option Page *************/
 
-
-function toggleWhitelistItems(id, state, cb) {
-    var onSuccess = function(data) {
-        data.enabled = state;
-        objWhitelist.put(data, syncWhiteList);
-        if (cb) {
-            cb();
-        }
-    };
-    var onError = function(error) {
-        console.log("Error updating field : ", error);
-        return;
-    };
-    objWhitelist.get(id, onSuccess, onError);
-} 
-
-function addToWhiteList(data, tab, logo, cb) {
-    var pattern = {};
-    let addToDb = function(pattern) {
-        pattern.patternName = data.site;
-        data.templates = [];
-        data.templates.push(pattern);
-        data.domains = [];
-        data.domains.push(data.site);
-        tabinfo[tab.id].state = "greenflagged";
-        let urlInfo = getPathInfo(tab.url); 
-        addToKPSkipList(urlInfo.host, true);
-        objWhitelist.put(data, (x) => {
-            syncWhiteList();
-            debug("Added to DB : ", x);
-        });
-    };
-
-    let appendToDb = function(pattern, index) {
-        let id = KPWhiteList[index].id;
-        pattern.patternName = data.site;
-        var onSuccess = function(obj) {
-            obj.url.push(data.url[0]);
-            obj.templates.push(pattern);
-            objWhitelist.put(obj, syncWhiteList);
-            tabinfo[tab.id].state = "greenflagged";
-            let urlInfo = getPathInfo(tab.url); 
-            addToKPSkipList(urlInfo.host, true);
-        };
-        var onError = function(error) {
-            console.log("Error updating field : ", error);
-            return;
-        };
-        objWhitelist.get(id, onSuccess, onError);
-    };
-
-
-    var isSiteAdded = KPWhiteList.findIndex((x) => {
-        let y = x.domains.filter((z) => {
-            return data.site.endsWith(z);
-        });
-        if (y.length > 0) {
+function getProtectedSitesData() {
+    let data = Sites.getSites("exists").filter(x => {
+        let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
+        let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
+        if (protected.length > 0 || templates.length > 0) {
             return true;
         }
         return false;
-    });
-
-    if (logo) {
-        createPatterns(logo).then(function(result) {
-            console.log("Template promise result : ", result);
-            pattern.logo = logo;
-            pattern.patternCorners = result.patternCorners;
-            pattern.patternDescriptors = result.patternDescriptors;
-            pattern.url = tab.url;
-            if (isSiteAdded !== -1) {
-                appendToDb(pattern, isSiteAdded);
-            } else {
-                addToDb(pattern);
-            }
-            if (cb !== undefined || cb !== null) {
-                cb(true);
-            }
-        }).catch((e) => {
-            console.log(e);//promise rejected.
-            if (cb !== undefined || cb !== null) {
-                cb(false);
-            }
-            return;
-        });
-    } else {
-        pattern.url = tab.url;
-        if (isSiteAdded !== -1) {
-            appendToDb(pattern, isSiteAdded);
-        } else {
-            addToDb(pattern);
-        }
-    }
-
-}
-
-function removeUrlFromWhiteList(url, id) {
-    var onSuccess = function(data) {
-        let j = data.url.indexOf(url);
-        if (data.type === "custom" && data.url.length > 1) {
-            data.url.splice(j, 1);
-            let ti = data.templates.findIndex((x) => {
-                return x.url === url;
+    }).map( site => {
+        if (site.templates) {
+            site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
+                let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+                if (found) {
+                    template.base64 = found.base64;
+                } else {
+                    template.deleted = true;
+                }
+                return template;
             });
-            console.log("template found : ", ti);
-            if (ti !== -1) {
-                data.templates.splice(ti, 1);
-            }
-        } else {
-            data.url.splice(j, 1);
         }
-
-        objWhitelist.put(data, syncWhiteList);
-    };
-    var onError = function(error) {
-        console.log("Error updating field : ", error);
-        return;
-    };
-    objWhitelist.get(id, onSuccess, onError);
+        return site;
+    });
+    return data;
 }
 
-function removeFromWhiteList(site, tab) {
-    let upsertInDb = function(id) {
-        var onSuccess = function(obj) {
-            let i = obj.url.indexOf(site);
-            obj.url.splice(i, 1);
-            let ti = obj.templates.findIndex((x) => {
-                return x.url === site;
-            });
-            if (ti !== -1) {
-                obj.templates.splice(ti, 1);
-            }
-            objWhitelist.put(obj, syncWhiteList);
-        };
-        var onError = function(error) {
-            console.log("Error updating field : ", error);
-            return;
-        };
-        objWhitelist.get(id, onSuccess, onError);
-    };
+function getSafeDomainsData() {
 
-    let found = KPWhiteList.filter((x) => {
-        return (x.url.filter(y => y === site)).length > 0;
-    });
-    if (found.length > 0) {
-        if (found[0].url.length > 1) {
-            upsertInDb(found[0].id);
-        } else {
-            removeFromKPSkipList(getPathInfo(site).host);
-            objWhitelist.remove(found[0].id, syncWhiteList);
-            debug("Removed from whitelist : ", site);
-        }
-        tabinfo[tab.id].state = "red_done";
-        tabinfo[tab.id].checkState = false;
-    } else {
-        debug("site not Whitelisted : ", site);
+    function flatten(sites) {
+        return sites.filter(y => !y.deleted && !y.disabled && y.safe && y.safe.length)
+            .map(x => x.safe)
+            .reduce((a,b) => _.cloneDeep(a).concat(_.cloneDeep(b)),[]);
     }
+    let cdata = flatten(Sites.customSites),
+        ddata = flatten(Sites.defaultSites).map(s => (s.protected = true, s));
+
+    return cdata.concat(ddata);
 }
 
-
-function saveKPSkipList() {
-    chrome.storage.local.set({skiplist : KPSkipArray}, () => {
-        console.log("skiplist : ", KPSkipArray);
-        syncSkipList();
-    });
-}
-
-
-function initSkipList() {
-    chrome.storage.local.get("skiplist", function(result) {
-        var data = result.skiplist;
-        debug("Data received : ", data);
-        if (data) {
-            KPSkipArray = data;
-            syncSkipList();
-        } else {
-            KPSkipArray = skipDomains;
-            saveKPSkipList();
-        }
-    });
-}
-
-
-function syncSkipList(){
-    chrome.storage.local.get("skiplist", function(result) {
-        var data = result.skiplist;
-        console.log("Data received : ", data);
-        KPSkipArray = data;
-        KPSkipList = KPSkipArray.map((x) => {
-            return x.domains;
-        }).reduce(function (a,b) {
-            return a.concat(b);
-        }, []);
-    });
-}
-
-
+/*******************/
 function errorfn(err) {
-    console.log("error occured");
+    console.log("Inedexeddb error occured : ", err);
+}
+
+function getSecurityImage(cb) {
+    chrome.storage.local.get("secure_img", function(result) {
+        cb(result.secure_img);
+    });
+}
+
+function setSecurityImage(image){
+    chrome.storage.local.set({ "secure_img": image }, function() {
+    });
 }
 
 function setDefaultSecurityImage(cb) {
@@ -544,69 +458,38 @@ function setDefaultSecurityImage(cb) {
         }
     });
 }
-    
+
 function loadDefaults() {
     initAdvConfigs();
-    initSkipList();
     setDefaultSecurityImage();
-    //TODO
-    //Should we allow users to add multiple entries for the same site?
-    objWhitelist = new IDBStore({
-        storeName: "whitelist",
-        keyPath: "id",
-        autoIncrement: true,
-        onStoreReady: initWhitelist,
-        onError: errorfn,
-        indexes: [
-            { name: "url", keyPath: "url", unique: false, multiEntry: false }
-        ]
+    return Sites.init()
+        .then(x => checkUpdates());
+}
+
+function cleanDB(respond) {
+    return Sites.reset()
+        .then(x => chrome.storage.local.remove("secure_img"))
+        .then(x => respond())
+        .catch(e => console.log("cleanDB error", e));
+}
+
+function backupDB(respond) {
+    getSecurityImage(function(image) {
+        let subscribedFeeds = [];
+        Sites.dbFeedList.getAll().then(feedList => {
+            feedList.forEach(feed => subscribedFeeds.push(feed));
+            let customSites = Sites.backup();
+            respond({subscribedFeeds : subscribedFeeds, sites: customSites, secureImage: image });
+        });
     });
 }
 
 
-function addToKPSkipList(domain, isWhitelisted = false) {
-    console.log("addToSkipList Callled");
-    if (KPSkipList.indexOf(domain) !== -1) {
-        console.log("Skiplist adding failed");
-        return ("Domain already present in skiplist");
-    }
-    var obj = {};
-    obj.site = domain;
-    obj.whiteListed = isWhitelisted;
-    obj.domains = [];
-    obj.domains.push(domain);
-    KPSkipArray.push(obj);
-    saveKPSkipList();
-}
-
-
-function removeFromKPSkipList(domain) {
-    let found = KPSkipArray.filter((x) => {
-        return !domain.endsWith(x.site);
-    });
-    console.log("Found : ", found);
-    if (found.length === KPSkipArray.length) {
-        console.log("Domain not in skip list : ", domain);
-        return ("Domain not present in skip list");
-    } else {
-        KPSkipArray = found;
-        console.log("Removed from skiplist : ", domain);
-        saveKPSkipList();
-    }
-}
-
-function getKPSkipListSites(cb) {
-    console.log("getSkipListSites Callled");
-    return KPSkipArray.map((x)=> {
-        return {site: x.site, whitelisted: x.whiteListed };});
-}
-
-
-function cleanDB() {
-    chrome.storage.local.remove(["skiplist", "secure_img"], () => {
-        console.log("skiplist cleaned up");
-    });
-    objWhitelist.clear(loadDefaults);
+function restoreBackup(data, respond) {
+    return Sites.backupResotre(data.sites)
+        .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage);}})
+        .then(x =>  respond())
+        .catch(x => respond({message: x.message}));
 }
 
 function initAdvConfigs() {
@@ -615,17 +498,14 @@ function initAdvConfigs() {
         debug("Data received : ", data);
         if (data) {
             DEBUG = data.debug? true : false;
-            basic_mode = data.basic_mode ? true : false;
         } else {
-            DEBUG = false;
-            basic_mode = false;
             saveAdvConfig();
         }
     });
 }
 
 function saveAdvConfig() {
-    chrome.storage.local.set({adv_config : {debug: DEBUG, basic_mode: basic_mode}});
+    chrome.storage.local.set({adv_config : {debug: DEBUG}});
 }
 
 function setDebugFlag(enable) {
@@ -637,11 +517,98 @@ function getDebugFlag() {
     return DEBUG;
 }
 
-function setBsicMode(enable) {
-    basic_mode = enable;
-    saveAdvConfig();
+function setIcon(ti, state, info) {
+    const iconFolder = "assets/icons";
+    let tabId = ti.tab.id,
+        path = iconFolder + "/icon24.png",
+        title = "Page not tested",
+        text = "", times = "";
+
+    switch (state) {
+    case "safe":
+        title = "Page belongs to safe domain";
+        path = iconFolder + "/icon24-green.png";
+        break;
+    case "greenflagged":
+        title = "Protected page verified: " + info.site;
+        path = iconFolder + "/icon24-green.png";
+        break;
+    case "redflagged":
+        text = ti.nchecks.toString();
+        title = "Possible phishing: looks like " + info.site;
+        path = iconFolder + "/icon24-red.png";
+        break;
+    case "red_done":
+    case "checked":
+        text = ti.nchecks.toString();
+        times = (ti.nchecks === 1) ? "time" : "times";
+        title = `Page tested ${text} ${times}, looks clean`;
+        path = iconFolder + "/icon24-blue.png";
+        break;
+    }
+
+    ti.status = title;
+    chrome.browserAction.setIcon({path, tabId});
+    chrome.browserAction.setTitle({title, tabId});
+    chrome.browserAction.setBadgeText({text, tabId});
 }
 
-function getBsicMode() {
-    return basic_mode;
+function addToProtectedList(tab, logo) {
+    const url = tab.url;
+    return Sites.addProtectedURL(url, logo)
+        .then(x => Sites.getProtectedURL(url))
+        .then(u => {
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "greenflagged";
+            setIcon(ti, "greenflagged", {site: u.site});
+            ti.checkState = false;
+        });
+}
+
+function removeFromProtectedList(tab) {
+    const url = tab.url;
+
+    return Sites.removeProtectedURL(url)
+        .then(x => {
+            const ti = Tabinfo.get(tab.id);
+            ti.state = "red_done";
+            setIcon(ti, "red_done");
+            ti.checkState = false;
+        });
+}
+
+function removeSite(name, respond) {
+    return Sites.removeSite(name)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleSite(name, enable, respond) {
+    return Sites.toggleSite(name, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeURL(url, respond) {
+    return Sites.removeProtectedURL(url)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function toggleURL(url, enable, respond) {
+    return Sites.toggleURL(url, enable)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function removeSafeDomain(domain, respond) {
+    return Sites.removeSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
+}
+
+function addSafeDomain(domain, respond) {
+    return Sites.addSafeDomain(domain)
+        .then(x => respond({}))
+        .catch(x => respond({error: x.message}));
 }

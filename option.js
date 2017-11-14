@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 const defaultImages = ["kp1.gif", "kp2.jpg", "kp3.jpg", "kp4.jpg"];
 var bkg = chrome.extension.getBackgroundPage();
 
@@ -17,15 +22,15 @@ function templateImage(src, favorite, imageClass) {
     return temp;
 }
 
-function templateSafeDomain(index, data) {
+function templateSafeDomain(data) {
     const template = `
-        <li class="mdl-list__item kp-safelist-row" data-id=${index} data-name=${data.site}>
+        <li class="mdl-list__item kp-safelist-row" data-name=${data.domain} >
             <span class="mdl-list__item-primary-content">
                 <i class="material-icons  mdl-list__item-avatar">public</i>
-                ${data.site}
+                ${data.domain}
             </span>
-            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.whitelisted? "disabled" :""}>
-            <i class="material-icons ${data.whitelisted? "" : "kp-sl-delete"}">delete</i>
+            <button class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored" ${data.protected? "disabled" :""}>
+            <i class="material-icons ${data.protected? "" : "kp-sl-delete"}">delete</i>
             </button>
 
         </li>
@@ -36,41 +41,45 @@ function templateSafeDomain(index, data) {
 //   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
 function templateWhitelist(data) {
     const checked = "check_box", unchecked ="check_box_outline_blank";
-    let logos_temp = data.templates.filter((x) => {
-        return x.logo !== undefined;
-    }).reduce((a,b) => {
-        var logo_name = "";
-        if (b.templateName) {
-            logo_name = b.templateName;
-        }
-        var tmp = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                <div class="mdl-card__media">
-                    <img class="template-image" src="${b.logo}" border="0" alt="">
-                </div>
-                <div class="mdl-card__supporting-text">
-                ${logo_name}
-                </div>
-            </div>`;
-        return a + tmp;
-    }, "");
-
-    let urls = "";
-    let enabled = data.enabled ? checked : unchecked;
-
-    if (data.url.length === 1) {
-        urls =`
-            <tr class="kp-wl-url-row" data-id=${data.id}>
-                <td class="mdl-data-table__cell--non-numeric kp-login-url">${data.url[0]}</td>
-            </tr>`;
-    } else {
-        urls = data.url.reduce((a,b) => {
+    let template_str = "";
+    if (data.templates) {
+        template_str = data.templates.filter(x => !x.deleted).reduce((a,b) => {
+            var logo_name = "";
+            if (b.name) {
+                logo_name = b.name;
+            }
             var tmp = `
-                <tr class="kp-wl-url-row" data-id=${data.id} data-url=${b} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b}</td>
+                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                    <div class="mdl-card__media">
+                        <img class="template-image" src="${b.base64}" border="0" alt="">
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                    ${logo_name}
+                    </div>
+                </div>`;
+            return a + tmp;
+        }, "");
+    }
+
+    let protected_urls = "";
+    let enabled = data.disabled ? unchecked : checked;
+    let disable_flag = data.disabled ?  "disabled" : "";
+
+    if (data.protected) {
+        let protectedList = data.protected.filter(x => !x.deleted);
+        protected_urls = protectedList.reduce((a,b) => {
+            let url_disabled = b.disabled? unchecked : checked;
+            var tmp = `
+                <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
+                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
                     <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-                            <i class="material-icons kp-wl-url-delete">delete</i>
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
+                          <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
+                        </button>
+                    </td>
+                    <td>
+                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
+                            <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
                         </button>
                     </td>
                 </tr>`;
@@ -78,34 +87,33 @@ function templateWhitelist(data) {
         },"");
     }
 
-    const template = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-id=${data.id} data-site=${data.site}>
+    const site = `
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
                 <div class="mdl-card__title mdl-card--border">
-                    <h2 class="mdl-card__title-text">${data.site}</h2>
+                    <h2 class="mdl-card__title-text">${data.name}</h2>
                 </div>
                 <div class="mdl-card__menu">
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-check">
                       <i class="material-icons kp-wl-site-check">${enabled}</i>
                     </button>
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-delete">
                       <i class="material-icons kp-wl-site-delete">delete</i>
                     </button>
                  </div>
                 <div class="mdl-grid kp-template-container">
-                ${logos_temp}
+                ${template_str}
                 </div>
                 <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
                     <table class="mdl-data-table mdl-js-data-table kp-url-table">
                         <tbody>
-                        ${urls}
+                        ${protected_urls}
                         </tbody>
                     </table>
                 </div>
             </div>
             `;
-    return template;
+    return site;
 }
-
 
 function updateImage(data) {
     if (data) {
@@ -118,57 +126,111 @@ function updateImage(data) {
         chrome.storage.local.get("secure_img", function(result) {
             data = result.secure_img;
             $("#secureimage").attr("src", data.src);
+            if (data.type === "custom"){
+                $("#imagegallery #customimage").attr("src", data.src);
+                $("#imagegallery #kp-custom-icons").text("favorite");
+                $("#imageUpload").text("Change Image");
+            } else if (data.type === "suggested" || data.type === "default" ){
+                let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
+                $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
+            }
         });
     }
 }
 
-function renderWhitelistTable(data) {
+function renderProtectedList() {
+    let data = bkg.getProtectedSitesData();
     $(".kp-wl-site").remove();
-    console.log("IDB-data", data);
+    //console.log("Protected-data", data);
     data.forEach((x) => {
         $(".kp-wl-main").append(templateWhitelist(x));
     });
     $(".kp-wl-site").on("click", function(e) {
-        var id = $(this).data("id");
-        var site = $(this).data("site");
+        var name = $(this).data("name");
         if ($(e.target).is(".kp-wl-site-delete")) {
-            var res = confirm("Do you want to delete " + site + " from the list of protected pages?");
+            var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
             if (res) {
-                bkg.removeFromWhiteListById(id);
-                $(this).remove();
+                chrome.runtime.sendMessage({op: "remove_site", site: name}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    $(this).remove();
+                });
             }
         } else if ($(e.target).is(".kp-wl-site-check")) {
             const checked = "check_box", unchecked ="check_box_outline_blank";
-            var value = $(e.target)[0].innerHTML.trim();
+            var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+            var value = icon.innerHTML.trim();
             if (value === checked) {
-                bkg.toggleWhitelistItems(id, false);
-                $(e.target)[0].innerHTML = unchecked;
+                chrome.runtime.sendMessage({op: "toggle_site", site: name, enable: false}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    icon.innerHTML = unchecked;
+                    $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
+                    $(this).find("i.kp-wl-url-delete").removeClass("enable");
+                    $(this).find("i.kp-wl-url-check").each((i,x) => {
+                        x.innerHTML = unchecked;
+                        $(x).removeClass("enable");
+                    });
+                });
             } else {
-                bkg.toggleWhitelistItems(id, true);
-                $(e.target)[0].innerHTML = checked;
+                chrome.runtime.sendMessage({op: "toggle_site", site: name, enable: true}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
+                    $(this).find("i.kp-wl-url-delete").addClass("enable");
+                    $(this).find("i.kp-wl-url-check").each((i,x) => {
+                        x.innerHTML = checked;
+                        $(x).addClass("enable");
+                    });
+                    icon.innerHTML = checked;
+                });
             }
-        } else if ($(e.target).is(".kp-wl-url-delete")) {
-            $(e.target)[0].remove();
         }
     });
     $(".kp-wl-url-row").on("click", function(e){
         e.stopPropagation();
-        if ($(e.target).is(".kp-wl-url-delete")) {
-            let id = $(this).data("id");
+        if ($(e.target).is(".kp-wl-url-delete.enable")) {
             let url = $(this).data("url");
-            bkg.removeUrlFromWhiteList(url, id);
-            $(this).remove();
+            chrome.runtime.sendMessage({op: "remove_url", url: url}, res => {
+                if (res.error) {
+                    return alert(res.error);
+                }
+                $(this).remove();
+            });
+        }
+        if ($(e.target).is(".kp-wl-url-check.enable")) {
+            let url = $(this).data("url");
+            const checked = "check_box", unchecked ="check_box_outline_blank";
+            let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+            let value = icon.innerHTML.trim();
+            if (value === checked) {
+                chrome.runtime.sendMessage({op: "toggle_url", url: url, enable: false}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    icon.innerHTML = unchecked;
+                });
+            } else {
+                chrome.runtime.sendMessage({op: "toggle_url", url: url, enable: true}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    icon.innerHTML = checked;
+                });
+            }
         }
     });
 }
 
-
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
-    let KPSkipList = bkg.getKPSkipListSites();
+    let safeSites = bkg.getSafeDomainsData();
 
-    KPSkipList.forEach((data, index)=> {
-        $(".kp-safelist").append(templateSafeDomain(index, data));
+    safeSites.forEach(x => {
+        $(".kp-safelist").append(templateSafeDomain(x));
     });
 
     $(".kp-safelist-row").on("click", function(e) {
@@ -177,12 +239,12 @@ function renderSafeDomainTable() {
             var domain = $(this).data("name");
             var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {
-                let err = bkg.removeFromKPSkipList(domain);
-                if (err) {
-                    alert(err);
-                } else {
+                chrome.runtime.sendMessage({op: "remove_safe_domain", domain: domain}, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
                     $(this).remove();
-                }
+                });
             }
         }
     });
@@ -197,10 +259,12 @@ function initAdvanceTab() {
 $(document).ready(function() {
     $(".mdl-layout__tab").on("click", function(e){
         let href = $(this).attr("href");
-        if (href === "#scroll-tab-safedomain") {
+        window.location.hash = href;
+        if (href === "#tab-safedomain") {
             renderSafeDomainTable();
-        } else if (href === "#scroll-tab-whitelist") {
-            bkg.syncWhiteList(renderWhitelistTable);
+        } else if (href === "#tab-whitelist") {
+            //bkg.syncWhiteList(renderWhitelistTable);
+            renderProtectedList();
         }
     });
 
@@ -231,8 +295,31 @@ $(document).ready(function() {
         updateImage(data);
 
         $(".kp-active-icons").text("favorite_border");
+
+        if (data.type != "custom"){
+            if (!$("#customimage").attr("src")){
+                $("#kp-custom-icons").text("");
+            }
+        }
+
         var icon = $(this).find("i")[0];
         $(icon).text("favorite");
+    });
+
+    $("#kp-custom-btn-icons").on("click", function(event) {
+        $(".kp-custom-icons").click();
+    });
+
+    $(".kp-custom-icons").on("click", function(event) {
+        var data = {};
+        event.preventDefault();
+        data.type = "custom";
+        data.src = $("#customimage").attr("src");
+        if (data.src) {
+            updateImage(data);
+            $(".kp-active-icons").text("favorite_border");
+            $("#kp-custom-icons").text("favorite");
+        }
     });
 
     $(".img-edit").on("click", function(e) {
@@ -243,6 +330,44 @@ $(document).ready(function() {
     $("#imageUpload").on("click", function(e) {
         $("#custom-img").click();
     });
+    $("#backupFileUpload").on("click", function(e) {
+        $("#backup-file").click();
+    });
+
+    $("#backup-file").change(function(e) {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.onloadend = function() {
+            let fileData = reader.result;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(fileData)
+            }
+            catch(err) {
+                $("#notifications").text("Please upload a valid file").css("visibility", "visible").css("color", "red");
+                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+                return;
+            }
+
+            bkg.restoreBackup(jsonData, function(error){
+
+                let msg = "",
+                    color = "";
+                if (error){
+                    msg = "Something went wrong, Error: " + error.message;
+                    color = "#FF5722";
+                } else {
+                    updateImage();
+                    msg = "Restore data completed successfully.";
+                    color = "#4CAF50";
+                }
+                $("#notifications").text(msg).css("visibility", "visible").css("color", color);
+                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+            });
+
+        };
+        reader.readAsText(file);
+    });
 
     $("#custom-img").change(function(e) {
 
@@ -252,7 +377,7 @@ $(document).ready(function() {
             return;
         }
         if (file.size > 2097154) {
-            alert("The image size size should not be nore than 2MB");
+            alert("The image size should not be more than 2MB");
             return;
         }
         var reader = new FileReader();
@@ -261,8 +386,12 @@ $(document).ready(function() {
             data.type = "custom";
             data.src = reader.result;
             updateImage(data);
-            $("#imagegallery .cutsom-image").remove();
-            $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
+            // $("#imagegallery .cutsom-image").remove();
+            $("#imagegallery #customimage").attr("src", reader.result);
+            $(".kp-active-icons").text("favorite_border");
+            $("#imagegallery #kp-custom-icons").text("favorite");
+            // $("#imagegallery .mdl-cell:last").before(templateImage(reader.result, "favorite", "cutsom-image"));
+            $("#imageUpload").text("Change Image");
         };
         reader.readAsDataURL(file);
 
@@ -270,13 +399,42 @@ $(document).ready(function() {
 
     $("#kp-restore-factory").on("click", function(e) {
         if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
-            bkg.cleanDB();
-            bkg.setDefaultSecurityImage(function () {
-                $("#imagegallery .cutsom-image").remove();
-                updateImage();
+            bkg.cleanDB(function(){
+                bkg.setDefaultSecurityImage(function () {
+                    $("#imagegallery .cutsom-image").remove();
+                    $("#imagegallery #customimage").attr("src", "");
+                    $("#imagegallery #kp-custom-icons").text("");
+                    $("#imageUpload").text("Upload New Image");
+                    updateImage();
+                });
+                let val = $("#kp-debug-switch").is(":checked");
+                if (val) {
+                    $("#kp-debug-switch").click();
+                }
             });
         }
     });
+
+    // get backup of all the custom settings
+    $("#sp-backup").on("click", function(e) {
+        bkg.backupDB(function(backupData) {
+            download(backupData);
+            $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");
+            setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 5000);
+        });
+    });
+
+    // download db backup file
+    function download(content) {
+        let a = document.createElement("a");
+        let blob = new Blob([JSON.stringify(content, null, 4)], {"type": "application/json"});
+        a.href = window.URL.createObjectURL(blob);
+        let date =  new Date();
+        let datetime = date.getFullYear().toString() + (date.getMonth() + 1).toString() +  date.getDate().toString() + date.getHours().toString() + date.getMinutes().toString() + date.getSeconds().toString();
+        a.download = `SpotPhish-backup-${datetime}.json`;
+        a.click();
+    }
+
 
     $(".kp-safelist-add-btn").on("click", function(e) {
         var input = $("#kp-safelist-input").val().trim();
@@ -292,12 +450,12 @@ $(document).ready(function() {
                 alert("Incorrect domain entered, please try again");
                 return;
             }
-            let err = bkg.addToKPSkipList(val);
-            if (err) {
-                alert(err);
-            } else {
+            chrome.runtime.sendMessage({op: "add_safe_domain", domain: val}, res => {
+                if (res.error) {
+                    return alert(res.error);
+                }
                 renderSafeDomainTable();
-            }
+            });
         }
         $("#kp-safelist-input").val("");
 

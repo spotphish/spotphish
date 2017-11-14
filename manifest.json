@@ -3,7 +3,7 @@
 
   "name": "SpotPhish",
   "description": "Zero-day phishing protection",
-  "version": "0.1.0",
+  "version": "1.0",
   "browser_action": {
     "default_icon": "assets/icons/icon24.png",
     "default_popup": "popup.html",
@@ -20,9 +20,8 @@
       "matches": ["<all_urls>"],
       "css":["css/content.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
       "js": [
-        "externalCode/jquery/jquery-1.12.4.min.js",
+        "externalCode/jquery/jquery-3.1.1.min.js",
         "externalCode/jquery.Jcrop.min.js",
-        "whitelist.js",
         "utils.js",
         "content.js",
         "dialog.js"
@@ -33,11 +32,16 @@
   ],
   "background": {
     "scripts": [
-        "assets/defaults/pattern.js",
-        "whitelist.js",
+        "config.js",
         "externalCode/idbstore.min.js",
+        "externalCode/CryptoJs_v3.1.2/core-min.js",
+        "externalCode/CryptoJs_v3.1.2/sha256-min.js",
+        "externalCode/jquery/jquery-3.1.1.min.js",
+        "externalCode/lodash.min.js",
+        "externalCode/psl.min.js",
         "utils.js",
         "screenshot.js",
+        "model.js",
         "background.js",
         "orb-features.js",
         "externalCode/jsfeat.js"
@@ -56,7 +60,6 @@
     "assets/fonts/*",
     "images/*",
     "css/iconfont/*",
-    "assets/defaults/*",
     "option.html"
   ]
 }

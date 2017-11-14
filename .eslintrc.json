@@ -37,14 +37,12 @@
         "DEFAULT_IMG": false,
         "updateImage": false,
         "assert": false,
-        "ajax_get": false,
         "crop": false,
         "findOrbFeatures": false,
         "matchOrbFeatures": false,
         "stripQueryParams": false,
         "getPathInfo": false,
         "createPatterns": false,
-        "skipDomains": true,
         "IDBStore": false,
         "redFlagSites": true,
         "isSpecialTab": false,
@@ -54,6 +52,14 @@
         "dialog": false,
         "findCorrespondence": false,
         "getUrlVars": false,
-        "injectAckModal": false
+        "injectAckModal": false,
+        "defaultFeeds": false,
+        "_": false,
+        "CryptoJS": false,
+        "DEBUG": true,
+        "psl": false,
+        "Sites": false,
+        "Pdb": false,
+        "ajax_get": false
     }
 }

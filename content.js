@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
+ * This program is free software - see the file LICENSE for license details.
+ */
+
 const POLL_INTERVAL = 2000; /* Periodicity of redflag candidate check */
 const MAX_POLLS = 30; /* Give up after polling x times */
 
@@ -26,6 +31,10 @@ function main() {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
                 alert("This site already added to whitelist");
+            } else if (msg.op == "test_match") {
+                showMatch(msg);
+            } else if (msg.op == "test_no_match") {
+                showNoMatch();
             } else {
                 console.log("KP: unknown op", msg);
             }
@@ -40,6 +49,7 @@ function do_init() {
     if (window === top) {
         init.top = true;
         init.dpr = devicePixelRatio;
+        init.inputFields = scanInputFields();
     }
     topUrl = stripQueryParams(window.location.href);
 
@@ -55,6 +65,14 @@ function do_init() {
     if (window === top) {
         startUrlPoll();
     }
+
+    function urgentCheck() {
+        console.log("key event captured");
+        rpc({ op: "urgent_check"});
+        $(document).off("keypress", urgentCheck);
+    }
+
+    $(document).on("keypress", urgentCheck);
 }
 
 let upolls = 0;
@@ -136,7 +154,8 @@ function rpc(msg) {
     });
 }
 
-function injectAckModal(message = "All done") {
+function injectAckModal(message = "All done", image) {
+    var img = document.createElement("img");
     const ack = {
         title: "SpotPhish",
         type: "info",
@@ -145,14 +164,18 @@ function injectAckModal(message = "All done") {
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
         dismiss_after: 3000
     };
+    if (image) {
+        img.src = image;
+        ack.img = img;
+    }
     dialog(ack);
 }
+
 function injectCropModal() {
     function basic() {
         chrome.runtime.sendMessage({
-            op: "add_wh"
+            op: "protect_basic"
         }, function (res) {
-            console.log("resp called");
             setTimeout(x => injectAckModal("Basic protection enabled for this page"), 500);
         });
     }
@@ -169,3 +192,40 @@ function injectCropModal() {
     dialog(cropDialog);
 }
 
+function showMatch(msg) {
+    var img = document.createElement("img");
+    img.src = msg.img;
+    const warn = {
+        title: "Template Matched",
+        type: "warning",
+        img: img,
+        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+    };
+    dialog(warn);
+}
+
+function showNoMatch() {
+    const ack1 = {
+        title: "SpotPhish",
+        type: "info",
+        main: "No template matches found for this page.",
+        extra: null,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        dismiss_after: 3000
+    };
+    dialog(ack1);
+}
+
+function scanInputFields() {
+    let ip = {};
+    $("input").filter(":visible").map(function() {
+        if (ip[this.type]) {
+            ip[this.type]++;
+        } else {
+            ip[this.type] = 1;
+        }
+    });
+    console.log("IP : ", ip);
+    return ip;
+}
