@@ -35,13 +35,13 @@ let Sites = {
                 (filter === "exists") ? x => !x.deleted : x => true;
         const found = this.sites.filter(ff)
             .filter(s => _.find(s.domains, y => host.endsWith(y)));
-        return found[0];
+        return _.cloneDeep(found[0]);
     },
 
     getSiteByName: function(name, filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
-        return _.find(this.sites.filter(ff), x => x.name === name);
+        return _.cloneDeep(_.find(this.sites.filter(ff), x => x.name === name));
     },
 
     getProtectedURL: function(url, filter="enabled") {
@@ -59,23 +59,24 @@ let Sites = {
 
     getSafeDomain: function(url) {
         const host = url.includes("://") ? getPathInfo(url).host : url;
-        return _.find(this.safe, x => host.endsWith(x));
+        return _.cloneDeep(_.find(this.safe, x => host.endsWith(x)));
     },
 
     getSites: function(filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
-        return this.sites.filter(ff);
+        let data = this.sites.filter(ff);
+        return _.cloneDeep(data);
     },
 
     getTemplates: function() {
-        return this.templates;
+        return _.cloneDeep(this.templates);
     },
 
     getFeeds: function(filter="enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
-        return this.feedList.filter(ff);
+        return _.cloneDeep(this.feedList.filter(ff));
     },
 
     updateFeedList: function(data) {
@@ -238,11 +239,10 @@ let Sites = {
         const cur = _.find(this.customSites, x => x.name === site.name);
         let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
         out.disabled = !enable;
-        let protected  = site.protected.map(x => {
-            x.disabled = !enable;
-            return x;
-        });
+        let protected  = site.protected.map(x => (x.disabled = !enable, x));
+        let templates  = site.templates.map(x => (x.disabled = !enable, x));
         out.protected = protected;
+        out.templates = _.cloneDeep(templates);
         return this.dbCustomSites.put(out)
             .then(x => this.sync());
     },
@@ -313,11 +313,14 @@ let Sites = {
             this.customSites = customSites;
             this.sites = sites.filter(s => !!s.protected.length);
             this.safe = _.uniq(sites.filter(s => !s.deleted && !s.disabled)
-                .map(s => s.safe.map(x => x.domain))
+                .map(s => s.safe.filter(x => !x.deleted && !x.disabled).map(x => x.domain))
                 .reduce((a,b) => a.concat(b),[]));
+            let tsites = _.cloneDeep(this.sites);
+            let tcsites = _.cloneDeep(this.customSites);
         }
 
         function syncTemplates() {
+            //TODO: We need to check for the disabled status for each  templates in the DB 
 
             /* Garbage collect deleted templates */
 
@@ -356,6 +359,8 @@ let Sites = {
             res = res.then(x => this.dbTemplateList.getAll())
                 .then(x => {
                     this.templateList = x;
+                    //TODO: Here is an issue, Don't remove the templtes of disabled sites, Instead mark them as disabled.
+                    //Otherwise we will loose the templates in case of custom entry.
                     const templates = this.sites.filter(x => !x.deleted && !x.disabled &&
                         x.templates)
                         .map(y => y.templates)
@@ -365,6 +370,7 @@ let Sites = {
                         .map(y => y.checksum);
                     this.templates = this.templateList.filter(y => checksums.indexOf(y.checksum) !== -1);
                 });
+            let tsites = _.cloneDeep(this.sites);
 
             return res;
         }

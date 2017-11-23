@@ -349,10 +349,24 @@ chrome.runtime.onInstalled.addListener(function(details) {
     }
 });
 
+/*
+function initFeeds() {
+    let feeds =  Sites.getFeeds();
+    let res = Promise.resolve(true);
+
+    let  val = _.values(_.merge(
+                    _.keyBy(defaultFeeds, "src"),
+                    _.keyBy(feeds, "src")
+                ));
+    res = res.then(x => Sites.updateFeedList(val))
+            .then(x => checkUpdates())
+    console.log("Value :", val);
+}
+*/
+
 function checkUpdates() {
     let activeFeeds =  Sites.getFeeds();
     let res = Promise.resolve(true);
-
     if (activeFeeds.length === 0) {
         res = res.then(x => Sites.updateFeedList(defaultFeeds))
             .then(x => {activeFeeds = Sites.getFeeds(); debug(activeFeeds);});
