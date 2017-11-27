@@ -341,9 +341,9 @@ $(document).ready(function() {
             let fileData = reader.result;
             let jsonData;
             try {
-                jsonData = JSON.parse(fileData)
+                jsonData = JSON.parse(fileData);
             }
-            catch(err) {
+            catch (err) {
                 $("#notifications").text("Please upload a valid file").css("visibility", "visible").css("color", "red");
                 setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
                 return;

@@ -315,8 +315,6 @@ let Sites = {
             this.safe = _.uniq(sites.filter(s => !s.deleted && !s.disabled)
                 .map(s => s.safe.filter(x => !x.deleted && !x.disabled).map(x => x.domain))
                 .reduce((a,b) => a.concat(b),[]));
-            let tsites = _.cloneDeep(this.sites);
-            let tcsites = _.cloneDeep(this.customSites);
         }
 
         function syncTemplates() {
@@ -370,8 +368,6 @@ let Sites = {
                         .map(y => y.checksum);
                     this.templates = this.templateList.filter(y => checksums.indexOf(y.checksum) !== -1);
                 });
-            let tsites = _.cloneDeep(this.sites);
-
             return res;
         }
     },
