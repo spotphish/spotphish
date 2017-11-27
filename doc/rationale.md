@@ -1,4 +1,4 @@
-# SpotPhish: Zero-Day Phishing Protection
+# SpotPhish: Zero-Hour Phishing Protection
 
 ## Introduction
 
@@ -9,7 +9,7 @@ them.
 Attackers can automatically create thousands of customized phishing emails,
 domains and pages which, being newly minted, evade the browser's
 blacklist-based phishing protection. High-value individuals and employees of
-sensitive organizations are especially vulnerable to such _zero-day phishing_
+sensitive organizations are especially vulnerable to such _zero-hour phishing_
 attacks.
 
 We increase the contrast in user experience between browsing a genuine page
@@ -21,7 +21,7 @@ versus an imitation page in the following manner:
     login page of a whitelisted site. The comparison is done using computer
     vision techniques.
 
-Our approach can thus effectively protect against zero-day phishing, which
+Our approach can thus effectively protect against zero-hour phishing, which
 would not be caught by a blacklist-based system. It is implemented as a browser
 plugin. 
 
@@ -81,10 +81,10 @@ This phenomenon is made worse by factors like the following:
 
 Most browsers include effective blacklist-based anti-phishing measures.
 However, it is easy for attackers to automatically create thousands of
-personalized zero-day phishing emails, domains and pages which have never been
+personalized zero-hour phishing emails, domains and pages which have never been
 seen before, and are thus not on any blacklist. Employees and contractors of
 governments, banks, public utilities and other sensitive organizations are
-especially at risk from such targeted zero-day "spearphishing" attacks.
+especially at risk from such targeted zero-hour "spearphishing" attacks.
 
 ## Perceptual anti-phishing
 

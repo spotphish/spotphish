@@ -1,6 +1,6 @@
-# SpotPhish: Zero-Day Phishing Protection
+# SpotPhish: Zero-Hour Phishing Protection
 
-A browser extension for Chrome and Firefox which provides zero-day phishing protection.
+A browser extension for Chrome and Firefox which provides zero-hour phishing protection.
 
 ## Contents
 
@@ -18,7 +18,7 @@ A browser extension for Chrome and Firefox which provides zero-day phishing prot
 
 ## Introduction
 
-SpotPhish is a Chrome extension, which provides zero-day phishing protection
+SpotPhish is a Chrome extension which provides zero-hour phishing protection
 by creating large visual differences between legitimate sites and phishing
 pages which attempt to mimic them.
 
@@ -26,7 +26,7 @@ Attackers can automatically create thousands of customized phishing emails,
 domains and pages which, being newly minted, cannot be caught by the
 blacklist-based methods present on most browsers. High-value individuals and
 employees of sensitive organizations are especially vulnerable to such
-_zero-day phishing_ attacks.
+_zero-hour phishing_ attacks.
 
 The extension increases the contrast in user experience between browsing a genuine
 page versus an imitation page in the following manner:
@@ -196,6 +196,7 @@ Components used and their licenses
 | [IDBWrapper](https://github.com/jensarps/IDBWrapper) | MIT |
 | [JQuery](https://jquery.com) | MIT |
 | [Ad Blocking](https://github.com/citp/ad-blocking) | MIT |
+| [Shield icon][icon] | CC BY-SA 3.0 |
 
 ## License:
 
@@ -204,3 +205,4 @@ MIT
 [Paypal Greenflag]: doc/img/paypal-greenflag.gif
 [Paypal Redflag]: doc/img/paypal-redflag.gif
 [foab]: https://arxiv.org/abs/1705.08568
+[icon]: https://en.wikipedia.org/wiki/Bend_(heraldry)#/media/File:Bend_Sinister_demo.svg
