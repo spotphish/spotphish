@@ -198,9 +198,13 @@ Components used and their licenses
 | [Ad Blocking](https://github.com/citp/ad-blocking) | MIT |
 | [Shield icon][icon] | CC BY-SA 3.0 |
 
-## License:
+## License
 
 MIT
+
+## Contact
+
+Email us at <dev@spotphish.com> or follow [@spotphish](https://twitter.com/spotphish).
 
 [Paypal Greenflag]: doc/img/paypal-greenflag.gif
 [Paypal Redflag]: doc/img/paypal-redflag.gif
