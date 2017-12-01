@@ -318,8 +318,6 @@ let Sites = {
         }
 
         function syncTemplates() {
-            //TODO: We need to check for the disabled status for each  templates in the DB 
-
             /* Garbage collect deleted templates */
 
             /* flattened list of all templates, annotated by site name */
@@ -357,10 +355,9 @@ let Sites = {
             res = res.then(x => this.dbTemplateList.getAll())
                 .then(x => {
                     this.templateList = x;
-                    //TODO: Here is an issue, Don't remove the templtes of disabled sites, Instead mark them as disabled.
-                    //Otherwise we will loose the templates in case of custom entry.
+                    const ff = x => !x.deleted && !x.disabled;
                     const templates = this.sites.filter(x => !x.deleted && !x.disabled &&
-                        x.templates)
+                        x.templates && x.protected && x.protected.filter(ff).length)
                         .map(y => y.templates)
                         .reduce((a,b) => a.concat(b),[]);
 

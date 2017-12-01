@@ -349,20 +349,17 @@ chrome.runtime.onInstalled.addListener(function(details) {
     }
 });
 
-/*
 function initFeeds() {
-    let feeds =  Sites.getFeeds();
+    let feeds =  Sites.getFeeds("all");
     let res = Promise.resolve(true);
 
     let  val = _.values(_.merge(
                     _.keyBy(defaultFeeds, "src"),
                     _.keyBy(feeds, "src")
                 ));
-    res = res.then(x => Sites.updateFeedList(val))
-            .then(x => checkUpdates())
-    console.log("Value :", val);
+    return res.then(x => Sites.updateFeedList(val))
+            .then(x => checkUpdates());
 }
-*/
 
 function checkUpdates() {
     let activeFeeds =  Sites.getFeeds();
@@ -477,7 +474,7 @@ function loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
     return Sites.init()
-        .then(x => checkUpdates());
+        .then(x => initFeeds());
 }
 
 function cleanDB(respond) {
