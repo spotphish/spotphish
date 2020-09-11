@@ -88,7 +88,7 @@ function templateWhitelist(data) {
     }
 
     const site = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
+            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name="${data.name}" >
                 <div class="mdl-card__title mdl-card--border">
                     <h2 class="mdl-card__title-text">${data.name}</h2>
                 </div>
@@ -138,6 +138,10 @@ function updateImage(data) {
     }
 }
 
+function renderCustomProtectedList(){
+
+}
+
 function renderProtectedList() {
     let data = bkg.getProtectedSitesData();
     $(".kp-wl-site").remove();
@@ -152,6 +156,7 @@ function renderProtectedList() {
             if (res) {
                 chrome.runtime.sendMessage({op: "remove_site", site: name}, res => {
                     if (res.error) {
+                        console.log("Unable to delete...........");
                         return alert(res.error);
                     }
                     $(this).remove();

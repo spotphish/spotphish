@@ -133,14 +133,14 @@ function showRedflag(msg) {
     var img = document.createElement("img");
     img.src = msg.img;
     const warn = {
-        title: "Are you being phished?",
+        title: chrome.i18n.getMessage("redFlagTitle"),
         type: "warning",
         img: img,
-        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
-        extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
-            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`, onclick: openSafeDomainLink},
-            {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`, onclick: null}]
+        main: `<div class="kpmdl-color-text--accent"> ${chrome.i18n.getMessage("redFlagMain1")} <b>${msg.site}</b>${chrome.i18n.getMessage("redFlagMain2")}</div>`,
+        extra: chrome.i18n.getMessage("redFlagExtra"),
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>${chrome.i18n.getMessage("redFlagButtonDismiss")}</button>`, onclick: null},
+            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >${chrome.i18n.getMessage("redFlagButtonSafeDomains")}</button>`, onclick: openSafeDomainLink},
+            {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>${chrome.i18n.getMessage("redFlagButtonReport")}</button>`, onclick: null}]
     };
 
     dialog(warn);
@@ -154,10 +154,10 @@ function rpc(msg) {
     });
 }
 
-function injectAckModal(message = "All done", image) {
+function injectAckModal(message = chrome.i18n.getMessage("injectAckModalDefault"), image) {
     var img = document.createElement("img");
     const ack = {
-        title: "SpotPhish",
+        title: chrome.i18n.getMessage("extName"),
         type: "info",
         main: message,
         extra: null,
@@ -173,20 +173,38 @@ function injectAckModal(message = "All done", image) {
 
 function injectCropModal() {
     function basic() {
+        $(".kp-dialog").css({opacity: 0});
+        // setTimeout(() => {
+        //     $(".kp-dialog").remove();
+        //     chrome.runtime.sendMessage({
+        //         op: "crop_capture",
+        //         dpr : devicePixelRatio
+        //     }, function (res) {
+        //         let msg = "";
+        //         if (res.message == "cropped"){
+        //             msg = chrome.i18n.getMessage("injectAckModalCropped");
+        //         } 
+        //         else if (res.message == "nohash"){
+        //             msg = chrome.i18n.getMessage("injectAckModalNohash");
+        //         }
+        //         else
+        //             msg - chrome.i18n.getMessage("injectAckModalError");
+        //         setTimeout(x => injectAckModal(msg), 500);
+        //     }); 
+        // }, 400);
         chrome.runtime.sendMessage({
-            op: "protect_basic"
+            op: "protect_basic",
         }, function (res) {
             setTimeout(x => injectAckModal("Basic protection enabled for this page"), 500);
-        });
+        }); 
     }
 
     const cropDialog = {
-        title: "Protect Page",
+        title: chrome.i18n.getMessage("protectPageTitle"),
         type: "info",
-        main: "Basic or Enhanced?",
-        extra: "<div>With <b>basic protection</b>, your personal security image will be displayed every time you visit this page.</div><br><div>For <b>enhanced protection</b>, identify the most recognizable part of the page, like the area around the logo. You will be alerted if any other page looks like this one.</div>",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Enhance!</button>`, onclick: crop},
-            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Basic</button>`, onclick: basic}]
+        main: chrome.i18n.getMessage("protectPageMainMessage"),
+        extra: `<div>${chrome.i18n.getMessage("protectPageExtraMessage")}</div>`,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>${chrome.i18n.getMessage("protectPageButtonProtect")}</button>`, onclick: basic}]
     };
 
     dialog(cropDialog);
@@ -196,22 +214,22 @@ function showMatch(msg) {
     var img = document.createElement("img");
     img.src = msg.img;
     const warn = {
-        title: "Template Matched",
+        title: chrome.i18n.getMessage("templateMactchedTitle"),
         type: "warning",
         img: img,
-        main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        main: `<div class="kpmdl-color-text--accent"> ${chrome.i18n.getMessage("templateMatchedMessage")} <b>${msg.site}</b>.</div>`,
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>${chrome.i18n.getMessage("okButton")}</button>`, onclick: null}],
     };
     dialog(warn);
 }
 
 function showNoMatch() {
     const ack1 = {
-        title: "SpotPhish",
+        title: chrome.i18n.getMessage("extName"),
         type: "info",
-        main: "No template matches found for this page.",
+        main: chrome.i18n.getMessage("templateNotMatchedMessage"),
         extra: null,
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>${chrome.i18n.getMessage("okButton")}</button>`, onclick: null}],
         dismiss_after: 3000
     };
     dialog(ack1);

@@ -35,12 +35,11 @@ function stripQueryParams(url) {
     return site;
 }
 
-function getUrlVars()
-{
-    var vars = [], hash;
+function getUrlVars() {
+    var vars = [],
+        hash;
     var hashes = window.location.href.slice(window.location.href.indexOf("?") + 1).split("&");
-    for (var i = 0; i < hashes.length; i++)
-    {
+    for (var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split("=");
         vars.push(hash[0]);
         vars[hash[0]] = hash[1];
@@ -131,10 +130,14 @@ function mergeDeep(target, ...sources) {
     if (isObject(target) && isObject(source)) {
         for (const key in source) {
             if (isObject(source[key])) {
-                if (!target[key]) Object.assign(target, { [key]: {} });
+                if (!target[key]) Object.assign(target, {
+                    [key]: {}
+                });
                 mergeDeep(target[key], source[key]);
             } else {
-                Object.assign(target, { [key]: source[key] });
+                Object.assign(target, {
+                    [key]: source[key]
+                });
             }
         }
     }
@@ -148,7 +151,7 @@ function mergeDeep(target, ...sources) {
 class Pdb {
     constructor(options) {
         this.ready_promise = new Promise((resolve, reject) => {
-            const o = Object.assign({}, options, {onStoreReady: resolve, onError: reject});
+            const o = Object.assign({}, options, { onStoreReady: resolve, onError: reject });
             this.db = new IDBStore(o);
         });
     }
@@ -266,4 +269,3 @@ chrome.storage.promise = {
         }
     }
 };
-

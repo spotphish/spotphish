@@ -1,0 +1,82 @@
+{
+	"extName": {
+		"message": "SpotPhish",
+		"description": "name of the extension"
+	},
+	"redFlagTitle": {
+		"message": "Are you being phished?",
+		"description": "Title displayed on the modal box for phishing page alert."
+	},
+	"redFlagMain1": {
+		"message": "This looks like",
+		"description": "first part of message on phishing alert"
+	},
+	"redFlagMain2": {
+		"message": ". But it isn't!",
+		"description": "second part of message on phishing alert."
+	},
+	"redFlagExtra": {
+		"message": "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
+		"description": "extra string on phishing alert. Translation should preserve the html tag <em> for safe domains feature"
+	},
+	"redFlagButtonDismiss": {
+		"message": "Dismiss",
+		"description": "Dismiss button on phishing alert modal box"
+	},
+	"redFlagButtonSafeDomains": {
+		"message": "Add To Safe Domains",
+		"description": "Add to safe domains button on phishing alert modal"
+	},
+	"redFlagButtonReport": {
+		"message": "Report Phishing",
+		"description": "Report phishing button on phishing alert modal"
+	},
+	"injectAckModalDefault": {
+		"message": "All done",
+		"description": "Default message on injectAckModal, not being used currently"
+	},
+	"injectAckModalCropped": {
+		"message": "Advanced protection enabled for this page",
+		"description": "MEssage when advanced protection is enabled successfully"
+	},
+	"injectAckModalNohash": {
+		"message": "No good hashes found for the page, only basic protection enabled",
+		"description": "Error message to display when enough hashes were not found for the current page"
+	},
+	"injectAckModalError": {
+		"message": "Ran into errors protectecting the page",
+		"description": "Error message when some unexpected error occured while adding page to protected"
+	},
+	"protectPageTitle": {
+		"message": "Protect Page",
+		"description": "Title on modal box for protect page modal"
+  },
+  "protectPageMainMessage":{
+      "message":"Add page to Spotphish for protection?",
+      "description":"Main message on protect page modal"
+  },
+  "protectPageExtraMessage":{
+      "message":"By protecting this page, you will add this page to Spotphish. We will actively protect you against phishing attempts for the current page.",
+      "description":"Extra message on pretect page modal"
+  },
+  "protectPageButtonProtect" :{
+      "message":"Protect!",
+      "description":"Protect button"
+  },
+  "templateMactchedTitle":{
+      "message":"Template Matched",
+      "description":"Title on the templete matched modal"
+  },
+  "templateMatchedMessage":{
+      "message":"This looks like",
+      "description":"First part of the message when template matched"
+  },
+  "okButton":{
+      "message":"OK",
+      "description":"ok button"
+  },
+  "templateNotMatchedMessage":{
+      "message":"No template matches found for this page.",
+      "description": "message whene no match found for template"
+  }
+}

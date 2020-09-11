@@ -91,7 +91,75 @@ var redFlagSites =[{
         "templateName":"Dropbox-2",
         "logo":"assets/img/db2.png"
     }]
-}];
+}/*, {//---------------------------------------------------------------------------
+    "site": "Axis Bank",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: "https://www.axisbank.com/"},
+        {url: "https://www.axisbank.com/bank-smart/internet-banking/getting-started"},
+        {url: "https://retail.axisbank.co.in/wps/portal/rBanking/axisebanking/AxisRetailLogin/!ut/p/a1/04_Sj9CPykssy0xPLMnMz0vMAfGjzOKNAzxMjIwNjLwsQp0MDBw9PUOd3HwdDQwMjIEKIoEKDHAARwNC-sP1o_ArMYIqwGNFQW6EQaajoiIAVNL82A!!/dl5/d5/L2dBISEvZ0FBIS9nQSEh/?_ga=2.176901798.2087957965.1597285660-2077410702.1597035646"}
+    ],
+    "templates": [{
+        "templateName": "Axis-Bank-1",
+        "logo": "assets/img/Axis-Bank-1.png"
+    }, {
+        "templateName":"Axis-Bank-2",
+        "logo":"assets/img/Axis-Bank-2.png"
+    }]
+}, {
+    "site": "Bank of Baroda",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: "https://www.bankofbaroda.in/"},
+        {url: "https://www.bobibanking.com/"},
+        {url: "https://www.bankofbaroda.in/login.htm"},
+        {url: "https://feba.bobibanking.com/corp/AuthenticationController?FORMSGROUP_ID__=AuthenticationFG&__START_TRAN_FLAG__=Y&FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=1&BANK_ID=012&language=English"}
+    ],
+    "templates": [{
+        "templateName": "Bank-of-Baroda-1",
+        "logo": "assets/img/Bank-of-Baroda-1.png"
+    }, {
+        "templateName":"Bank-of-Baroda-2",
+        "logo": "assets/img/Bank-of-Baroda-2.png"
+    }]
+}, {
+    "site": "HDFC Bank",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: "https://www.hdfcbank.com/"},
+        {url: "https://netbanking.hdfcbank.com/netbanking/?_ga=2.209993557.1157941487.1597288009-2143975229.1597036634"},
+        {url: "https://v1.hdfcbank.com/assets/popuppages/netbanking.htm"}
+    ],
+    "templates": [{
+        "templateName": "HDFC-Bank-1",
+        "logo": "assets/img/HDFC-Bank-1.png"
+    }, {
+        "templateName": "HDFC-Bank-2",
+        "logo": "assets/img/HDFC-Bank-2.png"
+    }, {
+        "templateName": "HDFC-Bank-3",
+        "logo": "assets/img/HDFC-Bank-3.png"
+    }]
+}/*, {
+    "site": "",
+    "enabled": true,
+    "type": "default",
+    "url": [
+        {url: ""},
+        {url: ""}
+    ],
+    "templates": [{
+        "templateName": "",
+        "logo": "assets/img/.png"
+    }, {
+        "templateName":"",
+        "logo":"assets/img/.png"
+    }]
+}*/
+];
 
 //Domains/sites that are skipped completely for red flaf approach.
 var skipDomains = [ {
@@ -135,5 +203,33 @@ var skipDomains = [ {
                         "site": "dropbox.com",
                         "whiteListed":true,
                         "domains": ["dropbox.com"]
-                    }
+                    }/*, {
+                        "name": "Axis Bank",
+                        "site": "axisbank.com",
+                        "whiteListed":true,
+                        "domains": ["axisbank.com",
+                                    "retail.axisbank.co.in"
+                                ]
+                    }, {
+                        "name": "Bank of Baroda",
+                        "site": "bankofbaroda.in",
+                        "whiteListed":true,
+                        "domains": ["bankofbaroda.in",
+                                    "bobibanking.com",
+                                    "feba.bobibanking.com"
+                                ]
+                    }, {
+                        "name": "HDFC Bank",
+                        "site": "hdfcbank.com",
+                        "whiteListed":true,
+                        "domains": ["hdfcbank.com",
+                                    "netbanking.hdfcbank.com",
+                                    "v1.hdfcbank.com"
+                                ]
+                    }/*, {
+                        "name": "",
+                        "site": "",
+                        "whiteListed":true,
+                        "domains": [""]
+                    }*/
 ];

@@ -3,11 +3,30 @@
  * This program is free software - see the file LICENSE for license details.
  */
 
+const loadImageSync = (imageUrl, canvasElement) => {
+    return new Promise((resolve, reject) => {
+        let image = new Image();
+        image.onload = () => {
+            if (canvasElement) {
+                canvasElement.width = image.width;
+                canvasElement.height = image.height;
+            }
+            resolve(image);
+        };
+        image.onerror = () => {
+            reject("Error: Unable to load image");
+        };
+        image.src = imageUrl;
+    });
+};
+
 let Sites = {
 
-    safe: [], /* flattened list of strings, all enabled safe domains */
+    safe: [],
+    /* flattened list of strings, all enabled safe domains */
     templates: [],
-    sites: [], /* all sites, merged with user-defined changes */
+    sites: [],
+    /* all sites, merged with user-defined changes */
 
     /* db */
     dbDefaultSites: null,
@@ -29,29 +48,29 @@ let Sites = {
      * Returns site object or undefined.
      */
 
-    getSite: function(url, filter="enabled") {
+    getSite: function(url, filter = "enabled") {
         const host = url.includes("://") ? getPathInfo(url).host : url,
             ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
-                (filter === "exists") ? x => !x.deleted : x => true;
+            (filter === "exists") ? x => !x.deleted : x => true;
         const found = this.sites.filter(ff)
             .filter(s => _.find(s.domains, y => host.endsWith(y)));
         return _.cloneDeep(found[0]);
     },
 
-    getSiteByName: function(name, filter="enabled") {
+    getSiteByName: function(name, filter = "enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
         return _.cloneDeep(_.find(this.sites.filter(ff), x => x.name === name));
     },
 
-    getProtectedURL: function(url, filter="enabled") {
+    getProtectedURL: function(url, filter = "enabled") {
         const url1 = stripQueryParams(url),
-            ff = (filter === "enabled") ? x => !x.deleted && !x.disabled && x.url === url1:
-                (filter === "exists") ? x => !x.deleted && x.url === url1: x => x.url === url1;
+            ff = (filter === "enabled") ? x => !x.deleted && !x.disabled && x.url === url1 :
+            (filter === "exists") ? x => !x.deleted && x.url === url1 : x => x.url === url1;
         const site = this.getSite(url1);
         if (site) {
             const found = _.find(site.protected, ff),
-                u = found ? Object.assign(_.cloneDeep(found), {site: site.name}) : null;
+                u = found ? Object.assign(_.cloneDeep(found), { site: site.name }) : null;
             return u;
         }
         return null;
@@ -62,7 +81,7 @@ let Sites = {
         return _.cloneDeep(_.find(this.safe, x => host.endsWith(x)));
     },
 
-    getSites: function(filter="enabled") {
+    getSites: function(filter = "enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
         let data = this.sites.filter(ff);
@@ -73,7 +92,7 @@ let Sites = {
         return _.cloneDeep(this.templates);
     },
 
-    getFeeds: function(filter="enabled") {
+    getFeeds: function(filter = "enabled") {
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
         return _.cloneDeep(this.feedList.filter(ff));
@@ -92,10 +111,10 @@ let Sites = {
 
     updateDefaultSites: function(data) {
         if (Array.isArray(data)) {
-            return  this.dbDefaultSites.putBatch(data)
+            return this.dbDefaultSites.putBatch(data)
                 .then(x => this.sync());
         } else {
-            return  this.dbDefaultSites.put(data)
+            return this.dbDefaultSites.put(data)
                 .then(x => this.sync());
         }
     },
@@ -112,8 +131,8 @@ let Sites = {
         const site = this.getSite(domain, "all");
         let out = {
             name: site ? site.name : _.capitalize(p.sld),
-            src: site ? site.src : "user_defined", safe:
-            [{domain}]
+            src: site ? site.src : "user_defined",
+            safe: [{ domain }]
         };
         const cur = _.cloneDeep(this.customSites.find(s => s.name === out.name)) || {};
         if (site && site.deleted) {
@@ -134,7 +153,6 @@ let Sites = {
         return this.dbCustomSites.put(data)
             .then(x => this.sync());
     },
-
     addProtectedURL: function(url, logo) {
         const url1 = stripQueryParams(url),
             site = this.getSite(url1, "exists"),
@@ -146,42 +164,57 @@ let Sites = {
             if (!p.sld) {
                 return Promise.reject(new Error(`Invalid hostname ${host}`));
             }
-            data = {name: _.capitalize(p.sld), src: "user_defined"};
+            data = { name: _.capitalize(p.sld), src: "user_defined" };
         } else {
             /* Site exists, may be disabled */
-            data = {name: site.name, src: site.src, disabled: false};
+            data = { name: site.name, src: site.src, disabled: false };
         }
 
-        data.protected = [{url: url1, disabled: false, deleted: false}];
+        data.protected = [{ url: url1, disabled: false, deleted: false }];
 
         let res = Promise.resolve(true);
         const cur = _.find(this.customSites, x => x.name === data.name) || {};
 
-        if (logo) {
-            let pattern;
-            res = res.then(x => createPatterns(logo))
-                .then(result => {
-                    pattern = {
-                        base64: logo,
-                        patternCorners: result.patternCorners,
-                        patternDescriptors: result.patternDescriptors,
-                        site: data.name,
-                        page: url1,
-                        checksum: CryptoJS.SHA256(logo).toString()
-                    };
-                    return this.dbTemplateList.put(pattern);
-                }).then(x => {
-                    data.templates = [{page: url1, checksum: pattern.checksum}];
-                    const out = mergeSite(data, cur);
-                    return this.dbCustomSites.put(out);
-                });
-        } else {
-            const out = mergeSite(data, cur);
-            res = res.then(x => this.dbCustomSites.put(out));
-        }
-
+        const out = mergeSite(data, cur);
+        res = res.then(x => this.dbCustomSites.put(out));
         res = res.then(x => this.sync());
         return res;
+
+    },
+    addProtectedURLWithHash: function(url, hashes) {
+        const url1 = stripQueryParams(url),
+            site = this.getSite(url1, "exists"),
+            host = getPathInfo(url).host;
+        let data;
+
+        if (!site) {
+            const p = psl.parse(host);
+            if (!p.sld) {
+                return Promise.reject(new Error(`Invalid hostname ${host}`));
+            }
+            data = { name: _.capitalize(p.sld), src: "user_defined", disabled: false };
+        } else {
+            /* Site exists, may be disabled */
+            data = { name: site.name, src: site.src, disabled: false };
+        }
+
+        data.protected = [{ url: url1, disabled: false, deleted: false }];
+
+        let res = Promise.resolve(true);
+        const cur = _.find(this.customSites, x => x.name === data.name) || {};
+
+        if (hashes) {
+            data.hashes = hashes;
+        }
+        data.templates = [{ page: url1 }];
+        const out = mergeSite(data, cur);
+        let res1 = res.then(x => this.dbCustomSites.put(out));
+
+        let res2 = res1.then(x => {
+            console.log(x);
+            return this.sync();
+        });
+        return res2;
     },
 
     removeProtectedURL: function(url) {
@@ -194,18 +227,17 @@ let Sites = {
         if (!_.find(site.protected, x => x.url === url1)) {
             return Promise.reject(new Error(`Protected URL not found: ${url1}`));
         }
-        const csite = _.cloneDeep(_.find(this.customSites, x => x.name === site.name)) ||
-                {name: site.name, src: site.src};
+        const csite = _.cloneDeep(_.find(this.customSites, x => x.name === site.name)) || { name: site.name, src: site.src };
         csite.protected = csite.protected || [];
         csite.templates = csite.templates || [];
 
         if (_.find(csite.protected, x => x.url === url1)) {
             csite.protected = csite.protected.filter(x => x.url !== url1);
             if (csite.src !== "user_defined") {
-                csite.protected.push({url: url1, deleted: true});
+                csite.protected.push({ url: url1, deleted: true });
             }
         } else {
-            csite.protected.push({url: url1, deleted: true});
+            csite.protected.push({ url: url1, deleted: true });
         }
 
         if (_.find(csite.templates, x => x.page && x.page === url1)) {
@@ -218,7 +250,7 @@ let Sites = {
             }
         }
         return this.dbCustomSites.put(csite)
-            .then( x => this.sync());
+            .then(x => this.sync());
     },
 
     removeSite: function(name) {
@@ -227,7 +259,7 @@ let Sites = {
             return Promise.reject(new Error(`Site does not exist: ${name}`));
         }
         let res = (site.src === "user_defined") ? this.dbCustomSites.remove(name) :
-            this.dbCustomSites.put({name, src: site.src, deleted: true});
+            this.dbCustomSites.put({ name, src: site.src, deleted: true });
         return res.then(x => this.sync());
     },
 
@@ -237,10 +269,10 @@ let Sites = {
             return Promise.reject(new Error(`Site does not exist: ${name}`));
         }
         const cur = _.find(this.customSites, x => x.name === site.name);
-        let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
+        let out = cur ? _.cloneDeep(cur) : { name: site.name, src: site.src };
         out.disabled = !enable;
-        let protected  = site.protected.map(x => (x.disabled = !enable, x));
-        let templates  = site.templates.map(x => (x.disabled = !enable, x));
+        let protected = site.protected.map(x => (x.disabled = !enable, x));
+        let templates = site.templates.map(x => (x.disabled = !enable, x));
         out.protected = protected;
         out.templates = _.cloneDeep(templates);
         return this.dbCustomSites.put(out)
@@ -257,7 +289,7 @@ let Sites = {
         const templates = site.templates.filter(x => !x.deleted && x.page && x.page === url);
         delete url1["site"];
         const cur = _.find(this.customSites, x => x.name === site.name);
-        let out = cur ? _.cloneDeep(cur) : {name: site.name, src: site.src};
+        let out = cur ? _.cloneDeep(cur) : { name: site.name, src: site.src };
         url1.disabled = !enable;
         out.protected = [url1];
         if (templates.length) {
@@ -278,7 +310,7 @@ let Sites = {
         let defaultSites, customSites;
         return this.dbTemplateList.getAll()
             .then(x => this.templateList = x)
-            .then (x => this.dbDefaultSites.getAll())
+            .then(x => this.dbDefaultSites.getAll())
             .then(x => defaultSites = x)
             .then(x => this.dbCustomSites.getAll())
             .then(x => customSites = x)
@@ -291,7 +323,7 @@ let Sites = {
             site.templates = site.templates || [];
             site.safe = site.safe || [];
             site.safe = _.uniq(site.safe.concat(site.protected.filter(x => !x.deleted && !x.disabled)
-                .map(p => ({domain: getPathInfo(p.url).host}))));
+                .map(p => ({ domain: getPathInfo(p.url).host }))));
             site.domains = _.uniq(site.safe.map(s => s.domain)
                 .concat(site.protected.filter(x => !x.deleted).map(p => getPathInfo(p.url).host)));
             return site;
@@ -314,7 +346,7 @@ let Sites = {
             this.sites = sites.filter(s => !!s.protected.length);
             this.safe = _.uniq(sites.filter(s => !s.deleted && !s.disabled)
                 .map(s => s.safe.filter(x => !x.deleted && !x.disabled).map(x => x.domain))
-                .reduce((a,b) => a.concat(b),[]));
+                .reduce((a, b) => a.concat(b), []));
         }
 
         function syncTemplates() {
@@ -323,7 +355,7 @@ let Sites = {
             /* flattened list of all templates, annotated by site name */
             const templates = this.sites.filter(x => !x.deleted && x.templates)
                 .map(y => y.templates.map(z => (z.site = y.name, z)))
-                .reduce((a,b) => a.concat(b),[]);
+                .reduce((a, b) => a.concat(b), []);
 
             const checksums = templates.filter(x => !x.deleted).map(y => y.checksum);
             const garbageTemplates = this.templateList.filter(x => checksums.indexOf(x.checksum) === -1)
@@ -339,13 +371,17 @@ let Sites = {
 
             if (newTemplates) {
                 const np = newTemplates.filter(t => t.image || t.base64)
-                    .map(x => createPatterns((x.image || x.base64))
-                        .then(result => {
-                            x.base64 = result.base64;
-                            x.patternCorners = result.patternCorners;
-                            x.patternDescriptors = result.patternDescriptors;
+                    .map(x => loadImageSync((x.image || x.base64))
+                        .then(image => {
+                            var canvas = document.createElement("canvas");
+                            canvas.width = image.width;
+                            canvas.height = image.height;
+                            var ctx = canvas.getContext("2d");
+                            ctx.drawImage(image, 0, 0, image.width, image.height);
+                            x.base64 = canvas.toDataURL("image/png");
                             return x;
-                        }).then(x => this.dbTemplateList.put(x))
+                        })
+                        .then(x => this.dbTemplateList.put(x))
                         .catch(x => (console.log(x), null)));
 
                 res = res.then(x => Promise.all(np));
@@ -357,9 +393,9 @@ let Sites = {
                     this.templateList = x;
                     const ff = x => !x.deleted && !x.disabled;
                     const templates = this.sites.filter(x => !x.deleted && !x.disabled &&
-                        x.templates && x.protected && x.protected.filter(ff).length)
+                            x.templates && x.protected && x.protected.filter(ff).length)
                         .map(y => y.templates)
-                        .reduce((a,b) => a.concat(b),[]);
+                        .reduce((a, b) => a.concat(b), []);
 
                     const checksums = templates.filter(x => !x.deleted && !x.disabled)
                         .map(y => y.checksum);
@@ -375,13 +411,14 @@ let Sites = {
     },
 
     init: function() {
-        this.dbDefaultSites = new Pdb({storeName: "default_sites", keyPath: "name"});
-        this.dbCustomSites = new Pdb({storeName: "custom_sites", keyPath: "name"});
-        this.dbTemplateList = new Pdb({storeName: "template_list", keyPath: "checksum"});
-        this.dbFeedList = new Pdb({storeName: "feed_list", keyPath: "src"});
+        this.dbDefaultSites = new Pdb({ storeName: "default_sites", keyPath: "name" });
+        this.dbCustomSites = new Pdb({ storeName: "custom_sites", keyPath: "name" });
+        this.dbTemplateList = new Pdb({ storeName: "template_list", keyPath: "checksum" });
+        this.dbFeedList = new Pdb({ storeName: "feed_list", keyPath: "src" });
 
         return Promise.all([this.dbDefaultSites.ready(), this.dbCustomSites.ready(),
-            this.dbTemplateList.ready(), this.dbFeedList.ready()])
+                this.dbTemplateList.ready(), this.dbFeedList.ready()
+            ])
             .then(x => this.sync())
             .then(x => this.syncFeeds());
     },
@@ -396,7 +433,7 @@ let Sites = {
         this.customSites.forEach(csite => {
             if (csite.templates) {
                 csite.templates.forEach(ctemp => {
-                    let imageTemplete =  this.templateList.filter(x => x.checksum === ctemp.checksum)[0];
+                    let imageTemplete = this.templateList.filter(x => x.checksum === ctemp.checksum)[0];
                     if (imageTemplete) {
                         if (imageTemplete.image) {
                             ctemp["image"] = imageTemplete.image;
@@ -428,7 +465,7 @@ let Sites = {
 
 function mergeSite(update, old) {
     const unionProperty = {
-        templates : "checksum",
+        templates: "checksum",
         safe: "domain",
         protected: "url"
     };

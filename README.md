@@ -39,29 +39,25 @@ page versus an imitation page in the following manner:
     domain.
 
 Screenshots are processed locally in the browser and discarded immediately;
-they are not stored or sent to an external site.  More information and
-technical details [here](doc/rationale.md).
+they are not stored or sent to an external site.
 
-![Paypal Greenflag]
-
-*Real Paypal login page*
-
-<br>
-
-![Paypal Redflag]
-
-*Paypal phishing page*
-
+#### *Real Axis Bank Page*
+![Axis Bank Green Flag]
 ## Installation
 
 To get this running from the source code on your local machine:
 
 - Clone this git repository
+- Navigate to "chrome://flags".
+- Search for WebGL.
+- Turn WebGL ON.
 - Navigate to "chrome://extensions".
 - Click the checkbox next to "Developer mode" in the upper right hand corner.
 - Click the "Load unpacked extension..." button below the "Extensions" title.
 - Select the "spotphish" folder from your filesystem
 - Existing pages will not be affected; reload for protection
+
+![Installation]
 
 ## Usage
 
@@ -70,10 +66,6 @@ Once the plugin is installed, try visiting the following links:
 - [Paypal real login page](https://www.paypal.com/signin): You should see a
   popup with a security image, which will fade in a few seconds. This is an
   indication that the page is a protected page and its URL has been verified.
-
-- [Paypal phishing sample](http://www.phishtank.com/phish_detail.php?phish_id=5123590)
-  (Don't worry, it's harmless): This page contains a screenshot of a Paypal phishing page
-  and will trigger an alert warning about possible phishing.
 
 To customize the behaviour of the plugin, click the icon at the right of the address bar
 and select *Settings*.
@@ -206,7 +198,7 @@ MIT
 
 Email us at <dev@spotphish.com> or follow [@spotphish](https://twitter.com/spotphish).
 
-[Paypal Greenflag]: doc/img/paypal-greenflag.gif
-[Paypal Redflag]: doc/img/paypal-redflag.gif
+[Axis Bank Green Flag]: doc/img/axis-bank-green-flag.gif
+[Installation]: doc/img/install.gif
 [foab]: https://arxiv.org/abs/1705.08568
 [icon]: https://en.wikipedia.org/wiki/Bend_(heraldry)#/media/File:Bend_Sinister_demo.svg
