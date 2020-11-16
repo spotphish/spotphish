@@ -107,22 +107,28 @@ function startChecking() {
 }
 
 function showGreenflag(msg) {
-    chrome.storage.local.get("secure_img", function(result) {
-        var data = result.secure_img;
-        var img = document.createElement("img");
-        img.id = "kp-secure-img";
-        img.src = data.src;
+    chrome.storage.local.get("adv_config", function(result) {
+       let imgVisible=  result.adv_config.show_secure_image;
+       if(imgVisible){
+        chrome.storage.local.get("secure_img", function(result) {
+            var data = result.secure_img;
+            var img = document.createElement("img");
+            img.id = "kp-secure-img";
+            img.src = data.src;
 
-        const greenflag = {
-            title: "Security Image",
-            type: "info",
-            img: img,
-            extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
-            buttons: [],
-            dismiss_after: 3500
-        };
-        dialog(greenflag);
+            const greenflag = {
+                title: "Security Image",
+                type: "info",
+                img: img,
+                extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
+                buttons: [],
+                dismiss_after: 1000
+            };
+            dialog(greenflag);
+        });
+       }
     });
+
 }
 
 function showRedflag(msg) {

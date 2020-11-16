@@ -4,7 +4,7 @@
  */
 
 /*global chrome */
-
+var bkg = chrome.extension.getBackgroundPage();
 (function () {
     var curTab;
     var handleTabInfo = function(response) {
@@ -56,6 +56,7 @@
                 chrome.runtime.sendMessage({op: "test_now", tab: curTab});
                 window.close();
             });
+
             $("#settingsLink").on("click", e => {
                 chrome.tabs.create({
                     url: chrome.extension.getURL("option.html")

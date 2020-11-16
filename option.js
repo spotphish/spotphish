@@ -254,6 +254,9 @@ function initAdvanceTab() {
     if (bkg.getDebugFlag()) {
         $("#kp-debug-switch").click();
     }
+    if(bkg.getSecureImageFlag()){
+        $("#kp-secure-image-switch").click();
+    }
 }
 
 $(document).ready(function() {
@@ -411,6 +414,10 @@ $(document).ready(function() {
                 if (val) {
                     $("#kp-debug-switch").click();
                 }
+                let val1 = $("#kp-secure-image-switch").is(":checked");
+                if (val1) {
+                    $("#kp-secure-image-switch").click();
+                }
             });
         }
     });
@@ -466,6 +473,14 @@ $(document).ready(function() {
             bkg.setDebugFlag(true);
         } else {
             bkg.setDebugFlag(false);
+        }
+    });
+    $("#kp-secure-image-switch").on("click", function(e) {
+        var val = $(this).is(":checked");
+        if (val) {
+            bkg.setSecureImageFlag(true);
+        } else {
+            bkg.setSecureImageFlag(false);
         }
     });
 });
