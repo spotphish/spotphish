@@ -257,6 +257,8 @@ function initAdvanceTab() {
     if(bkg.getSecureImageFlag()){
         $("#kp-secure-image-switch").click();
     }
+    $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
+
 }
 
 $(document).ready(function() {
@@ -401,7 +403,7 @@ $(document).ready(function() {
     });
 
     $("#kp-restore-factory").on("click", function(e) {
-        if (confirm("This will delete all personal images, protected pages and image snippets  added by you. Restore factory defaults?")) {
+        if (confirm("This will delete all personal images, protected pages and image snippets added by you. Restore factory defaults?")) {
             bkg.cleanDB(function(){
                 bkg.setDefaultSecurityImage(function () {
                     $("#imagegallery .cutsom-image").remove();
@@ -415,9 +417,12 @@ $(document).ready(function() {
                     $("#kp-debug-switch").click();
                 }
                 let val1 = $("#kp-secure-image-switch").is(":checked");
-                if (val1) {
+                if (!val1) {
                     $("#kp-secure-image-switch").click();
                 }
+                $("#kp-secure-image-duration").val(1);
+                bkg.setSecureImageDuration(1);
+
             });
         }
     });
@@ -481,6 +486,15 @@ $(document).ready(function() {
             bkg.setSecureImageFlag(true);
         } else {
             bkg.setSecureImageFlag(false);
+        }
+    });
+    $("#kp-secure-image-duration").on("change paste keyup", function(e) {
+        var val = $(this).val();
+        if(val===""){
+            bkg.setSecureImageDuration(1);
+        }
+        else{
+            bkg.setSecureImageDuration(val);
         }
     });
 });

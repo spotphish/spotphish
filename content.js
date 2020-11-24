@@ -2,7 +2,6 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
 const POLL_INTERVAL = 2000; /* Periodicity of redflag candidate check */
 const MAX_POLLS = 30; /* Give up after polling x times */
 
@@ -17,6 +16,7 @@ let DEBUG = true;
 main();
 
 function main() {
+
     if (window === top) {
         port = chrome.runtime.connect();
         port.onMessage.addListener(msg => {
@@ -109,6 +109,8 @@ function startChecking() {
 function showGreenflag(msg) {
     chrome.storage.local.get("adv_config", function(result) {
        let imgVisible=  result.adv_config.show_secure_image;
+       let imgVisibilityDuration=  result.adv_config.secure_image_duration;
+
        if(imgVisible){
         chrome.storage.local.get("secure_img", function(result) {
             var data = result.secure_img;
@@ -122,7 +124,7 @@ function showGreenflag(msg) {
                 img: img,
                 extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
                 buttons: [],
-                dismiss_after: 1000
+                dismiss_after: (imgVisibilityDuration*1000)
             };
             dialog(greenflag);
         });

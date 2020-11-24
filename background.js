@@ -11,7 +11,7 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
-let DEBUG = false,SECURE_IMAGE=true,
+let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
     globalCurrentTabId,
     tabInfoList = {};
 
@@ -154,9 +154,12 @@ function inject (tab) {
 }
 
 function init(msg, sender, respond) {
-    const ti = Tabinfo.get(sender.tab.id),
-        tab = ti.tab;
-    //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    const ti = Tabinfo.get(sender.tab.id);
+    if(ti==undefined){
+        return;
+    }
+    const  tab = ti.tab;
+      //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
     if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
     if (END_STATES.indexOf(ti.state) !== -1) {
@@ -251,10 +254,10 @@ function watchdog() {
 }
 
 function redflagCheck(ti, testNow) {
-    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
+    // console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
     return scanTab(ti)
         .then(res => {
-            //console.log("SCAN", ti.tab.url, ti.tab.state, res);
+            // console.log("SCAN", ti.tab.url, ti.tab.state, res);
             if (res.match) {
                 const site = res.match.template.site;
                 if (testNow) {
@@ -413,6 +416,7 @@ function getProtectedSitesData() {
     }).map( site => {
         if (site.templates) {
             site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
+
                 let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
                 if (found) {
                     template.base64 = found.base64;
@@ -424,6 +428,8 @@ function getProtectedSitesData() {
         }
         return site;
     });
+    console.log(data);
+
     return data;
 }
 
@@ -510,7 +516,7 @@ function initAdvConfigs() {
         if (data) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
-
+            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
         } else {
             saveAdvConfig();
         }
@@ -518,7 +524,7 @@ function initAdvConfigs() {
 }
 
 function saveAdvConfig() {
-    chrome.storage.local.set({adv_config : {debug: DEBUG,show_secure_image:SECURE_IMAGE}});
+    chrome.storage.local.set({adv_config : {debug: DEBUG,show_secure_image:SECURE_IMAGE,secure_image_duration:SECURE_IMAGE_DURATION}});
 }
 
 function setDebugFlag(enable) {
@@ -536,6 +542,14 @@ function setSecureImageFlag(enable) {
 
 function getSecureImageFlag() {
     return SECURE_IMAGE;
+}
+function setSecureImageDuration(value) {
+    SECURE_IMAGE_DURATION = value;
+    saveAdvConfig();
+}
+
+function getSecureImageDuration() {
+    return SECURE_IMAGE_DURATION;
 }
 
 function setIcon(ti, state, info) {

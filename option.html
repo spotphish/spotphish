@@ -176,7 +176,10 @@
                             <li class="mdl-list__item mdl-list__item--three-line">
                                 <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
                                     <i class="material-icons kp-settings-icon">imagegallery</i>
-                                    Show Secure Image
+                                    <span>Show Secure Image</span>
+                                    <span class="mdl-list__item-text-body">
+                                        Do you want to always show secure image?
+                                    </span>
 
                                 </span>
                                 <span
@@ -185,6 +188,26 @@
                                         for="kp-secure-image-switch">
                                         <input type="checkbox" id="kp-secure-image-switch" class="mdl-switch__input" />
                                     </label>
+                                </span>
+                            </li>
+                            <li class="mdl-list__item mdl-list__item--three-line">
+                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                    <i class="material-icons kp-settings-icon">access_time</i>
+                                    <span>Secure Image Duration</span>
+                                    <span class="mdl-list__item-text-body">
+                                        How long you want the secure image popup to last?
+                                    </span>
+
+                                </span>
+                                <span
+                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                    <div class="mdl-textfield mdl-js-textfield">
+                                        <input class="mdl-textfield__input" type="text" pattern="[0-9]*"
+                                            id="kp-secure-image-duration">
+                                        <label class="mdl-textfield__label" for="kp-secure-image-duration">
+                                            Seconds</label>
+                                        <span class="mdl-textfield__error">Number required!</span>
+                                    </div>
                                 </span>
                             </li>
                             <li class="mdl-list__item mdl-list__item--three-line">
