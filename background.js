@@ -318,6 +318,7 @@ function scanTab(ti) {
         let activeTemplates = Sites.getTemplates();
         for (let i = 0; i < activeTemplates.length; i++) {
             const template = activeTemplates[i];
+console.log(template);
             const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
                 template.patternDescriptors, template.site);
             if (res) {
@@ -406,6 +407,7 @@ function updateFeed(feed) {
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
+
     let data = Sites.getSites("exists").filter(x => {
         let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
         let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
@@ -428,7 +430,7 @@ function getProtectedSitesData() {
         }
         return site;
     });
-    console.log(data);
+
 
     return data;
 }

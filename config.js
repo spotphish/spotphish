@@ -1,7 +1,7 @@
 var defaultFeeds = [
     {
         "name": "main",
-        "src": "http://localhost/Max/main.json"
+        "src": "https://spotphish.github.io/feeds/main/main.json"
     }
 ];
 
