@@ -169,6 +169,9 @@ let Sites = {
                         page: url1,
                         checksum: CryptoJS.SHA256(logo).toString()
                     };
+                    console.log("TEMPLATE PATTERN");
+                    console.log(pattern);
+
                     return this.dbTemplateList.put(pattern);
                 }).then(x => {
                     data.templates = [{page: url1, checksum: pattern.checksum}];
