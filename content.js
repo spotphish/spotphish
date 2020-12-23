@@ -23,6 +23,7 @@ function main() {
             if (!msg.op) {
                 console.log("KP: Invalid msg from background?!", msg);
             }
+
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
@@ -43,6 +44,7 @@ function main() {
 
     $(document).ready(do_init);
 }
+
 
 function do_init() {
     const init = { op: "init", top: false };

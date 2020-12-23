@@ -16,6 +16,15 @@
     <script type="text/javascript" src="externalCode/code.getmdl.io/1.3.0/material.min.js"></script>
     <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="option.js"></script>
+    <style>
+        .mdl-dialog {
+            width: 50%;
+        }
+
+        .full {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
@@ -202,13 +211,105 @@
                                 <span
                                     class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
                                     <div class="mdl-textfield mdl-js-textfield">
-                                        <input class="mdl-textfield__input" type="text" pattern="[0-9]*"
+                                        <input class="mdl-textfield__input" type="text" pattern="^\d*(\.\d{0,2})?$"
                                             id="kp-secure-image-duration">
                                         <label class="mdl-textfield__label" for="kp-secure-image-duration">
                                             Seconds</label>
-                                        <span class="mdl-textfield__error">Number required!</span>
+                                        <span class="mdl-textfield__error">Number upto 2 decimals allowed</span>
                                     </div>
                                 </span>
+                            </li>
+
+                            <li class="mdl-list__item  mdl-list__item--three-line">
+                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                    <i class="material-icons kp-settings-icon">developer_board</i>
+                                    <span>ML model</span>
+                                    <span class="mdl-list__item-text-body">
+                                        Customize your own models
+                                    </span>
+
+                                </span>
+                                <span
+                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                    <button class="full mdl-button mdl-button--colored mdl-js-button mdl-button--raised"
+                                        id="kp-show-add-model-dialog">Add Model</button>
+
+                                    <dialog class="mdl-dialog">
+                                        <h4 class="mdl-dialog__title">Add New ML Model</h4>
+                                        <div class="mdl-dialog__content">
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                <input class="mdl-textfield__input" type="text" id="label">
+                                                <label class="mdl-textfield__label" for="label">Label (Display
+                                                    name of your model)</label>
+                                            </div>
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                <input class="mdl-textfield__input" type="text" id="name">
+                                                <label class="mdl-textfield__label" for="name">Name of the class in
+                                                    your algorithm</label>
+
+                                            </div>
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                <input class="mdl-textfield__input" type="url" id="src">
+                                                <label class="mdl-textfield__label" for="src">Source url of your
+                                                    algorithm</label>
+                                                <span class="mdl-textfield__error">Invalid Url</span>
+
+                                            </div>
+
+                                            <h5>Dependencies</h5>
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                <input class="mdl-textfield__input" type="url" id="dependency">
+                                                <label class="mdl-textfield__label" for="dependency">Dependency
+                                                    url</label>
+                                                <span class="mdl-textfield__error">Invalid Url</span>
+                                            </div>
+                                            <button id="addDependency" class="mdl-button  mdl-button--colored">
+                                                Add
+                                            </button>
+                                            <div id="dependencies">
+                                            </div>
+                                        </div>
+                                        <div class="mdl-dialog__actions">
+                                            <button id="addModel" type="button"
+                                                class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised">Done</button>
+                                            <button type="button" class="mdl-button close">Cancel</button>
+                                        </div>
+                                    </dialog>
+                                </span>
+                            </li>
+                            <li class="mdl-list__item">
+                                <div class="mdl-grid kp-max-width">
+                                    <div class="mdl-cell mdl-cell--1-col">
+                                    </div>
+                                    <div class="mdl-cell mdl-cell--10-col">
+                                        <ul id="kp-models" class="mdl-list ">
+                                            <!-- <li class="mdl-list__item  mdl-list__item--three-line">
+                                                <span class="mdl-list__item-primary-content ">
+                                                    <span>Template Matching</span>
+                                                    <span class="mdl-list__item-text-body">
+                                                        Match against various templates
+                                                    </span>
+
+                                                </span>
+                                                <span class="mdl-list__item-secondary-content ">
+                                                    <label class=" mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                                                        for="TemplateMatching">
+                                                        <input type="checkbox" id="TemplateMatching" checked
+                                                            class="mdl-switch__input" />
+                                                    </label>
+
+                                                </span>
+
+
+                                            </li> -->
+
+
+                                        </ul>
+                                    </div>
+                                    <div class="mdl-cell mdl-cell--1-col">
+                                    </div>
+
+                                </div>
                             </li>
                             <li class="mdl-list__item mdl-list__item--three-line">
                                 <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
@@ -220,7 +321,7 @@
                                 </span>
                                 <span
                                     class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <button class="mdl-button mdl-button mdl-js-button mdl-button--raised"
+                                    <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
                                         id="sp-backup">Backup</button>
                                 </span>
                             </li>
@@ -237,7 +338,7 @@
                                     <div style="height:0px;overflow:hidden">
                                         <input type="file" id="backup-file" name="fileInput" />
                                     </div>
-                                    <button class="mdl-button mdl-button mdl-js-button mdl-button--raised"
+                                    <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
                                         id="backupFileUpload">
                                         Upload File
                                     </button>
@@ -254,7 +355,7 @@
                                 </span>
                                 <span
                                     class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <button class="mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
+                                    <button class="full mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
                                         id="kp-restore-factory">Restore</button>
                                 </span>
                             </li>

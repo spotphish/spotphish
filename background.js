@@ -11,9 +11,11 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
-let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
-    globalCurrentTabId,
+let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=0.3,
+AVAILABLE_MODELS=[{name:"TemplateMatching",label:"Template Matching",selected:true}],
+globalCurrentTabId,
     tabInfoList = {};
+var prediction_model=new PredictionModel();
 
 loadDefaults();
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
@@ -67,18 +69,71 @@ Tabinfo.show = function() {
 
 chrome.runtime.onConnect.addListener(port => {
     const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
+
     setIcon(ti, "init");
 });
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
+function unInjectScripts(item){
+    if(item.name==="TemplateMatching"){
+        return;
+    }
+    if($("#"+item.name).length==0){
+
+       }else{
+        $("#"+item.name).empty();
+       }
+
+
+
+}
+function injectScripts(item){
+    if(item.name==="TemplateMatching"){
+        return;
+    }
+   if($("#"+item.name).length==0){
+    let di = document.createElement('div');
+    di.id=item.name;
+    document.body.appendChild(di);
+   }
+
+
+    let ga = document.createElement('script'); ga.type = 'text/javascript';
+        ga.src = item.src;
+        $("#"+item.name).append(ga);
+        for(let x of item.dependencies){
+            let ga1 = document.createElement('script'); ga1.type = 'text/javascript';
+                ga1.src = x;
+                $("#"+item.name).append(ga1);
+        }
+
+    /*webkitRequestFileSystem(PERSISTENT, 1024, function(filesystem) {
+        console.log(filesystem);
+        filesystem.root.getFile("vijaysharma", { create: true }, function(file) {
+        console.log(file.fullPath);
+         file.createWriter(function(writer) {
+        console.log(writer);
+          writer.addEventListener("write", function(event) {
+        //    location = file.toURL()
+        console.log("inside writer");
+          })
+          writer.addEventListener("error", console.error)
+          writer.write(new Blob([ "test" ]))
+         }, console.error)
+        }, console.error)
+       }, console.error)*/
+
+}
+  chrome.runtime.onMessage.addListener(async function(msg, sender, respond) {
+
     if (sender.tab) {
         const ti = Tabinfo.get(sender.tab.id);
         if (ti) {
             ti.update(sender.tab);
         }
     }
+
     if (msg.op === "init") {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
@@ -137,7 +192,8 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         removeSafeDomain(msg.domain, respond);
     } else if (msg.op === "add_safe_domain") {
         addSafeDomain(msg.domain, respond);
-    } else {
+    }
+    else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;
@@ -244,6 +300,7 @@ function watchdog() {
             let redcheck = false;
             while (ti.watches.length && now > ti.watches[0]) {
                 redcheck = true;
+
                 ti.watches.shift();
             }
             if (redcheck) {
@@ -253,104 +310,79 @@ function watchdog() {
     });
 }
 
-function redflagCheck(ti, testNow) {
-    // console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
-    return scanTab(ti)
-        .then(res => {
-            // console.log("SCAN", ti.tab.url, ti.tab.state, res);
-            if (res.match) {
-                const site = res.match.template.site;
-                if (testNow) {
-                    return ti.port.postMessage({op: "test_match", site, img:res.corr_img});
-                }
-                ti.nchecks++;
-                ti.state = "redflagged";
-                setIcon(ti, "redflagged", {site});
-                return ti.port.postMessage({op: "redflag", site, img:res.corr_img});
-            } else {
-                if (testNow) {
-                    return ti.port.postMessage({op: "test_no_match"});
-                }
-                ti.nchecks++;
-                if (ti.state !== "redflagged" && ti.watches.length === 0) {
-                    ti.state = "red_done";
-                }
-                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
-                    setIcon(ti, "checked"); // The page is checked atleast once.
-                }
+
+
+async function redflagCheck(ti,testNow){
+
+    const tab = ti.tab;
+
+
+    let screenshot=await snapTab(tab)
+        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
+        let result;
+        result=await prediction_model.predict(screenshot,AVAILABLE_MODELS);
+        console.log(result);
+
+        if(result.site!="NaN"){
+            let site = result.site+" "+result.confidence+ " %"
+            let corr_img=result.image;
+            if (testNow) {
+                return ti.port.postMessage({op: "test_match", site, img:corr_img});
             }
-        }).catch(e => console.log("redflagCheck error", e));
+            ti.nchecks++;
+            ti.state = "redflagged";
+            setIcon(ti, "redflagged", {site});
+            return ti.port.postMessage({op: "redflag", site, img:corr_img});
+        }else{
+            if (testNow) {
+                return ti.port.postMessage({op: "test_no_match"});
+            }
+            ti.nchecks++;
+            if (ti.state !== "redflagged" && ti.watches.length === 0) {
+                ti.state = "red_done";
+            }
+            if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
+                setIcon(ti, "checked"); // The page is checked atleast once.
+            }
+        }
 }
 
 /*
  * Screenshot a tab and match with all active templates
  */
 
-function scanTab(ti) {
-    const tab = ti.tab;
-    let screenshot, features, match;
-
-    return snapTab(tab)
-        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
-        .then(x => screenshot = x)
-        .then(screenshot => findOrbFeatures(screenshot))
-        .then(x => features = x)
-        .then(features => matchTemplates(features))
-        .then(x => match = x)
-        .then(match => makeCorrespondenceImage(match, screenshot, features))
-        .then(corr_img => ({match, corr_img}));
-
-    function snapTab(tab) {
-        return new Promise((resolve, reject) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
-        });
-    }
-
-    function normalizeScreenshot(image, width, height, dpr) {
-        const area = {x: 0, y: 0, w: width, h: height};
-        return crop(image, area, dpr, false);
-    }
-
-    function matchTemplates(scrFeatures) {
-        const scrCorners = scrFeatures.corners;
-        const scrDescriptors = scrFeatures.descriptors;
-        let t0 = performance.now();
-        let activeTemplates = Sites.getTemplates();
-        for (let i = 0; i < activeTemplates.length; i++) {
-            const template = activeTemplates[i];
-console.log(template);
-            const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
-                template.patternDescriptors, template.site);
-            if (res) {
-                let t1 = performance.now();
-                console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
-                res.template = template;
-                return Promise.resolve(res);
-            }
-        }
-        return Promise.resolve(null);
-    }
-
-    function makeCorrespondenceImage(match, screenshot, features) {
-        if (!match) {
-            return Promise.resolve(null);
-        }
-        return findCorrespondence(screenshot, features.corners , match.template, match.matches, match.matchCount,
-            match.mask);
-    }
+function snapTab(tab) {
+    console.log("snapTab");
+    return new Promise((resolve, reject) => {
+        chrome.tabs.captureVisibleTab(tab.windowId, { format: "png", quality: 100 }, (data) => resolve(data));
+    });
 }
+
+
+function normalizeScreenshot(image, width, height, dpr) {
+    console.log("normalize");
+
+    const area = {x: 0, y: 0, w: width, h: height};
+    return crop(image, area, dpr, false);
+}
+
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
     Tabinfo.remove(tabid);
 });
 
+
+
 chrome.runtime.onInstalled.addListener(function(details) {
+
+
     if (details.reason === "install") {
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
         update_flag = true;
     }
+
 });
 
 function initFeeds() {
@@ -477,8 +509,7 @@ function setDefaultSecurityImage(cb) {
         }
     });
 }
-
-function loadDefaults() {
+function  loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
     return Sites.init()
@@ -518,15 +549,30 @@ function initAdvConfigs() {
         if (data) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
-            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
+            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:0.3;
+            AVAILABLE_MODELS=data.available_models?data.available_models:[{name:"TemplateMatching",label:"Template Matching",selected:true}];
+            $.each(getAvailableModels(), function (i, item) {
+                if(item.selected){
+                    injectScripts(item);
+                }
+            });
         } else {
             saveAdvConfig();
         }
+
     });
 }
 
 function saveAdvConfig() {
-    chrome.storage.local.set({adv_config : {debug: DEBUG,show_secure_image:SECURE_IMAGE,secure_image_duration:SECURE_IMAGE_DURATION}});
+    chrome.storage.local.set(
+        {adv_config :
+            {debug: DEBUG,
+                show_secure_image:SECURE_IMAGE,
+                secure_image_duration:SECURE_IMAGE_DURATION,
+            available_models:AVAILABLE_MODELS
+
+            }});
+
 }
 
 function setDebugFlag(enable) {
@@ -554,6 +600,45 @@ function getSecureImageDuration() {
     return SECURE_IMAGE_DURATION;
 }
 
+
+
+function selectModel(model_name) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.selected=true;
+            injectScripts(item);
+        }
+    });
+saveAdvConfig();
+console.log(getAvailableModels());
+}
+function unSelectModel(model_name) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.selected=false;
+            unInjectScripts(item);
+
+        }
+    });
+saveAdvConfig();
+console.log(getAvailableModels());
+
+
+}
+
+function setAvailableModels(value) {
+    AVAILABLE_MODELS.push (value);
+    saveAdvConfig();
+}
+function removeAvailableModels(value) {
+    unSelectModel(value);
+    AVAILABLE_MODELS.splice(AVAILABLE_MODELS.findIndex(a => a.name ===value ) , 1)
+    console.log(AVAILABLE_MODELS);
+    saveAdvConfig();
+}
+function getAvailableModels() {
+    return AVAILABLE_MODELS;
+}
 function setIcon(ti, state, info) {
     const iconFolder = "assets/icons";
     let tabId = ti.tab.id,

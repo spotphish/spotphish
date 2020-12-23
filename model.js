@@ -166,6 +166,7 @@ let Sites = {
                         patternCorners: result.patternCorners,
                         patternDescriptors: result.patternDescriptors,
                         site: data.name,
+
                         page: url1,
                         checksum: CryptoJS.SHA256(logo).toString()
                     };

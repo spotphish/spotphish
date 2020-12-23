@@ -307,7 +307,37 @@
     },
     {
       "name": "SBI",
-      "src": "https://vijay-coriolis.github.io/main.json"
+      "src": "https://vijay-coriolis.github.io/main.json",
+      "protected": [
+        {
+          "url": "https://onlinesbi.com/"
+        },
+        {
+          "url": "https://www.sbiyono.sbi/index.html"
+        }
+      ],
+      "templates": [
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI.png",
+          "checksum": "2759a12caadf923aaa61463ee0b408d66e95ef1c0a8f0382b7c65d93b04a575b"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI1.png",
+          "checksum": "a069113420f2cea7a1e4259281ad862d6842dfa43ac68931d9dceb1f0a59abb3"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI2.png",
+          "checksum": "7e9074da25c6d700286e3514493442670c8464217d4d2209125f29e9b5f872de"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI3.png",
+          "checksum": "b33748edcfac749bb0ea114a799073a08279ce421099c76b74812491ce46e73b"
+        }
+      ]
     },
     {
       "name": "IDBI Bank",

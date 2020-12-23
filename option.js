@@ -5,7 +5,12 @@
 
 const defaultImages = ["kp1.gif", "kp2.jpg", "kp3.jpg", "kp4.jpg"];
 var bkg = chrome.extension.getBackgroundPage();
-
+var template_of_MLmodel={name:"",
+            src:"",
+            label:"",
+            dependencies:[],
+            selected:false
+        };
 function templateImage(src, favorite, imageClass) {
     const temp = `
     <div class="mdl-cell mdl-cell--4-col mdl-card set-image ${imageClass === undefined ? "" :  imageClass }">
@@ -257,8 +262,39 @@ function initAdvanceTab() {
     if(bkg.getSecureImageFlag()){
         $("#kp-secure-image-switch").click();
     }
-    $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
+    $.each(bkg.getAvailableModels(), function (i, item) {
+        $('#kp-models').append(`   <li  class="mdl-list__item  mdl-list__item--three-line">
+        <span class="mdl-list__item-primary-content ">
+            <span>${item.label}</span>
+            <span class="mdl-list__item-text-body">
+            ${item.src?item.src:item.label}
+            </span>
 
+        </span>
+        <span class="mdl-list__item-secondary-content ">
+            <label class=" mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                for="${item.name}">
+                <input type="checkbox" id="${item.name}" ${item.selected?"checked":""}
+                    class="mdl-switch__input" />
+            </label>
+
+        </span>
+        <span  class=" edit mdl-list__item-secondary-content ">
+            <button   ${item.name==="TemplateMatching"?"disabled":""}
+                class=" mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                <i class="material-icons">edit</i>
+            </button>
+        </span>
+        <span class= " delete mdl-list__item-secondary-content ">
+            <button ${item.name==="TemplateMatching"?"disabled":""}
+                class="  mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent  ">
+                <i class="material-icons">delete</i>
+            </button>
+        </span>
+
+    </li>`);
+    });
+    $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
 }
 
 $(document).ready(function() {
@@ -423,6 +459,8 @@ $(document).ready(function() {
                 $("#kp-secure-image-duration").val(1);
                 bkg.setSecureImageDuration(1);
 
+
+
             });
         }
     });
@@ -449,8 +487,8 @@ $(document).ready(function() {
 
 
     $(".kp-safelist-add-btn").on("click", function(e) {
-        var input = $("#kp-safelist-input").val().trim();
-        var val;
+        let input = $("#kp-safelist-input").val().trim();
+        let val;
         if (input.length > 0) {
             let urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?/;
             let continousString = /^\S*$/;
@@ -473,7 +511,7 @@ $(document).ready(function() {
 
     });
     $("#kp-debug-switch").on("click", function(e) {
-        var val = $(this).is(":checked");
+        let val = $(this).is(":checked");
         if (val) {
             bkg.setDebugFlag(true);
         } else {
@@ -481,15 +519,34 @@ $(document).ready(function() {
         }
     });
     $("#kp-secure-image-switch").on("click", function(e) {
-        var val = $(this).is(":checked");
+        let val = $(this).is(":checked");
         if (val) {
             bkg.setSecureImageFlag(true);
         } else {
             bkg.setSecureImageFlag(false);
         }
     });
+    $("#kp-models input").on("click", function(e) {
+
+        let val = $(this).is(":checked");
+        console.log(val);
+        if (val) {
+            bkg.selectModel($(this).attr('id'));
+        } else {
+            bkg.unSelectModel($(this).attr('id'));
+        }
+    });
+    $("#kp-models .delete").on("click", function(e) {
+        bkg.removeAvailableModels($(this).parent().find('input').attr("id"));
+        location.reload();
+
+    });
+    $("#kp-models .edit").on("click", function(e) {
+        alert($(this).parent().find('input').attr("id")+" Edited");
+
+    });
     $("#kp-secure-image-duration").on("change paste keyup", function(e) {
-        var val = $(this).val();
+        let val = $(this).val();
         if(val===""){
             bkg.setSecureImageDuration(1);
         }
@@ -497,4 +554,74 @@ $(document).ready(function() {
             bkg.setSecureImageDuration(val);
         }
     });
+
+    var dialog = document.querySelector('dialog');
+    var showDialogButton = document.querySelector('#kp-show-add-model-dialog');
+    if (! dialog.showModal) {
+      dialogPolyfill.registerDialog(dialog);
+    }
+    showDialogButton.addEventListener('click', function() {
+      dialog.showModal();
+    });
+    dialog.querySelector('.close').addEventListener('click', function() {
+      dialog.close();
+    });
+    dialog.querySelector('#addDependency').addEventListener('click', function() {
+      if( ! $('#dependency').val().includes("https://vijay-coriolis.github.io/")){
+      alert("Unauthorized domain");
+      $('#dependency').val("")
+      return;
+      }
+
+        template_of_MLmodel.dependencies.push($('#dependency').val());
+        $("#dependency").val("");
+        $("#dependencies").empty();
+        $.each(template_of_MLmodel.dependencies, function (i, item) {
+            $("#dependencies").append(`<p>${item}</p>`);
+        });
+
+      });
+      dialog.querySelector('#label').addEventListener("change", function(e) {
+        template_of_MLmodel.label=($(this).val());
+
+    });
+    dialog.querySelector('#name').addEventListener("change", function(e) {
+
+        template_of_MLmodel.name=($(this).val());
+
+    });
+    dialog.querySelector('#src').addEventListener("change", function(e) {
+        if(! $(this).val().includes("https://vijay-coriolis.github.io/"))
+        {alert("Unauthorized domain"); $(this).val("");return;}
+        template_of_MLmodel.src=($(this).val());
+
+    });
+    dialog.querySelector('#addModel').addEventListener("click", function(e) {
+if(!validateModel()){alert("All fields are mandatory");return;}
+        bkg.setAvailableModels(template_of_MLmodel);
+
+        template_of_MLmodel={name:"",
+                    src:"",
+                    label:"",
+                    dependencies:[],
+                    selected:false
+                };
+
+        dialog.close();
+        location.reload();
+
+    });
 });
+
+function validateModel(){
+  if(  !isEmpty(template_of_MLmodel.name) &&
+   ! isEmpty(template_of_MLmodel.label)&&
+   ! isEmpty(template_of_MLmodel.src)  ){
+return true;
+   }
+   return false;
+}
+
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}

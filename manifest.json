@@ -1,6 +1,5 @@
 {
   "manifest_version": 2,
-
   "name": "SpotPhish",
   "description": "Zero-day phishing protection",
   "version": "1.0",
@@ -14,11 +13,19 @@
     "48": "assets/icons/icon48.png",
     "128": "assets/icons/icon128.png"
   },
-  "options_page":"option.html",
+  "options_page": "option.html",
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css":["css/content.css", "css/material-dialog.css", "css/iconfont/material-icons.css", "externalCode/jquery.Jcrop.min.css"],
+      "matches": [
+        "<all_urls>",
+        "*://*/*"
+      ],
+      "css": [
+        "css/content.css",
+        "css/material-dialog.css",
+        "css/iconfont/material-icons.css",
+        "externalCode/jquery.Jcrop.min.css"
+      ],
       "js": [
         "externalCode/jquery/jquery-3.1.1.min.js",
         "externalCode/jquery.Jcrop.min.js",
@@ -31,29 +38,17 @@
     }
   ],
   "background": {
-    "scripts": [
-        "config.js",
-        "externalCode/idbstore.min.js",
-        "externalCode/CryptoJs_v3.1.2/core-min.js",
-        "externalCode/CryptoJs_v3.1.2/sha256-min.js",
-        "externalCode/jquery/jquery-3.1.1.min.js",
-        "externalCode/lodash.min.js",
-        "externalCode/psl.min.js",
-        "utils.js",
-        "screenshot.js",
-        "model.js",
-        "background.js",
-        "orb-features.js",
-        "externalCode/jsfeat.js"
-      ]
+    "page": "background.html"
   },
   "permissions": [
+    "unlimitedStorage",
     "activeTab",
     "storage",
     "tabs",
     "*://*/*",
     "<all_urls>"
   ],
+  "content_security_policy": "script-src 'self' https://vijay-coriolis.github.io  'unsafe-eval' ; object-src 'self'",
   "web_accessible_resources": [
     "assets/img/*",
     "assets/icons/*",
