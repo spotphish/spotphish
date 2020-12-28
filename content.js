@@ -207,7 +207,7 @@ function showMatch(msg) {
     img.src = msg.img;
     const warn = {
         title: "Match found",
-        type: "success",
+        type: "info",
         img: img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
