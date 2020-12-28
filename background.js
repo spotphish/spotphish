@@ -11,7 +11,7 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
-let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=0.3,
+let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
 AVAILABLE_MODELS=[{name:"TemplateMatching",label:"Template Matching",selected:true}],
 globalCurrentTabId,
     tabInfoList = {};
@@ -438,37 +438,30 @@ function updateFeed(feed) {
 
 /********* Functions for Option Page *************/
 
-function getProtectedSitesData() {
-console.log("getProtectedSitesData "+performance.now());
-    let data = Sites.getSites("exists").filter(x => {
-console.log("after clone "+performance.now());
-
-        let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
-        let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
-        if (protected.length > 0 || templates.length > 0) {
-            return true;
-        }
-        return false;
-    }).map( site => {
-// console.log("after clone "+performance.now());
-
-        if (site.templates) {
-            site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
-
-                let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
-                if (found) {
-                    template.base64 = found.base64;
-                } else {
-                    template.deleted = true;
+  function getProtectedSitesData() {
+            let data = Sites.getSites("exists").filter(x => {
+                let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
+                let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
+                if (protected.length > 0 || templates.length > 0) {
+                    return true;
                 }
-                return template;
-            });
-        }
-        return site;
-    });
-
-
-    return data;
+                return false;
+            }).map(site=>{
+                if (site.templates) {
+                    site.templates = site.templates.filter(a => !a.deleted && !a.disabled)
+                    .map(template => {
+                        // let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+                        // if (found) {
+                        //         template.base64 = found.base64;
+                        //     } else {
+                        //         template.deleted = true;
+                        //     }
+                        return template;
+                    });
+                }
+                return site;
+            })
+        return data;
 }
 
 function getSafeDomainsData() {
@@ -553,7 +546,7 @@ function initAdvConfigs() {
         if (data) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
-            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:0.3;
+            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
             AVAILABLE_MODELS=data.available_models?data.available_models:[{name:"TemplateMatching",label:"Template Matching",selected:true}];
             $.each(getAvailableModels(), function (i, item) {
                 if(item.selected){
