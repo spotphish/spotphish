@@ -324,7 +324,7 @@ async function redflagCheck(ti,testNow){
         console.log(result);
 
         if(result.site!="NaN"){
-            let site = result.site+" "+result.confidence+ " %"
+            let site = result.site
             let corr_img=result.image;
             if (testNow) {
                 return ti.port.postMessage({op: "test_match", site, img:corr_img});
@@ -439,8 +439,10 @@ function updateFeed(feed) {
 /********* Functions for Option Page *************/
 
 function getProtectedSitesData() {
-
+console.log("getProtectedSitesData "+performance.now());
     let data = Sites.getSites("exists").filter(x => {
+console.log("after clone "+performance.now());
+
         let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
         let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
         if (protected.length > 0 || templates.length > 0) {
@@ -448,6 +450,8 @@ function getProtectedSitesData() {
         }
         return false;
     }).map( site => {
+// console.log("after clone "+performance.now());
+
         if (site.templates) {
             site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
 

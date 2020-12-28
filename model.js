@@ -63,9 +63,13 @@ let Sites = {
     },
 
     getSites: function(filter="enabled") {
+console.log("getSites "+performance.now());
+
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
         let data = this.sites.filter(ff);
+console.log("before clone deep "+performance.now());
+
         return _.cloneDeep(data);
     },
 

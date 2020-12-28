@@ -2,6 +2,6 @@ var defaultFeeds = [
     {
         "name": "main",
 
-        "src":"./main.json"
+        "src":"https://vijay-coriolis.github.io/main.json"
     }
 ];

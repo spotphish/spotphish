@@ -280,6 +280,27 @@
       ]
     },
     {
+      "name": "Union Bank",
+      "src": "https://vijay-coriolis.github.io/main.json",
+      "protected": [
+        {
+          "url": "https://www.unionbankofindia.co.in/english/home.aspx"
+        }
+      ],
+      "templates": [
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union.png",
+          "checksum": "2256f217905c5bb8d6cc3a09fe732e6cf43611b38b144caa8a09b0b55491db90"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union1.png",
+          "checksum": "2a1d4ee6e6a1664645a70328d730f7482734e3207303fcbccea8bc364e26eeee"
+        }
+      ]
+    },
+    {
       "name": "ICICI Bank",
       "src": "https://vijay-coriolis.github.io/main.json",
       "protected": [

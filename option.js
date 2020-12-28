@@ -53,6 +53,8 @@ function templateWhitelist(data) {
             if (b.name) {
                 logo_name = b.name;
             }
+
+
             var tmp = `
                 <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
                     <div class="mdl-card__media">
@@ -144,6 +146,7 @@ function updateImage(data) {
 }
 
 function renderProtectedList() {
+
     let data = bkg.getProtectedSitesData();
     $(".kp-wl-site").remove();
     //console.log("Protected-data", data);

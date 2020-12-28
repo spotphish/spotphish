@@ -206,8 +206,8 @@ function showMatch(msg) {
     var img = document.createElement("img");
     img.src = msg.img;
     const warn = {
-        title: "Template Matched",
-        type: "warning",
+        title: "Match found",
+        type: "success",
         img: img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
@@ -219,7 +219,7 @@ function showNoMatch() {
     const ack1 = {
         title: "SpotPhish",
         type: "info",
-        main: "No template matches found for this page.",
+        main: "No matches found for this page.",
         extra: null,
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
         dismiss_after: 3000
