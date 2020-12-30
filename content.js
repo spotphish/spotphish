@@ -70,8 +70,9 @@ function do_init() {
 
     function urgentCheck() {
         console.log("key event captured");
+
         rpc({ op: "urgent_check"});
-        $(document).off("keypress", urgentCheck);
+        $(document).off("keypress");
     }
 
     $(document).on("keypress", urgentCheck);

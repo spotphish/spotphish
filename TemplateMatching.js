@@ -1,9 +1,7 @@
-class TemplateMatching{
+export default class TemplateMatching{
 
-    constructor(){
-
-  }
- async  matchTemplates(scrFeatures,screenshot) {
+    constructor(){}
+    async  matchTemplates(scrFeatures,screenshot) {
         const scrCorners = scrFeatures.corners;
         const scrDescriptors = scrFeatures.descriptors;
         let t0 = performance.now();

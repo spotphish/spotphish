@@ -2,8 +2,7 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
-let Sites = {
+ let Sites = {
 
     safe: [], /* flattened list of strings, all enabled safe domains */
     templates: [],

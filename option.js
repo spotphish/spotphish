@@ -164,19 +164,20 @@ async function renderProtectedList() {
              if ($(e.target).is(".kp-wl-site-delete")) {
                  var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
                  if (res) {
-                     chrome.runtime.sendMessage({op: "remove_site", site: name}, res => {
-                         if (res.error) {
-                             return alert(res.error);
-                         }
-                         $(this).remove();
-                     });
+                    bkg.removeSite(name,(res)=>{
+                        if (res.error) {
+                            return alert(res.error);
+                        }
+                        $(this).remove();
+                    })
+
                  }
              } else if ($(e.target).is(".kp-wl-site-check")) {
                  const checked = "check_box", unchecked ="check_box_outline_blank";
                  var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
                  var value = icon.innerHTML.trim();
                  if (value === checked) {
-                     chrome.runtime.sendMessage({op: "toggle_site", site: name, enable: false}, res => {
+                    bkg.toggleSite( name, false, res => {
                          if (res.error) {
                              return alert(res.error);
                          }
@@ -189,7 +190,7 @@ async function renderProtectedList() {
                          });
                      });
                  } else {
-                     chrome.runtime.sendMessage({op: "toggle_site", site: name, enable: true}, res => {
+                    bkg.toggleSite( name, true, res => {
                          if (res.error) {
                              return alert(res.error);
                          }
@@ -208,7 +209,7 @@ async function renderProtectedList() {
              e.stopPropagation();
              if ($(e.target).is(".kp-wl-url-delete.enable")) {
                  let url = $(this).data("url");
-                 chrome.runtime.sendMessage({op: "remove_url", url: url}, res => {
+                 bkg.removeURL( url, res => {
                      if (res.error) {
                          return alert(res.error);
                      }
@@ -221,14 +222,14 @@ async function renderProtectedList() {
                  let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
                  let value = icon.innerHTML.trim();
                  if (value === checked) {
-                     chrome.runtime.sendMessage({op: "toggle_url", url: url, enable: false}, res => {
+                     bkg.toggleURL( url,false, res => {
                          if (res.error) {
                              return alert(res.error);
                          }
                          icon.innerHTML = unchecked;
                      });
                  } else {
-                     chrome.runtime.sendMessage({op: "toggle_url", url: url, enable: true}, res => {
+                    bkg.toggleURL( url,  true, res => {
                          if (res.error) {
                              return alert(res.error);
                          }
@@ -260,7 +261,7 @@ function renderSafeDomainTable() {
             var domain = $(this).data("name");
             var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {
-                chrome.runtime.sendMessage({op: "remove_safe_domain", domain: domain}, res => {
+                bkg.removeSafeDomain( domain, res => {
                     if (res.error) {
                         return alert(res.error);
                     }
@@ -270,14 +271,8 @@ function renderSafeDomainTable() {
         }
     });
 }
-
-function initAdvanceTab() {
-    if (bkg.getDebugFlag()) {
-        $("#kp-debug-switch").click();
-    }
-    if(bkg.getSecureImageFlag()){
-        $("#kp-secure-image-switch").click();
-    }
+function renderAvailableModels(){
+    $('#kp-models').empty();
     $.each(bkg.getAvailableModels(), function (i, item) {
         $('#kp-models').append(`   <li  class="mdl-list__item  mdl-list__item--three-line">
         <span class="mdl-list__item-primary-content ">
@@ -310,6 +305,15 @@ function initAdvanceTab() {
 
     </li>`);
     });
+}
+function initAdvanceTab() {
+    if (bkg.getDebugFlag()) {
+        $("#kp-debug-switch").click();
+    }
+    if(bkg.getSecureImageFlag()){
+        $("#kp-secure-image-switch").click();
+    }
+   renderAvailableModels()
     $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
 
 }
@@ -520,7 +524,7 @@ $(document).ready( function() {
                 alert("Incorrect domain entered, please try again");
                 return;
             }
-            chrome.runtime.sendMessage({op: "add_safe_domain", domain: val}, res => {
+            bkg.addSafeDomain( val, res => {
                 if (res.error) {
                     return alert(res.error);
                 }
@@ -558,7 +562,7 @@ $(document).ready( function() {
     });
     $("#kp-models .delete").on("click", function(e) {
         bkg.removeAvailableModels($(this).parent().find('input').attr("id"));
-        location.reload();
+        renderAvailableModels();
 
     });
     $("#kp-models .edit").on("click", function(e) {
@@ -618,8 +622,9 @@ $(document).ready( function() {
     });
     dialog.querySelector('#addModel').addEventListener("click", function(e) {
     if(!validateModel()){alert("All fields are mandatory");return;}
-        bkg.setAvailableModels(template_of_MLmodel);
+    if(modelNameExists(template_of_MLmodel.name)){alert("Model with same name already exists");return;}
 
+        bkg.setAvailableModels(template_of_MLmodel);
         template_of_MLmodel={name:"",
                     src:"",
                     label:"",
@@ -628,7 +633,7 @@ $(document).ready( function() {
                 };
 
         dialog.close();
-        location.reload();
+        renderAvailableModels()
 
     });
 
@@ -638,11 +643,13 @@ function validateModel(){
   if(  !isEmpty(template_of_MLmodel.name) &&
    ! isEmpty(template_of_MLmodel.label)&&
    ! isEmpty(template_of_MLmodel.src)  ){
-return true;
+    return true;
    }
    return false;
 }
-
+function modelNameExists(model_name){
+  return _.find(bkg.getAvailableModels(),x=>x.name===model_name)
+}
 function isEmpty(str) {
     return (!str || 0 === str.length);
 }
