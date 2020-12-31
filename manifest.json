@@ -49,7 +49,7 @@
     "*://*/*",
     "<all_urls>"
   ],
-  "content_security_policy": "script-src 'self' https://vijay-coriolis.github.io  'unsafe-eval' ; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://cdn.jsdelivr.net  'unsafe-eval' ; object-src 'self'",
   "web_accessible_resources": [
     "assets/img/*",
     "assets/icons/*",

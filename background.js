@@ -177,8 +177,6 @@ function injectScripts(item){
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
         redflagCheck(ti, true);
-    } else if (msg.op === "remove_safe_domain") {
-        removeSafeDomain(msg.domain, respond);
     }
     else {
         console.log("KPBG: Unknown message", msg);

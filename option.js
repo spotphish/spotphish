@@ -591,7 +591,7 @@ $(document).ready( function() {
       dialog.close();
     });
     dialog.querySelector('#addDependency').addEventListener('click', function() {
-      if( ! $('#dependency').val().includes("https://vijay-coriolis.github.io/")){
+      if( ! $('#dependency').val().includes("https://cdn.jsdelivr.net/")){
       alert("Unauthorized domain");
       $('#dependency').val("")
       return;
@@ -615,7 +615,7 @@ $(document).ready( function() {
 
     });
     dialog.querySelector('#src').addEventListener("change", function(e) {
-        if(! $(this).val().includes("https://vijay-coriolis.github.io/"))
+        if(! $(this).val().includes("https://cdn.jsdelivr.net/"))
         {alert("Unauthorized domain"); $(this).val("");return;}
         template_of_MLmodel.src=($(this).val());
 
