@@ -10,7 +10,11 @@ var template_of_MLmodel={name:"",
             src:"",
             label:"",
             dependencies:[],
-            selected:false
+            selected:false,
+            model:undefined,
+            weightage:0,
+            webgl:false
+
         };
 function templateImage(src, favorite, imageClass) {
     const temp = `
@@ -145,7 +149,7 @@ function updateImage(data) {
 
 async function renderProtectedList() {
   return new Promise(function(resolve,reject){
-    console.log("inside");
+
     let data;
      if(ProtectedSitesData==undefined){
           data = bkg.getProtectedSitesData();
@@ -240,7 +244,6 @@ async function renderProtectedList() {
          });
 
 
-         console.log("outside");
          return;
 
   });
@@ -274,34 +277,41 @@ function renderSafeDomainTable() {
 function renderAvailableModels(){
     $('#kp-models').empty();
     $.each(bkg.getAvailableModels(), function (i, item) {
-        $('#kp-models').append(`   <li  class="mdl-list__item  mdl-list__item--three-line">
+        $('#kp-models').append(`   <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
         <span class="mdl-list__item-primary-content ">
             <span>${item.label}</span>
             <span class="mdl-list__item-text-body">
-            ${item.src?item.src:item.label}
+            ${item.name}
             </span>
 
         </span>
-        <span class="mdl-list__item-secondary-content ">
-            <label class=" mdl-switch mdl-js-switch mdl-js-ripple-effect"
-                for="${item.name}">
-                <input type="checkbox" id="${item.name}" ${item.selected?"checked":""}
-                    class="mdl-switch__input" />
-            </label>
+        <span class="  mdl-list__item-secondary-content mdl-cell mdl-cell--3-col ">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class= " weightage-input mdl-textfield__input"  type="number" min="0" value="${item.weightage}"
+            max="100">
+            <label class="mdl-textfield__label" >% weightage
+                </label>
+            <span class="mdl-textfield__error">Only 0 to 100</span>
+        </div>
 
+    </span>
+        <span class=" mdl-list__item-secondary-content ">
+            <label class=" mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                >
+                <input  type="checkbox"  ${item.selected?"checked":""}
+                    class=" select-switch mdl-switch__input" />
+            </label>
         </span>
-        <span  class=" edit mdl-list__item-secondary-content ">
-            <button   ${item.name==="TemplateMatching"?"disabled":""}
-                class=" mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-                <i class="material-icons">edit</i>
-            </button>
-        </span>
-        <span class= " delete mdl-list__item-secondary-content ">
-            <button ${item.name==="TemplateMatching"?"disabled":""}
-                class="  mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent  ">
+
+
+        <span class= " mdl-list__item-secondary-content ">
+            <button
+                class=" delete mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent  ">
                 <i class="material-icons">delete</i>
             </button>
         </span>
+
+
 
     </li>`);
     });
@@ -319,29 +329,36 @@ function initAdvanceTab() {
 }
 
 $(document).ready( function() {
-    $(".mdl-layout__tab").on("click", function(e){
-        let href = $(this).attr("href");
-        window.location.hash = href;
-        if (href === "#tab-safedomain") {
-            renderSafeDomainTable();
-        } else if (href === "#tab-whitelist") {
-            //bkg.syncWhiteList(renderWhitelistTable);
-        }
-    });
-        setTimeout(
+    // $(".mdl-layout__tab").on("click", function(e){
+    //     let href = $(this).attr("href");
+    //     window.location.hash = href;
+    //     if (href === "#tab-safedomain") {
+    //         renderSafeDomainTable();
+    //     } else if (href === "#tab-whitelist") {
+    //         //bkg.syncWhiteList(renderWhitelistTable);
+    //     }
+    // });
+
+    setTimeout(
         function(){
             renderProtectedList();
+            renderSafeDomainTable();
+
         },1000)
 
     let params = getUrlVars();
-    console.log(params);
-    if (params["tab"] === "safedomain") {
-        $("#safedomain")[0].click();
+    if (params["tab"]) {
+
+    $(params["tab"]).addClass("is-active");
+
         if (params["host"]) {
             $("label[for=kp-safelist-input]").attr("style", "visibility: hidden");
             $("#kp-safelist-input").focus();
             $("#kp-safelist-input").val(params["host"]);
         }
+    }else{
+        $("#tab-secure-img").addClass("is-active");
+
     }
 
     initAdvanceTab();
@@ -422,7 +439,9 @@ $(document).ready( function() {
                     msg = "Something went wrong, Error: " + error.message;
                     color = "#FF5722";
                 } else {
+                    initAdvanceTab();
                     updateImage();
+
                     msg = "Restore data completed successfully.";
                     color = "#4CAF50";
                 }
@@ -482,6 +501,17 @@ $(document).ready( function() {
                 }
                 $("#kp-secure-image-duration").val(1);
                 bkg.setSecureImageDuration(1);
+                for(let deleteIcon of $("#kp-models .delete") ){
+                    let x=$(deleteIcon).closest('li').attr("id");
+                    if(x!=="TemplateMatching"){
+                        bkg.removeAvailableModels(x);
+                    }
+
+                }
+                weightMessage()
+            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+
+
 
 
 
@@ -550,23 +580,34 @@ $(document).ready( function() {
             bkg.setSecureImageFlag(false);
         }
     });
-    $("#kp-models input").on("click", function(e) {
+    $("#kp-models .select-switch").on("click", function(e) {
 
         let val = $(this).is(":checked");
         console.log(val);
         if (val) {
-            bkg.selectModel($(this).attr('id'));
+            bkg.selectModel($(this).closest('li').attr('id'));
         } else {
-            bkg.unSelectModel($(this).attr('id'));
+            bkg.unSelectModel($(this).closest('li').attr('id'));
         }
+        weightMessage()
     });
     $("#kp-models .delete").on("click", function(e) {
-        bkg.removeAvailableModels($(this).parent().find('input').attr("id"));
-        renderAvailableModels();
+        let x=$(this).closest('li').attr("id");
 
+        if(  x!=="TemplateMatching") {bkg.removeAvailableModels(x);
+            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+
+
+
+
+            ;}else{
+            alert("Not allowed")
+        }
+        weightMessage();
     });
-    $("#kp-models .edit").on("click", function(e) {
-        alert($(this).parent().find('input').attr("id")+" Edited");
+    $("#kp-models .weightage-input").on("change paste keyup", function(e) {
+        bkg.setWeightage( $(this).closest('li').attr("id"),parseInt( $(this).val()))
+        weightMessage()
 
     });
     $("#kp-secure-image-duration").on("change paste keyup", function(e) {
@@ -578,17 +619,18 @@ $(document).ready( function() {
             bkg.setSecureImageDuration(val);
         }
     });
-
     var dialog = document.querySelector('dialog');
     var showDialogButton = document.querySelector('#kp-show-add-model-dialog');
     if (! dialog.showModal) {
       dialogPolyfill.registerDialog(dialog);
     }
     showDialogButton.addEventListener('click', function() {
+
       dialog.showModal();
     });
     dialog.querySelector('.close').addEventListener('click', function() {
       dialog.close();
+
     });
     dialog.querySelector('#addDependency').addEventListener('click', function() {
       if( ! $('#dependency').val().includes("https://cdn.jsdelivr.net/")){
@@ -614,35 +656,64 @@ $(document).ready( function() {
         template_of_MLmodel.name=($(this).val());
 
     });
+    dialog.querySelector('#webgl').addEventListener("change", function(e) {
+        template_of_MLmodel.webgl=$(this).is(":checked");
+
+    });
     dialog.querySelector('#src').addEventListener("change", function(e) {
-        if(! $(this).val().includes("https://cdn.jsdelivr.net/"))
+       let srcFile=$(this).val();
+        if(! srcFile.includes("https://cdn.jsdelivr.net/"))
         {alert("Unauthorized domain"); $(this).val("");return;}
-        template_of_MLmodel.src=($(this).val());
 
-    });
-    dialog.querySelector('#addModel').addEventListener("click", function(e) {
-    if(!validateModel()){alert("All fields are mandatory");return;}
-    if(modelNameExists(template_of_MLmodel.name)){alert("Model with same name already exists");return;}
 
-        bkg.setAvailableModels(template_of_MLmodel);
-        template_of_MLmodel={name:"",
-                    src:"",
-                    label:"",
-                    dependencies:[],
-                    selected:false
-                };
-
-        dialog.close();
-        renderAvailableModels()
+        template_of_MLmodel.src=srcFile;
 
     });
 
+    dialog.querySelector('#addModel').addEventListener("click",async function(e) {
+        if(!validateModel()){alert("All fields are mandatory");return;}
+        if(modelNameExists(template_of_MLmodel.name)){alert("Model with same name already exists");return;}
+            //Class or function is exported from user's algorithm
+            let Model=(await import(template_of_MLmodel.src)).default;
+            if(Model!==undefined){
+                if(Model.toString().includes(template_of_MLmodel.name) ){
+                        if(Model.toString().includes("predict")){
+                            template_of_MLmodel.model=Model;
+                        }else{
+                            alert(template_of_MLmodel.label+" does not contain the predict function")
+                            return;
+                        }
+                }else{
+                        alert(template_of_MLmodel.label+" does not contain the "+template_of_MLmodel.name+" class");
+                        return;
+                    }
+            }else{
+                    alert(template_of_MLmodel.label+" does not export the "+template_of_MLmodel.name+" class");
+                    return;
+                }
+            bkg.setAvailableModels(template_of_MLmodel);
+            template_of_MLmodel={name:"",
+                        src:"",
+                        label:"",
+                        dependencies:[],
+                        selected:false,
+                        model:undefined,
+                        weightage:0,
+                        webgl:false
+                    };
+
+            dialog.close();
+            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+
+
+    });
+    weightMessage()
 });
 
 function validateModel(){
   if(  !isEmpty(template_of_MLmodel.name) &&
    ! isEmpty(template_of_MLmodel.label)&&
-   ! isEmpty(template_of_MLmodel.src)  ){
+   ! isEmpty(template_of_MLmodel.src) ){
     return true;
    }
    return false;
@@ -652,4 +723,20 @@ function modelNameExists(model_name){
 }
 function isEmpty(str) {
     return (!str || 0 === str.length);
+}
+function getSum(total, num) {
+    return total + num.weightage;
+}
+function weightMessage(){
+    let total= bkg.getAvailableModels().filter(item=>item.selected).reduce(getSum, 0);
+
+    if(total>100){
+        $("#total-weight").html("Total exceeding 100%")
+
+    }else  if(total<100){
+        $("#total-weight").html("Please ensure total weight is 100%");
+    }else{
+        $("#total-weight").html("Total Weightage : 100%");
+
+    }
 }

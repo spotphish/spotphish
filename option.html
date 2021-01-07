@@ -28,134 +28,165 @@
         .full {
             width: 100%;
         }
+
+        .badge {
+            background-color: turquoise;
+            color: whitesmoke;
+            border-radius: 5px;
+            padding: 2px;
+
+        }
     </style>
 </head>
 
 <body>
     <!-- Simple header with scrollable tabs. -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-        <header class="mdl-layout__header mdl-layout__header--waterfall">
+        <header class="mdl-layout__header ">
             <div class="mdl-layout__header-row">
                 <!-- Title -->
                 <span class="mdl-layout-title"><img class="kp-title-icon" src="assets/icons/icon128.png">
-                    &nbsp;SpotPhish</span>
+                    &nbsp;SpotPhish
+                    <!-- Icon badge -->
+                    <sub class="badge">
+                        beta
+
+                    </sub>
+                </span>
             </div>
+
             <!-- Tabs -->
-            <div class="mdl-navigation mdl-layout__tab-bar mdl-js-ripple-effect">
-                <a href="#tab-secure-img" class="mdl-layout__tab is-active">Security Image</a>
+            <div class=" mdl-layout__tab-bar mdl-js-ripple-effect">
+                <a href="#tab-secure-img" class="mdl-layout__tab ">Security Image</a>
                 <a href="#tab-whitelist" class="mdl-layout__tab">Protected Pages</a>
-                <a href="#tab-safedomain" class="mdl-layout__tab" id="safedomain">Safe Domains</a>
+                <a href="#tab-safedomain" class="mdl-layout__tab">Safe Domains</a>
                 <a href="#tab-advanced" class="mdl-layout__tab">Advanced</a>
                 <a href="#tab-help" class="mdl-layout__tab">Help</a>
             </div>
+
         </header>
         <main class="mdl-layout__content">
-            <section class="mdl-layout__tab-panel is-active" id="tab-secure-img">
-                <div class="mdl-grid kp-max-width">
-                    <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
-                        <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet kp-security-image">
-                            <img class="secure-image" id="secureimage" src="assets/img/secure_img/kp1.jpg" width="100"
-                                border="0" alt="">
-                        </div>
-                        <div class="mdl-cell mdl-cell--8-col">
-                            <h2 class="mdl-card__title-text">Security Image &nbsp;<i class="material-icons">lock</i>
-                            </h2>
-                            <div class="mdl-card__supporting-text kp-hero-text">
-                                Your security image is flashed in a popup when you visit protected pages. Look for your
-                                secure image whenever you login to Google, Facebook, Amazon, Paypal and other pages you
-                                have protected. If you do not see it, <em>double check the URL</em>.
+            <section class="mdl-layout__tab-panel" id="tab-secure-img">
+                <div class="page-content">
+                    <div class="mdl-grid kp-max-width">
+                        <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
+                            <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet kp-security-image">
+                                <img class="secure-image" id="secureimage" src="assets/img/secure_img/kp1.jpg"
+                                    width="100" border="0" alt="">
                             </div>
-                            <div class="mdl-card__supporting-text kp-hero-text">
-                                Your security image should be known only to you.
+                            <div class="mdl-cell mdl-cell--8-col">
+                                <h2 class="mdl-card__title-text">Security Image &nbsp;<i class="material-icons">lock</i>
+                                </h2>
+                                <div class="mdl-card__supporting-text kp-hero-text">
+                                    Your security image is flashed in a popup when you visit protected pages. Look for
+                                    your
+                                    secure image whenever you login to Google, Facebook, Amazon, Paypal and other pages
+                                    you
+                                    have protected. If you do not see it, <em>double check the URL</em>.
+                                </div>
+                                <div class="mdl-card__supporting-text kp-hero-text">
+                                    Your security image should be known only to you.
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="mdl-grid kp-max-width">
-                    <div class="mdl-cell mdl-cell--12-col mdl-grid mdl-card mdl-shadow--4dp" id="imagegallery">
-                        <div class="mdl-card__title mdl-cell mdl-cell--12-col">
-                            <h2 class="mdl-card__title-text"> Image Library</h2>
-                        </div>
-                        <div class="mdl-cell mdl-cell--4-col mdl-card mdl-color--grey-300">
-                            <div class="mdl-card__title mdl-card--expand kp-custom-icons">
-                                <img class="secure-image" id="customimage" src="" width="100" border="0" alt="">
+                    <div class="mdl-grid kp-max-width">
+                        <div class="mdl-cell mdl-cell--12-col mdl-grid mdl-card mdl-shadow--4dp" id="imagegallery">
+                            <div class="mdl-card__title mdl-cell mdl-cell--12-col">
+                                <h2 class="mdl-card__title-text"> Image Library</h2>
                             </div>
-                            <div class="mdl-card__menu">
-                                <button
-                                    class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent"
-                                    id="kp-custom-btn-icons">
-                                    <i class="material-icons kp-active-icons" id="kp-custom-icons"> </i>
-                                </button>
-                            </div>
-                            <div class="mdl-card__actions mdl-card--border">
-
-                                <div style="height:0px;overflow:hidden">
-                                    <canvas id="canvas-cust" class="hide"> </canvas>
-                                    <input type="file" id="custom-img" name="fileInput" />
+                            <div class="mdl-cell mdl-cell--4-col mdl-card mdl-color--grey-300">
+                                <div class="mdl-card__title mdl-card--expand kp-custom-icons">
+                                    <img class="secure-image" id="customimage" src="" width="100" border="0" alt="">
                                 </div>
+                                <div class="mdl-card__menu">
+                                    <button
+                                        class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--accent"
+                                        id="kp-custom-btn-icons">
+                                        <i class="material-icons kp-active-icons" id="kp-custom-icons"> </i>
+                                    </button>
+                                </div>
+                                <div class="mdl-card__actions mdl-card--border">
 
-                                <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-                                    id="imageUpload">
-                                    Upload New Image
-                                </button>
+                                    <div style="height:0px;overflow:hidden">
+                                        <canvas id="canvas-cust" class="hide"> </canvas>
+                                        <input type="file" id="custom-img" name="fileInput" />
+                                    </div>
+
+                                    <button class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                                        id="imageUpload">
+                                        Upload New Image
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
+                        </div>
                     </div>
                 </div>
             </section>
             <section class="mdl-layout__tab-panel" id="tab-whitelist">
-                <div class="mdl-grid kp-max-width kp-wl-main">
-                    <div class="mdl-cell mdl-cell--12-col">
-                        <h3>Protected Pages</h3>
-                        <div class="kp-hero-text">Login pages on which you will see your personal security image. Web
-                            pages you browse are scanned for similarity with protected pages, and you will be alerted to
-                            possible phishing attempts.</div>
+                <div class="page-content">
+                    <div class="mdl-grid kp-max-width kp-wl-main">
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <h3>Protected Pages</h3>
+                            <div class="kp-hero-text">Login pages on which you will see your personal security image.
+                                Web
+                                pages you browse are scanned for similarity with protected pages, and you will be
+                                alerted to
+                                possible phishing attempts.</div>
+                        </div>
+                        <div class="kp-wl-site">Loading...</div>
                     </div>
                 </div>
             </section>
             <section class="mdl-layout__tab-panel" id="tab-safedomain">
-                <div class="mdl-grid kp-max-width">
-                    <div class="mdl-cell mdl-cell--12-col">
-                        <h3>Safe Domains</h3>
-                        <p class="kp-hero-text">Trusted domains which are highly unlikely to host phishing pages. Pages
-                            on these sites are not scanned to reduce overhead.</p>
-                        <p class="kp-hero-text">For example, if we add <em>google.com</em> to the list, all pages hosted
-                            by <em>google.com</em>, <em>mail.google.com</em> and other subdomains are exempt from
-                            scanning. This reduces performance overhead for 90% browsing activity, while still
-                            protecting the 10% which really needs it.</p>
-                    </div>
-                    <div class="mdl-cell mdl-cell--6-col">
-                        <ul class="mdl-list">
-                            <li class="mdl-list__item">
-                                <span class="mdl-list__item-primary-content">
-                                    <i class="material-icons  mdl-list__item-avatar">add_circle</i>
-                                    <div class="mdl-textfield mdl-js-textfield kp-safelist-textfield">
-                                        <input class="mdl-textfield__input" type="text" id="kp-safelist-input">
-                                        <label class="mdl-textfield__label" for="kp-safelist-input">Add
-                                            Domain...</label>
-                                    </div>
-                                </span>
-                                <button
-                                    class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-safelist-add-btn">
-                                    <i class="material-icons kp-sl-delete">check_circle</i>
-                                </button>
-                            </li>
-                        </ul>
-                        <ul class="mdl-list kp-safelist">
-                        </ul>
+                <div class="page-content">
+                    <div class="mdl-grid kp-max-width">
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <h3>Safe Domains</h3>
+                            <p class="kp-hero-text">Trusted domains which are highly unlikely to host phishing pages.
+                                Pages
+                                on these sites are not scanned to reduce overhead.</p>
+                            <p class="kp-hero-text">For example, if we add <em>google.com</em> to the list, all pages
+                                hosted
+                                by <em>google.com</em>, <em>mail.google.com</em> and other subdomains are exempt from
+                                scanning. This reduces performance overhead for 90% browsing activity, while still
+                                protecting the 10% which really needs it.</p>
+                        </div>
+                        <div class="mdl-cell mdl-cell--6-col">
+                            <ul class="mdl-list">
+                                <li class="mdl-list__item">
+                                    <span class="mdl-list__item-primary-content">
+                                        <i class="material-icons  mdl-list__item-avatar">add_circle</i>
+                                        <div class="mdl-textfield mdl-js-textfield kp-safelist-textfield">
+                                            <input class="mdl-textfield__input" type="text" id="kp-safelist-input">
+                                            <label class="mdl-textfield__label" for="kp-safelist-input">Add
+                                                Domain...</label>
+                                        </div>
+                                    </span>
+                                    <button
+                                        class="mdl-button mdl-button-icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-safelist-add-btn">
+                                        <i class="material-icons kp-sl-delete">check_circle</i>
+                                    </button>
+                                </li>
+                            </ul>
+                            <ul class="mdl-list kp-safelist">
+                                <li>Loading....</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
             <section class="mdl-layout__tab-panel" id="tab-advanced">
-                <div class="mdl-grid kp-max-width">
-                    <div class="mdl-cell mdl-cell--12-col">
-                        <h3>Advanced Settings</h3>
-                    </div>
-                    <span class="mdl-textfield" id="notifications" style="visibility: hidden;"> Hello</span>
-                    <div class="mdl-cell mdl-cell--9-col mdl-grid">
-                        <ul class="mdl-list kp-settings-list">
-                            <!--
+                <div class="page-content">
+                    <div class="mdl-grid kp-max-width">
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <h3>Advanced Settings</h3>
+                        </div>
+                        <span class="mdl-textfield" id="notifications" style="visibility: hidden;"> Hello</span>
+                        <div class="mdl-cell mdl-cell--9-col mdl-grid">
+                            <ul class="mdl-list kp-settings-list">
+                                <!--
                     <li class="mdl-list__item mdl-list__item--three-line">
                         <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
                             <i class="material-icons kp-settings-icon">security</i>
@@ -171,127 +202,141 @@
                         </span>
                     </li>
                     -->
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">bug_report</i>
-                                    <span>Debug</span>
-                                    <span class="mdl-list__item-text-body">
-                                        Toggle debug features.
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">bug_report</i>
+                                        <span>Debug</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Toggle debug features.
+                                        </span>
                                     </span>
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="kp-debug-switch">
-                                        <input type="checkbox" id="kp-debug-switch" class="mdl-switch__input" />
-                                    </label>
-                                </span>
-                            </li>
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">imagegallery</i>
-                                    <span>Show Secure Image</span>
-                                    <span class="mdl-list__item-text-body">
-                                        Do you want to always show secure image?
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                                            for="kp-debug-switch">
+                                            <input type="checkbox" id="kp-debug-switch" class="mdl-switch__input" />
+                                        </label>
                                     </span>
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">imagegallery</i>
+                                        <span>Show Secure Image</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Do you want to always show secure image?
+                                        </span>
 
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
-                                        for="kp-secure-image-switch">
-                                        <input type="checkbox" id="kp-secure-image-switch" class="mdl-switch__input" />
-                                    </label>
-                                </span>
-                            </li>
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">access_time</i>
-                                    <span>Secure Image Duration</span>
-                                    <span class="mdl-list__item-text-body">
-                                        How long you want the secure image popup to last?
                                     </span>
-
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <div class="mdl-textfield mdl-js-textfield">
-                                        <input class="mdl-textfield__input" type="text" pattern="^\d*(\.\d{0,2})?$"
-                                            id="kp-secure-image-duration">
-                                        <label class="mdl-textfield__label" for="kp-secure-image-duration">
-                                            Seconds</label>
-                                        <span class="mdl-textfield__error">Number upto 2 decimals allowed</span>
-                                    </div>
-                                </span>
-                            </li>
-
-                            <li class="mdl-list__item  mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">developer_board</i>
-                                    <span>ML model</span>
-                                    <span class="mdl-list__item-text-body">
-                                        Customize your own models
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                                            for="kp-secure-image-switch">
+                                            <input type="checkbox" id="kp-secure-image-switch"
+                                                class="mdl-switch__input" />
+                                        </label>
                                     </span>
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">access_time</i>
+                                        <span>Secure Image Duration</span>
+                                        <span class="mdl-list__item-text-body">
+                                            How long you want the secure image popup to last?
+                                        </span>
 
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <button class="full mdl-button mdl-button--colored mdl-js-button mdl-button--raised"
-                                        id="kp-show-add-model-dialog">Add Model</button>
-
-                                    <dialog class="mdl-dialog">
-                                        <h4 class="mdl-dialog__title">Add New ML Model</h4>
-                                        <div class="mdl-dialog__content">
-                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                <input class="mdl-textfield__input" type="text" id="label">
-                                                <label class="mdl-textfield__label" for="label">Label (Display
-                                                    name of your model)</label>
-                                            </div>
-                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                <input class="mdl-textfield__input" type="text" id="name">
-                                                <label class="mdl-textfield__label" for="name">Name of the class in
-                                                    your algorithm</label>
-
-                                            </div>
-                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                <input class="mdl-textfield__input" type="url" id="src">
-                                                <label class="mdl-textfield__label" for="src">Source url of your
-                                                    algorithm</label>
-                                                <span class="mdl-textfield__error">Invalid Url</span>
-
-                                            </div>
-
-                                            <h5>Dependencies</h5>
-                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                <input class="mdl-textfield__input" type="url" id="dependency">
-                                                <label class="mdl-textfield__label" for="dependency">Dependency
-                                                    url</label>
-                                                <span class="mdl-textfield__error">Invalid Url</span>
-                                            </div>
-                                            <button id="addDependency" class="mdl-button  mdl-button--colored">
-                                                Add
-                                            </button>
-                                            <div id="dependencies">
-                                            </div>
+                                    </span>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <div class="mdl-textfield mdl-js-textfield">
+                                            <input class="mdl-textfield__input" type="text" pattern="^\d*(\.\d{0,2})?$"
+                                                id="kp-secure-image-duration">
+                                            <label class="mdl-textfield__label" for="kp-secure-image-duration">
+                                                Seconds</label>
+                                            <span class="mdl-textfield__error">Number upto 2 decimals allowed</span>
                                         </div>
-                                        <div class="mdl-dialog__actions">
-                                            <button id="addModel" type="button"
-                                                class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised">Done</button>
-                                            <button type="button" class="mdl-button close">Cancel</button>
+                                    </span>
+                                </li>
+
+                                <li class="mdl-list__item  mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">developer_board</i>
+                                        <span>ML model</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Customize your own models
+                                        </span>
+
+                                    </span>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <button
+                                            class="full mdl-button mdl-button--colored mdl-js-button mdl-button--raised"
+                                            id="kp-show-add-model-dialog">Add Model</button>
+
+                                        <dialog class="mdl-dialog">
+                                            <h4 class="mdl-dialog__title">Add New ML Model</h4>
+                                            <div class="mdl-dialog__content">
+                                                <div
+                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                    <input required class="mdl-textfield__input" type="text" id="label">
+                                                    <label class="mdl-textfield__label" for="label">Label (Display
+                                                        name of your model)</label>
+                                                </div>
+                                                <div
+                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                    <input required class="mdl-textfield__input" type="text" id="name">
+                                                    <label class="mdl-textfield__label" for="name">Name of the class in
+                                                        your algorithm</label>
+
+                                                </div>
+                                                <div
+                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                    <input required class="mdl-textfield__input" type="url" id="src">
+                                                    <label class="mdl-textfield__label" for="src">Source url of your
+                                                        algorithm</label>
+                                                    <span class="mdl-textfield__error">Invalid Url</span>
+
+                                                </div>
+                                                <h5>Dependencies</h5>
+                                                <div
+                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                                    <input class="mdl-textfield__input" type="url" id="dependency">
+                                                    <label class="mdl-textfield__label" for="dependency">Dependency
+                                                        url</label>
+                                                    <span class="mdl-textfield__error">Invalid Url</span>
+                                                </div>
+                                                <button id="addDependency" class="mdl-button  mdl-button--colored">
+                                                    Add
+                                                </button>
+                                                <div id="dependencies">
+                                                </div>
+                                                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
+                                                    for="webgl">
+                                                    <span class="mdl-switch__label">Does your algorithm require
+                                                        webgl?</span>
+                                                    <input type="checkbox" id="webgl" class="mdl-switch__input">
+                                                </label>
+                                            </div>
+                                            <div class="mdl-dialog__actions">
+                                                <button id="addModel" type="button"
+                                                    class="mdl-button mdl-button--colored mdl-js-button mdl-button--raised">Add</button>
+
+                                                <button type="button" class="mdl-button close">Cancel</button>
+                                            </div>
+                                            <video width="100%" controls>
+                                                <source src="./doc/img/add-model-1.webm" type="video/webm">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        </dialog>
+                                    </span>
+                                </li>
+                                <li class="mdl-list__item">
+                                    <div class="mdl-grid kp-max-width">
+                                        <div class="mdl-cell mdl-cell--1-col">
                                         </div>
-                                        <video width="100%" controls>
-                                            <source src="./doc/img/add-model.webm" type="video/webm">
-                                            Your browser does not support HTML video.
-                                        </video>
-                                    </dialog>
-                                </span>
-                            </li>
-                            <li class="mdl-list__item">
-                                <div class="mdl-grid kp-max-width">
-                                    <div class="mdl-cell mdl-cell--1-col">
-                                    </div>
-                                    <div class="mdl-cell mdl-cell--10-col">
-                                        <ul id="kp-models" class="mdl-list ">
-                                            <!-- <li class="mdl-list__item  mdl-list__item--three-line">
+                                        <div class="mdl-cell mdl-cell--10-col">
+                                            <p style="color: turquoise;" id="total-weight"></p>
+                                            <ul id="kp-models" class="mdl-list ">
+                                                <!-- <li class="mdl-list__item  mdl-list__item--three-line">
                                                 <span class="mdl-list__item-primary-content ">
                                                     <span>Template Matching</span>
                                                     <span class="mdl-list__item-text-body">
@@ -312,106 +357,112 @@
                                             </li> -->
 
 
-                                        </ul>
-                                    </div>
-                                    <div class="mdl-cell mdl-cell--1-col">
-                                    </div>
+                                            </ul>
+                                        </div>
+                                        <div class="mdl-cell mdl-cell--1-col">
+                                        </div>
 
-                                </div>
-                            </li>
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">backup</i>
-                                    <span>Backup your Data</span>
-                                    <span class="mdl-list__item-text-body">
-                                        Backup all custom settings.
-                                    </span>
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
-                                        id="sp-backup">Backup</button>
-                                </span>
-                            </li>
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">settings_backup_restore</i>
-                                    <span> Restore Data From Backup File</span>
-                                    <span class="mdl-list__item-text-body">
-                                        Restore custom settings from a backup file.
-                                    </span>
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <div style="height:0px;overflow:hidden">
-                                        <input type="file" id="backup-file" name="fileInput" />
                                     </div>
-                                    <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
-                                        id="backupFileUpload">
-                                        Upload File
-                                    </button>
-                                </span>
-                            </li>
-                            <li class="mdl-list__item mdl-list__item--three-line">
-                                <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
-                                    <i class="material-icons kp-settings-icon">restore</i>
-                                    <span>Restore Defaults</span>
-                                    <span class="mdl-list__item-text-body">
-                                        This will delete all personal images, custom protected pages and image snippets
-                                        and restore settings to factory defaults.
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">backup</i>
+                                        <span>Backup your Data</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Backup all custom settings.
+                                        </span>
                                     </span>
-                                </span>
-                                <span
-                                    class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
-                                    <button class="full mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
-                                        id="kp-restore-factory">Restore</button>
-                                </span>
-                            </li>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
+                                            id="sp-backup">Backup</button>
+                                    </span>
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">settings_backup_restore</i>
+                                        <span> Restore Data From Backup File</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Restore custom settings from a backup file.
+                                        </span>
+                                    </span>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <div style="height:0px;overflow:hidden">
+                                            <input type="file" id="backup-file" name="fileInput" />
+                                        </div>
+                                        <button class="full mdl-button mdl-button mdl-js-button mdl-button--raised"
+                                            id="backupFileUpload">
+                                            Upload File
+                                        </button>
+                                    </span>
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">restore</i>
+                                        <span>Restore Defaults</span>
+                                        <span class="mdl-list__item-text-body">
+                                            This will delete all personal images, custom protected pages and image
+                                            snippets
+                                            and restore settings to factory defaults.
+                                        </span>
+                                    </span>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <button
+                                            class="full mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
+                                            id="kp-restore-factory">Restore</button>
+                                    </span>
+                                </li>
 
-                        </ul>
+                            </ul>
+                        </div>
                     </div>
             </section>
             <section class="mdl-layout__tab-panel" id="tab-help">
-                <div class="mdl-grid kp-max-width">
-                    <div class="mdl-cell mdl-cell--12-col">
-                        <h3>About</h3>
-                        <p>version 1.0.0</p>
-                    </div>
-                    <div class="mdl-cell mdl-cell--9-col mdl-grid">
-                        <p class="kp-hero-text">
-                            SpotPhish is a Chrome extension which protects against zero-day phishing
-                            by creating large visual differences between legitimate sites and phishing
-                            pages which attempt to mimic them. This is done in the following manner:
-                        </p>
-                        <ul class="kp-hero-text">
-                            <li>Visiting a genuine page triggers a popup with a personal security image,
-                                which is displayed for a few seconds.
-                            </li>
-                            <li>The extension takes screenshots of the active browser tab and raises
-                                an alarm if the current page visually resembles a protected page, but belongs
-                                to an unknown domain.
-                            </li>
-                        </ul>
+                <div class="page-content">
+                    <div class="mdl-grid kp-max-width">
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <h3>About</h3>
+                            <p>Version 1.0.0</p>
+                        </div>
+                        <div class="mdl-cell mdl-cell--9-col mdl-grid">
+                            <p class="kp-hero-text">
+                                SpotPhish is a Chrome extension which protects against zero-day phishing
+                                by creating large visual differences between legitimate sites and phishing
+                                pages which attempt to mimic them. This is done in the following manner:
+                            </p>
+                            <ul class="kp-hero-text">
+                                <li>Visiting a genuine page triggers a popup with a personal security image,
+                                    which is displayed for a few seconds.
+                                </li>
+                                <li>The extension takes screenshots of the active browser tab and raises
+                                    an alarm if the current page visually resembles a protected page, but belongs
+                                    to an unknown domain.
+                                </li>
+                            </ul>
 
-                        <figure>
-                            <img src="doc/img/paypal-greenflag.gif">
-                            <figcaption>Real Paypal login page</figcaption>
-                        </figure>
-                        <figure>
-                            <img src="doc/img/paypal-redflag.gif">
-                            <figcaption>Paypal phishing page</figcaption>
-                        </figure>
-                    </div>
-                    <div class="mdl-cell mdl-cell--12-col">
-                        <h3>Documentation</h3>
-                    </div>
-                    <div class="mdl-cell mdl-cell--9-col mdl-grid">
-                        <ul class="kp-hero-text">
-                            <li><a href="https://github.com/spotphish/spotphish/blob/master/README.md">Usage and FAQ</a>
-                            </li>
-                            <li><a href="https://github.com/spotphish/spotphish/blob/master/doc/rationale.md">Background
-                                    and technical details</a></li>
-                        </ul>
+                            <figure>
+                                <img src="doc/img/paypal-greenflag.gif">
+                                <figcaption>Real Paypal login page</figcaption>
+                            </figure>
+                            <figure>
+                                <img src="doc/img/paypal-redflag.gif">
+                                <figcaption>Paypal phishing page</figcaption>
+                            </figure>
+                        </div>
+                        <div class="mdl-cell mdl-cell--12-col">
+                            <h3>Documentation</h3>
+                        </div>
+                        <div class="mdl-cell mdl-cell--9-col mdl-grid">
+                            <ul class="kp-hero-text">
+                                <li><a href="https://github.com/spotphish/spotphish/blob/master/README.md">Usage and
+                                        FAQ</a>
+                                </li>
+                                <li><a href="https://github.com/spotphish/spotphish/blob/master/doc/rationale.md">Background
+                                        and technical details</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>

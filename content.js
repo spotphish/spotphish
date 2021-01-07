@@ -27,7 +27,7 @@ function main() {
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
-                showRedflag(msg);
+               if(!isDialogOpen){ showRedflag(msg);}
             } else if (msg.op === "crop_template") {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
@@ -117,7 +117,7 @@ function showGreenflag(msg) {
        if(imgVisible){
         chrome.storage.local.get("secure_img", function(result) {
             var data = result.secure_img;
-            var img = document.createElement("img");
+            let img = document.createElement("img");
             img.id = "kp-secure-img";
             img.src = data.src;
 
@@ -135,26 +135,28 @@ function showGreenflag(msg) {
     });
 
 }
-
+var isDialogOpen=false;
 function showRedflag(msg) {
-    let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=safedomain&host=" + window.location.hostname;
+    isDialogOpen=true;
+    let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=#tab-safedomain&host=" + window.location.hostname;
     function openSafeDomainLink() {
         window.open(safeDomainLink);
     }
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     img.src = msg.img;
-    const warn = {
+    let warn = {
         title: "Are you being phished?",
         type: "warning",
-        img: img,
+        img:img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
         extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: (e)=>{isDialogOpen=false}},
             {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`, onclick: openSafeDomainLink},
             {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`, onclick: null}]
     };
 
-    dialog(warn);
+        dialog(warn);
+
 }
 
 function rpc(msg) {
@@ -166,7 +168,7 @@ function rpc(msg) {
 }
 
 function injectAckModal(message = "All done", image) {
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     const ack = {
         title: "SpotPhish",
         type: "info",
@@ -204,7 +206,7 @@ function injectCropModal() {
 }
 
 function showMatch(msg) {
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     img.src = msg.img;
     const warn = {
         title: "Match found",

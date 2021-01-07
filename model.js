@@ -423,7 +423,7 @@
         return customData;
     },
 
-    backupResotre: function(data) {
+    backupRestore: function(data) {
         return this.dbCustomSites.clear()
             .then(x => this.dbCustomSites.putBatch(data))
             .then(x => this.sync());

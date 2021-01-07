@@ -11,7 +11,7 @@ const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
  let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
-AVAILABLE_MODELS=[{src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true,dependencies:[]}],
+AVAILABLE_MODELS=[{weightage:100,webgl:false,src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true,dependencies:[]}],
 globalCurrentTabId,
     tabInfoList = {};
 // var prediction_model=new PredictionModel();
@@ -78,16 +78,16 @@ setInterval(watchdog, WATCHDOG_INTERVAL);
 
 function unInjectScripts(item){
 
-    if($("#"+item.name).length==0){
+    if($("#"+item).length==0){
 
        }else{
-        $("#"+item.name).empty();
+        $("#"+item).empty();
        }
 
 
 
 }
-function injectScripts(item){
+ function injectScripts(item){
 
    if($("#"+item.name).length==0){
     let di = document.createElement('div');
@@ -95,7 +95,7 @@ function injectScripts(item){
     document.body.appendChild(di);
    }
 
-
+    //Nothing exported from user's algorithm, directly inject his scripts
     // let ga = document.createElement('script'); ga.type = 'text/javascript';
     //     ga.src = item.src;
     //     $("#"+item.name).append(ga);
@@ -172,10 +172,14 @@ function injectScripts(item){
         let ti = Tabinfo.get(sender.tab.id);
         let tabState = ti.state;
         if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+            console.log("...................................urgent_check");
+
             redflagCheck(ti);
         }
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
+        console.log("...................................test_now");
+
         redflagCheck(ti, true);
     }
     else {
@@ -285,10 +289,10 @@ function watchdog() {
             let redcheck = false;
             while (ti.watches.length && now > ti.watches[0]) {
                 redcheck = true;
-
                 ti.watches.shift();
             }
             if (redcheck) {
+                console.log("...................................watchdog");
                 redflagCheck(ti);
             }
         }
@@ -296,20 +300,28 @@ function watchdog() {
 }
 
 
-
+function categorize(confidence){
+   if(confidence>75){
+       return " high probability";
+   }else if (confidence<=75 && confidence >50){
+       return " moderate probability";
+   }else if (confidence<=50 && confidence >25){
+       return " good probability";
+   }else{
+       return " fair probability";
+   }
+}
 async function redflagCheck(ti,testNow){
-
     const tab = ti.tab;
-
-
     let screenshot=await snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
         let result;
         result=await predict(screenshot,AVAILABLE_MODELS);
         console.log(result);
-
         if(result.site!="NaN"){
             let site = result.site
+            site +=" with "
+            site+=categorize(result.confidence)
             let corr_img=result.image;
             if (testNow) {
                 return ti.port.postMessage({op: "test_match", site, img:corr_img});
@@ -365,7 +377,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
+
         update_flag = true;
+        chrome.tabs.create({ url: "option.html" })
     }
 
 });
@@ -511,15 +525,28 @@ chrome.runtime.onInstalled.addListener(function(details) {
         Sites.dbFeedList.getAll().then(feedList => {
             feedList.forEach(feed => subscribedFeeds.push(feed));
             let customSites = Sites.backup();
-            respond({subscribedFeeds : subscribedFeeds, sites: customSites, secureImage: image });
+            respond({subscribedFeeds : subscribedFeeds,
+                 sites: customSites, secureImage: image,
+                 debugFlag:getDebugFlag(),
+                 secureImageFlag:getSecureImageFlag(),
+                 secureImageDuration:getSecureImageDuration(),
+                 availableModels:getAvailableModels() });
         });
     });
 }
 
 
  function restoreBackup(data, respond) {
-    return Sites.backupResotre(data.sites)
-        .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage);}})
+    return Sites.backupRestore(data.sites)
+        .then(x =>  {
+            if (!!data.secureImage){ setSecurityImage(data.secureImage);}
+
+            if (!!data.debugFlag){  setDebugFlag(data.debugFlag)}
+                if (!!data.secureImageFlag){  setSecureImageFlag(data.secureImageFlag)}
+                    if (!!data.secureImageDuration){  setSecureImageDuration(data.secureImageDuration)}
+                        if (!!data.availableModels){   AVAILABLE_MODELS=data.availableModels}
+
+    })
         .then(x =>  respond())
         .catch(x => respond({message: x.message}));
 }
@@ -532,11 +559,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
             SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
-            AVAILABLE_MODELS=data.available_models?data.available_models:[{dependencies:[],src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true}];
+            AVAILABLE_MODELS=data.available_models?data.available_models:[{webgl:false,weightage:100,dependencies:[],src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true}];
             $.each(getAvailableModels(), function (i, item) {
-                if(item.selected){
                     injectScripts(item);
-                }
             });
         } else {
             saveAdvConfig();
@@ -588,16 +613,26 @@ chrome.runtime.onInstalled.addListener(function(details) {
     $.each(getAvailableModels(), function (i, item) {
         if(item.name===model_name){
             item.selected=true;
-            injectScripts(item);
         }
     });
     saveAdvConfig();
 }
+
+function setWeightage(model_name,weight) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.weightage=weight;
+        }
+    });
+    saveAdvConfig();
+
+
+}
+
  function unSelectModel(model_name) {
     $.each(getAvailableModels(), function (i, item) {
         if(item.name===model_name){
             item.selected=false;
-            unInjectScripts(item);
 
         }
     });
@@ -605,12 +640,15 @@ chrome.runtime.onInstalled.addListener(function(details) {
 }
 
  function setAvailableModels(value) {
+     console.log(value);
     AVAILABLE_MODELS.push (value);
+    injectScripts(value);
     saveAdvConfig();
 }
  function removeAvailableModels(value) {
-    unSelectModel(value);
     AVAILABLE_MODELS.splice(AVAILABLE_MODELS.findIndex(a => a.name ===value ) , 1)
+    unInjectScripts(value);
+
     saveAdvConfig();
 }
  function getAvailableModels() {
