@@ -1,4 +1,5 @@
 window.predict=  async function  predict(screenshot,available_models){
+  console.log(available_models);
  let total= available_models.filter(item=>item.selected).reduce(function (total, num) {
     return total + num.weightage;
 }, 0);
@@ -10,11 +11,21 @@ let webglStatus=webgl_detect();
 
   let result= await Promise.all(available_models.filter(item=>item.selected).map(async function(item){
       // let model = eval("new " + item.name + "()");
-      let Model=(await import(item.src)).default;
+     let Model;
+     Model=(await import(item.src)).default;
+
+      // if(item.name==="TemplateMatching"){
+      //    Model=(await import(item.src)).default;
+
+      // }else{
+      //    Model=(item.model).default;
+
+      // }
+
       let x=new Model();
       if(item.webgl){
         if(webglStatus){
-          let z=await  x.predict(screenshot);
+          let z=await x.predict(screenshot);
           return {
             ...z,
             weightage:item.weightage

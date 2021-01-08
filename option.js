@@ -276,6 +276,7 @@ function renderSafeDomainTable() {
 }
 function renderAvailableModels(){
     $('#kp-models').empty();
+    console.log(bkg.getAvailableModels());
     $.each(bkg.getAvailableModels(), function (i, item) {
         $('#kp-models').append(`   <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
         <span class="mdl-list__item-primary-content ">
@@ -509,11 +510,12 @@ $(document).ready( function() {
 
                 }
                 weightMessage()
-            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+                if (params["tab"]) {
+                    location.reload();
+                }else{
+                    window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
 
-
-
-
+                }
 
             });
         }
@@ -594,13 +596,16 @@ $(document).ready( function() {
     $("#kp-models .delete").on("click", function(e) {
         let x=$(this).closest('li').attr("id");
 
-        if(  x!=="TemplateMatching") {bkg.removeAvailableModels(x);
-            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+        if(  x!=="TemplateMatching") {
+            bkg.removeAvailableModels(x);
+            if (params["tab"]) {
+                location.reload();
+            }else{
+                window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
 
+            }
 
-
-
-            ;}else{
+            }else{
             alert("Not allowed")
         }
         weightMessage();
@@ -674,11 +679,12 @@ $(document).ready( function() {
         if(!validateModel()){alert("All fields are mandatory");return;}
         if(modelNameExists(template_of_MLmodel.name)){alert("Model with same name already exists");return;}
             //Class or function is exported from user's algorithm
-            let Model=(await import(template_of_MLmodel.src)).default;
+            let srcFile=(await import(template_of_MLmodel.src));
+            let Model=srcFile.default;
             if(Model!==undefined){
                 if(Model.toString().includes(template_of_MLmodel.name) ){
                         if(Model.toString().includes("predict")){
-                            template_of_MLmodel.model=Model;
+                            template_of_MLmodel.model=srcFile;
                         }else{
                             alert(template_of_MLmodel.label+" does not contain the predict function")
                             return;
@@ -702,8 +708,14 @@ $(document).ready( function() {
                         webgl:false
                     };
 
+
             dialog.close();
-            window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+            if (params["tab"]) {
+                location.reload();
+            }else{
+                window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+
+            }
 
 
     });

@@ -316,8 +316,13 @@ async function redflagCheck(ti,testNow){
     let screenshot=await snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
         let result;
+try{
         result=await predict(screenshot,AVAILABLE_MODELS);
         console.log(result);
+ } catch(err){
+         alert(err);
+         return;
+     }
         if(result.site!="NaN"){
             let site = result.site
             site +=" with "
