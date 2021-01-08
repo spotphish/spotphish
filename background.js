@@ -2,7 +2,6 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
 const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
@@ -11,13 +10,11 @@ const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
-let DEBUG = false,
-    globalCurrentTabId,
+ let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
+AVAILABLE_MODELS=[{weightage:100,webgl:false,src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true,dependencies:[]}],
+globalCurrentTabId,
     tabInfoList = {};
-
-loadDefaults();
-setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
-
+// var prediction_model=new PredictionModel();
 class Tabinfo {
     constructor(id, tab, port) {
         this.id = id;
@@ -65,20 +62,75 @@ Tabinfo.show = function() {
     }
 };
 
+
+loadDefaults();
+setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
+
+
 chrome.runtime.onConnect.addListener(port => {
     const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
+
     setIcon(ti, "init");
+
 });
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
-chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
+function unInjectScripts(item){
+
+    if($("#"+item).length==0){
+
+       }else{
+        $("#"+item).empty();
+       }
+
+
+
+}
+ function injectScripts(item){
+
+   if($("#"+item.name).length==0){
+    let di = document.createElement('div');
+    di.id=item.name;
+    document.body.appendChild(di);
+   }
+
+    //Nothing exported from user's algorithm, directly inject his scripts
+    // let ga = document.createElement('script'); ga.type = 'text/javascript';
+    //     ga.src = item.src;
+    //     $("#"+item.name).append(ga);
+        for(let x of item.dependencies){
+            let ga1 = document.createElement('script'); ga1.type = 'text/javascript';
+                ga1.src = x;
+                $("#"+item.name).append(ga1);
+        }
+
+    /*webkitRequestFileSystem(PERSISTENT, 1024, function(filesystem) {
+        console.log(filesystem);
+        filesystem.root.getFile("vijaysharma", { create: true }, function(file) {
+        console.log(file.fullPath);
+         file.createWriter(function(writer) {
+        console.log(writer);
+          writer.addEventListener("write", function(event) {
+        //    location = file.toURL()
+        console.log("inside writer");
+          })
+          writer.addEventListener("error", console.error)
+          writer.write(new Blob([ "test" ]))
+         }, console.error)
+        }, console.error)
+       }, console.error)*/
+
+}
+  chrome.runtime.onMessage.addListener(async function(msg, sender, respond) {
+
     if (sender.tab) {
         const ti = Tabinfo.get(sender.tab.id);
         if (ti) {
             ti.update(sender.tab);
         }
     }
+
     if (msg.op === "init") {
         init(msg, sender, respond);
     } else if (msg.op === "checkdata") {
@@ -120,24 +172,17 @@ chrome.runtime.onMessage.addListener(function(msg, sender, respond) {
         let ti = Tabinfo.get(sender.tab.id);
         let tabState = ti.state;
         if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+            console.log("...................................urgent_check");
+
             redflagCheck(ti);
         }
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
+        console.log("...................................test_now");
+
         redflagCheck(ti, true);
-    } else if (msg.op === "remove_site") {
-        removeSite(msg.site, respond);
-    } else if (msg.op === "toggle_site") {
-        toggleSite(msg.site, msg.enable, respond);
-    } else if (msg.op === "remove_url") {
-        removeURL(msg.url, respond);
-    } else if (msg.op === "toggle_url") {
-        toggleURL(msg.url, msg.enable, respond);
-    } else if (msg.op === "remove_safe_domain") {
-        removeSafeDomain(msg.domain, respond);
-    } else if (msg.op === "add_safe_domain") {
-        addSafeDomain(msg.domain, respond);
-    } else {
+    }
+    else {
         console.log("KPBG: Unknown message", msg);
     }
     return true;
@@ -154,9 +199,12 @@ function inject (tab) {
 }
 
 function init(msg, sender, respond) {
-    const ti = Tabinfo.get(sender.tab.id),
-        tab = ti.tab;
-    //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+    const ti = Tabinfo.get(sender.tab.id);
+    if(ti==undefined){
+        return;
+    }
+    const  tab = ti.tab;
+      //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
     if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
     if (END_STATES.indexOf(ti.state) !== -1) {
@@ -244,112 +292,104 @@ function watchdog() {
                 ti.watches.shift();
             }
             if (redcheck) {
+                console.log("...................................watchdog");
                 redflagCheck(ti);
             }
         }
     });
 }
 
-function redflagCheck(ti, testNow) {
-    console.log("SNAP! ", Date(), ti.tab.id, ti.tab.url, ti.state, ti.nchecks, ti.watches);
-    return scanTab(ti)
-        .then(res => {
-            //console.log("SCAN", ti.tab.url, ti.tab.state, res);
-            if (res.match) {
-                const site = res.match.template.site;
-                if (testNow) {
-                    return ti.port.postMessage({op: "test_match", site, img:res.corr_img});
-                }
-                ti.nchecks++;
-                ti.state = "redflagged";
-                setIcon(ti, "redflagged", {site});
-                return ti.port.postMessage({op: "redflag", site, img:res.corr_img});
-            } else {
-                if (testNow) {
-                    return ti.port.postMessage({op: "test_no_match"});
-                }
-                ti.nchecks++;
-                if (ti.state !== "redflagged" && ti.watches.length === 0) {
-                    ti.state = "red_done";
-                }
-                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
-                    setIcon(ti, "checked"); // The page is checked atleast once.
-                }
+
+function categorize(confidence){
+   if(confidence>75){
+       return " high probability";
+   }else if (confidence<=75 && confidence >50){
+       return " moderate probability";
+   }else if (confidence<=50 && confidence >25){
+       return " good probability";
+   }else{
+       return " fair probability";
+   }
+}
+async function redflagCheck(ti,testNow){
+    const tab = ti.tab;
+    let screenshot=await snapTab(tab)
+        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
+        let result;
+try{
+        result=await predict(screenshot,AVAILABLE_MODELS);
+        console.log(result);
+ } catch(err){
+         alert(err);
+         return;
+     }
+        if(result.site!="NaN"){
+            let site = result.site
+            site +=" with "
+            site+=categorize(result.confidence)
+            let corr_img=result.image;
+            if (testNow) {
+                return ti.port.postMessage({op: "test_match", site, img:corr_img});
             }
-        }).catch(e => console.log("redflagCheck error", e));
+            ti.nchecks++;
+            ti.state = "redflagged";
+            setIcon(ti, "redflagged", {site});
+            return ti.port.postMessage({op: "redflag", site, img:corr_img});
+        }else{
+            if (testNow) {
+                return ti.port.postMessage({op: "test_no_match"});
+            }
+            ti.nchecks++;
+            if (ti.state !== "redflagged" && ti.watches.length === 0) {
+                ti.state = "red_done";
+            }
+            if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
+                setIcon(ti, "checked"); // The page is checked atleast once.
+            }
+        }
 }
 
 /*
  * Screenshot a tab and match with all active templates
  */
 
-function scanTab(ti) {
-    const tab = ti.tab;
-    let screenshot, features, match;
-
-    return snapTab(tab)
-        .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr))
-        .then(x => screenshot = x)
-        .then(screenshot => findOrbFeatures(screenshot))
-        .then(x => features = x)
-        .then(features => matchTemplates(features))
-        .then(x => match = x)
-        .then(match => makeCorrespondenceImage(match, screenshot, features))
-        .then(corr_img => ({match, corr_img}));
-
-    function snapTab(tab) {
-        return new Promise((resolve, reject) => {
-            chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, resolve);
-        });
-    }
-
-    function normalizeScreenshot(image, width, height, dpr) {
-        const area = {x: 0, y: 0, w: width, h: height};
-        return crop(image, area, dpr, false);
-    }
-
-    function matchTemplates(scrFeatures) {
-        const scrCorners = scrFeatures.corners;
-        const scrDescriptors = scrFeatures.descriptors;
-        let t0 = performance.now();
-        let activeTemplates = Sites.getTemplates();
-        for (let i = 0; i < activeTemplates.length; i++) {
-            const template = activeTemplates[i];
-            const res = matchOrbFeatures(scrCorners, scrDescriptors, template.patternCorners,
-                template.patternDescriptors, template.site);
-            if (res) {
-                let t1 = performance.now();
-                console.log("Match found for : " + template.site , " time taken : " + (t1-t0) + "ms", Date());
-                res.template = template;
-                return Promise.resolve(res);
-            }
-        }
-        return Promise.resolve(null);
-    }
-
-    function makeCorrespondenceImage(match, screenshot, features) {
-        if (!match) {
-            return Promise.resolve(null);
-        }
-        return findCorrespondence(screenshot, features.corners , match.template, match.matches, match.matchCount,
-            match.mask);
-    }
+function snapTab(tab) {
+    console.log("snapTab");
+    return new Promise((resolve, reject) => {
+        chrome.tabs.captureVisibleTab(tab.windowId, { format: "png", quality: 100 }, (data) => resolve(data));
+    });
 }
+
+
+function normalizeScreenshot(image, width, height, dpr) {
+    console.log("normalize");
+
+    const area = {x: 0, y: 0, w: width, h: height};
+    return crop(image, area, dpr, false);
+}
+
 
 chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
     Tabinfo.remove(tabid);
 });
 
+
+
 chrome.runtime.onInstalled.addListener(function(details) {
+
+
     if (details.reason === "install") {
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
+
         update_flag = true;
+        chrome.tabs.create({ url: "option.html" })
     }
+
 });
 
-function initFeeds() {
+ function initFeeds() {
     let feeds =  Sites.getFeeds("all");
     let res = Promise.resolve(true);
 
@@ -361,7 +401,7 @@ function initFeeds() {
             .then(x => checkUpdates());
 }
 
-function checkUpdates() {
+ function checkUpdates() {
     let activeFeeds =  Sites.getFeeds();
     let res = Promise.resolve(true);
     if (activeFeeds.length === 0) {
@@ -376,7 +416,7 @@ function checkUpdates() {
     });
 }
 
-function updateFeed(feed) {
+ function updateFeed(feed) {
     debug("Executing ", feed.src);
     let ord = Math.floor(Math.random()*100);
     let src = feed.src + "?ord=" + ord;
@@ -402,32 +442,33 @@ function updateFeed(feed) {
 
 /********* Functions for Option Page *************/
 
-function getProtectedSitesData() {
-    let data = Sites.getSites("exists").filter(x => {
-        let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
-        let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
-        if (protected.length > 0 || templates.length > 0) {
-            return true;
-        }
-        return false;
-    }).map( site => {
-        if (site.templates) {
-            site.templates = site.templates.filter(a => !a.deleted && !a.disabled).map(template => {
-                let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
-                if (found) {
-                    template.base64 = found.base64;
-                } else {
-                    template.deleted = true;
+  function getProtectedSitesData() {
+            let data = Sites.getSites("exists").filter(x => {
+                let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
+                let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
+                if (protected.length > 0 || templates.length > 0) {
+                    return true;
                 }
-                return template;
-            });
-        }
-        return site;
-    });
-    return data;
+                return false;
+            }).map(site=>{
+                if (site.templates) {
+                    site.templates = site.templates.filter(a => !a.deleted && !a.disabled)
+                    .map(template => {
+                        // let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+                        // if (found) {
+                        //         template.base64 = found.base64;
+                        //     } else {
+                        //         template.deleted = true;
+                        //     }
+                        return template;
+                    });
+                }
+                return site;
+            })
+        return data;
 }
 
-function getSafeDomainsData() {
+ function getSafeDomainsData() {
 
     function flatten(sites) {
         return sites.filter(y => !y.deleted && !y.disabled && y.safe && y.safe.length)
@@ -441,22 +482,22 @@ function getSafeDomainsData() {
 }
 
 /*******************/
-function errorfn(err) {
+ function errorfn(err) {
     console.log("Inedexeddb error occured : ", err);
 }
 
-function getSecurityImage(cb) {
+ function getSecurityImage(cb) {
     chrome.storage.local.get("secure_img", function(result) {
         cb(result.secure_img);
     });
 }
 
-function setSecurityImage(image){
+ function setSecurityImage(image){
     chrome.storage.local.set({ "secure_img": image }, function() {
     });
 }
 
-function setDefaultSecurityImage(cb) {
+ function setDefaultSecurityImage(cb) {
     chrome.storage.local.get("secure_img", function(result) {
         var data = result.secure_img;
         if (typeof data === "undefined") {
@@ -469,66 +510,156 @@ function setDefaultSecurityImage(cb) {
         }
     });
 }
-
-function loadDefaults() {
+ function  loadDefaults() {
     initAdvConfigs();
     setDefaultSecurityImage();
     return Sites.init()
         .then(x => initFeeds());
 }
 
-function cleanDB(respond) {
+ function cleanDB(respond) {
     return Sites.reset()
         .then(x => chrome.storage.local.remove("secure_img"))
         .then(x => respond())
         .catch(e => console.log("cleanDB error", e));
 }
 
-function backupDB(respond) {
+ function backupDB(respond) {
     getSecurityImage(function(image) {
         let subscribedFeeds = [];
         Sites.dbFeedList.getAll().then(feedList => {
             feedList.forEach(feed => subscribedFeeds.push(feed));
             let customSites = Sites.backup();
-            respond({subscribedFeeds : subscribedFeeds, sites: customSites, secureImage: image });
+            respond({subscribedFeeds : subscribedFeeds,
+                 sites: customSites, secureImage: image,
+                 debugFlag:getDebugFlag(),
+                 secureImageFlag:getSecureImageFlag(),
+                 secureImageDuration:getSecureImageDuration(),
+                 availableModels:getAvailableModels() });
         });
     });
 }
 
 
-function restoreBackup(data, respond) {
-    return Sites.backupResotre(data.sites)
-        .then(x =>  { if (!!data.secureImage){ setSecurityImage(data.secureImage);}})
+ function restoreBackup(data, respond) {
+    return Sites.backupRestore(data.sites)
+        .then(x =>  {
+            if (!!data.secureImage){ setSecurityImage(data.secureImage);}
+
+            if (!!data.debugFlag){  setDebugFlag(data.debugFlag)}
+                if (!!data.secureImageFlag){  setSecureImageFlag(data.secureImageFlag)}
+                    if (!!data.secureImageDuration){  setSecureImageDuration(data.secureImageDuration)}
+                        if (!!data.availableModels){   AVAILABLE_MODELS=data.availableModels}
+
+    })
         .then(x =>  respond())
         .catch(x => respond({message: x.message}));
 }
 
-function initAdvConfigs() {
+ function initAdvConfigs() {
     chrome.storage.local.get("adv_config", function(result) {
         var data = result.adv_config;
         debug("Data received : ", data);
         if (data) {
             DEBUG = data.debug? true : false;
+            SECURE_IMAGE = data.show_secure_image? true : false;
+            SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
+            AVAILABLE_MODELS=data.available_models?data.available_models:[{webgl:false,weightage:100,dependencies:[],src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true}];
+            $.each(getAvailableModels(), function (i, item) {
+                    injectScripts(item);
+            });
         } else {
             saveAdvConfig();
         }
+
     });
 }
 
-function saveAdvConfig() {
-    chrome.storage.local.set({adv_config : {debug: DEBUG}});
+ function saveAdvConfig() {
+    chrome.storage.local.set(
+        {adv_config :
+            {debug: DEBUG,
+                show_secure_image:SECURE_IMAGE,
+                secure_image_duration:SECURE_IMAGE_DURATION,
+            available_models:AVAILABLE_MODELS
+
+            }});
+
 }
 
-function setDebugFlag(enable) {
+ function setDebugFlag(enable) {
     DEBUG = enable;
     saveAdvConfig();
 }
 
-function getDebugFlag() {
+ function getDebugFlag() {
     return DEBUG;
 }
+ function setSecureImageFlag(enable) {
+    SECURE_IMAGE = enable;
+    saveAdvConfig();
+}
 
-function setIcon(ti, state, info) {
+ function getSecureImageFlag() {
+    return SECURE_IMAGE;
+}
+ function setSecureImageDuration(value) {
+    SECURE_IMAGE_DURATION = value;
+    saveAdvConfig();
+}
+
+ function getSecureImageDuration() {
+    return SECURE_IMAGE_DURATION;
+}
+
+
+
+ function selectModel(model_name) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.selected=true;
+        }
+    });
+    saveAdvConfig();
+}
+
+function setWeightage(model_name,weight) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.weightage=weight;
+        }
+    });
+    saveAdvConfig();
+
+
+}
+
+ function unSelectModel(model_name) {
+    $.each(getAvailableModels(), function (i, item) {
+        if(item.name===model_name){
+            item.selected=false;
+
+        }
+    });
+    saveAdvConfig();
+}
+
+ function setAvailableModels(value) {
+     console.log(value);
+    AVAILABLE_MODELS.push (value);
+    injectScripts(value);
+    saveAdvConfig();
+}
+ function removeAvailableModels(value) {
+    AVAILABLE_MODELS.splice(AVAILABLE_MODELS.findIndex(a => a.name ===value ) , 1)
+    unInjectScripts(value);
+
+    saveAdvConfig();
+}
+ function getAvailableModels() {
+    return AVAILABLE_MODELS;
+}
+ function setIcon(ti, state, info) {
     const iconFolder = "assets/icons";
     let tabId = ti.tab.id,
         path = iconFolder + "/icon24.png",
@@ -564,7 +695,7 @@ function setIcon(ti, state, info) {
     chrome.browserAction.setBadgeText({text, tabId});
 }
 
-function addToProtectedList(tab, logo) {
+ function addToProtectedList(tab, logo) {
     const url = tab.url;
     return Sites.addProtectedURL(url, logo)
         .then(x => Sites.getProtectedURL(url))
@@ -576,7 +707,7 @@ function addToProtectedList(tab, logo) {
         });
 }
 
-function removeFromProtectedList(tab) {
+ function removeFromProtectedList(tab) {
     const url = tab.url;
 
     return Sites.removeProtectedURL(url)
@@ -588,37 +719,37 @@ function removeFromProtectedList(tab) {
         });
 }
 
-function removeSite(name, respond) {
-    return Sites.removeSite(name)
+ function removeSite(name, respond) {
+     Sites.removeSite(name)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));
 }
 
-function toggleSite(name, enable, respond) {
+ function toggleSite(name, enable, respond) {
     return Sites.toggleSite(name, enable)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));
 }
 
-function removeURL(url, respond) {
+ function removeURL(url, respond) {
     return Sites.removeProtectedURL(url)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));
 }
 
-function toggleURL(url, enable, respond) {
+ function toggleURL(url, enable, respond) {
     return Sites.toggleURL(url, enable)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));
 }
 
-function removeSafeDomain(domain, respond) {
+ function removeSafeDomain(domain, respond) {
     return Sites.removeSafeDomain(domain)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));
 }
 
-function addSafeDomain(domain, respond) {
+ function addSafeDomain(domain, respond) {
     return Sites.addSafeDomain(domain)
         .then(x => respond({}))
         .catch(x => respond({error: x.message}));

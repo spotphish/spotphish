@@ -2,7 +2,6 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
 const POLL_INTERVAL = 2000; /* Periodicity of redflag candidate check */
 const MAX_POLLS = 30; /* Give up after polling x times */
 
@@ -17,16 +16,18 @@ let DEBUG = true;
 main();
 
 function main() {
+
     if (window === top) {
         port = chrome.runtime.connect();
         port.onMessage.addListener(msg => {
             if (!msg.op) {
                 console.log("KP: Invalid msg from background?!", msg);
             }
+
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
-                showRedflag(msg);
+               if(!isDialogOpen){ showRedflag(msg);}
             } else if (msg.op === "crop_template") {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
@@ -43,6 +44,7 @@ function main() {
 
     $(document).ready(do_init);
 }
+
 
 function do_init() {
     const init = { op: "init", top: false };
@@ -68,8 +70,9 @@ function do_init() {
 
     function urgentCheck() {
         console.log("key event captured");
+
         rpc({ op: "urgent_check"});
-        $(document).off("keypress", urgentCheck);
+        $(document).off("keypress");
     }
 
     $(document).on("keypress", urgentCheck);
@@ -107,43 +110,53 @@ function startChecking() {
 }
 
 function showGreenflag(msg) {
-    chrome.storage.local.get("secure_img", function(result) {
-        var data = result.secure_img;
-        var img = document.createElement("img");
-        img.id = "kp-secure-img";
-        img.src = data.src;
+    chrome.storage.local.get("adv_config", function(result) {
+       let imgVisible=  result.adv_config.show_secure_image;
+       let imgVisibilityDuration=  result.adv_config.secure_image_duration;
 
-        const greenflag = {
-            title: "Security Image",
-            type: "info",
-            img: img,
-            extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
-            buttons: [],
-            dismiss_after: 3500
-        };
-        dialog(greenflag);
+       if(imgVisible){
+        chrome.storage.local.get("secure_img", function(result) {
+            var data = result.secure_img;
+            let img = document.createElement("img");
+            img.id = "kp-secure-img";
+            img.src = data.src;
+
+            const greenflag = {
+                title: "Security Image",
+                type: "info",
+                img: img,
+                extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
+                buttons: [],
+                dismiss_after: (imgVisibilityDuration*1000)
+            };
+            dialog(greenflag);
+        });
+       }
     });
-}
 
+}
+var isDialogOpen=false;
 function showRedflag(msg) {
-    let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=safedomain&host=" + window.location.hostname;
+    isDialogOpen=true;
+    let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=#tab-safedomain&host=" + window.location.hostname;
     function openSafeDomainLink() {
         window.open(safeDomainLink);
     }
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     img.src = msg.img;
-    const warn = {
+    let warn = {
         title: "Are you being phished?",
         type: "warning",
-        img: img,
+        img:img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
         extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: (e)=>{isDialogOpen=false}},
             {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`, onclick: openSafeDomainLink},
             {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`, onclick: null}]
     };
 
-    dialog(warn);
+        dialog(warn);
+
 }
 
 function rpc(msg) {
@@ -155,7 +168,7 @@ function rpc(msg) {
 }
 
 function injectAckModal(message = "All done", image) {
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     const ack = {
         title: "SpotPhish",
         type: "info",
@@ -193,11 +206,11 @@ function injectCropModal() {
 }
 
 function showMatch(msg) {
-    var img = document.createElement("img");
+    let img = document.createElement("img");
     img.src = msg.img;
     const warn = {
-        title: "Template Matched",
-        type: "warning",
+        title: "Match found",
+        type: "info",
         img: img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
@@ -209,7 +222,7 @@ function showNoMatch() {
     const ack1 = {
         title: "SpotPhish",
         type: "info",
-        main: "No template matches found for this page.",
+        main: "No matches found for this page.",
         extra: null,
         buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
         dismiss_after: 3000

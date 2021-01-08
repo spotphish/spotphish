@@ -2,8 +2,7 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
-let Sites = {
+ let Sites = {
 
     safe: [], /* flattened list of strings, all enabled safe domains */
     templates: [],
@@ -63,9 +62,11 @@ let Sites = {
     },
 
     getSites: function(filter="enabled") {
+
         const ff = (filter === "enabled") ? x => !x.deleted && !x.disabled :
             (filter === "exists") ? x => !x.deleted : x => true;
-        let data = this.sites.filter(ff);
+            let data = this.sites.filter(ff);
+
         return _.cloneDeep(data);
     },
 
@@ -166,9 +167,13 @@ let Sites = {
                         patternCorners: result.patternCorners,
                         patternDescriptors: result.patternDescriptors,
                         site: data.name,
+
                         page: url1,
                         checksum: CryptoJS.SHA256(logo).toString()
                     };
+                    console.log("TEMPLATE PATTERN");
+                    console.log(pattern);
+
                     return this.dbTemplateList.put(pattern);
                 }).then(x => {
                     data.templates = [{page: url1, checksum: pattern.checksum}];
@@ -418,7 +423,7 @@ let Sites = {
         return customData;
     },
 
-    backupResotre: function(data) {
+    backupRestore: function(data) {
         return this.dbCustomSites.clear()
             .then(x => this.dbCustomSites.putBatch(data))
             .then(x => this.sync());

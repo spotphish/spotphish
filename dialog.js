@@ -139,11 +139,11 @@ function startCrop() {
             },
             onChange: e => {
                 sel = e;
-                hideMenu(); 
+                hideMenu();
             },
             onRelease: e => {
                 sel = null;
-                hideMenu(); 
+                hideMenu();
             }
         }, function() {
             jc = this;

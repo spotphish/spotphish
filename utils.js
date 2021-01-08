@@ -145,7 +145,7 @@ function mergeDeep(target, ...sources) {
  * Promise wrapper around IDBWrapper around IndexedDB
  */
 
-class Pdb {
+ class Pdb {
     constructor(options) {
         this.ready_promise = new Promise((resolve, reject) => {
             const o = Object.assign({}, options, {onStoreReady: resolve, onError: reject});
