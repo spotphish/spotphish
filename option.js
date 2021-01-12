@@ -276,7 +276,6 @@ function renderSafeDomainTable() {
 }
 function renderAvailableModels(){
     $('#kp-models').empty();
-    console.log(bkg.getAvailableModels());
     $.each(bkg.getAvailableModels(), function (i, item) {
         $('#kp-models').append(`   <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
         <span class="mdl-list__item-primary-content ">
@@ -447,7 +446,14 @@ $(document).ready( function() {
                     color = "#4CAF50";
                 }
                 $("#notifications").text(msg).css("visibility", "visible").css("color", color);
+
                 setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+                if (params["tab"]) {
+                    location.reload();
+                }else{
+                    window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+
+                }
             });
 
         };
@@ -684,7 +690,7 @@ $(document).ready( function() {
             if(Model!==undefined){
                 if(Model.toString().includes(template_of_MLmodel.name) ){
                         if(Model.toString().includes("predict")){
-                            template_of_MLmodel.model=srcFile;
+                            // template_of_MLmodel.model=Model.toString();
                         }else{
                             alert(template_of_MLmodel.label+" does not contain the predict function")
                             return;
@@ -719,7 +725,7 @@ $(document).ready( function() {
 
 
     });
-    weightMessage()
+    weightMessage();
 });
 
 function validateModel(){

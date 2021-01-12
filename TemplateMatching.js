@@ -1,6 +1,7 @@
 export default class TemplateMatching{
-
-    constructor(){}
+#templates;
+    constructor(){
+    }
     async  matchTemplates(scrFeatures,screenshot) {
         const scrCorners = scrFeatures.corners;
         const scrDescriptors = scrFeatures.descriptors;
@@ -43,14 +44,14 @@ export default class TemplateMatching{
 
   async  predict(screenshot) {
 
-  let features=await findOrbFeatures(screenshot);
-  let match=await this.matchTemplates(features,screenshot);
-  let result = {
-      site:match.template.site,
-      confidence:(match.goodMatches/match.ncorners)*100,
-      time_taken:match.time_taken,
-      image:match.image
-  }
-  return result;
-}
+    let features=await findOrbFeatures(screenshot);
+    let match=await this.matchTemplates(features,screenshot);
+    let result = {
+        site:match.template.site,
+        confidence:(match.goodMatches/match.ncorners)*100,
+        time_taken:match.time_taken,
+        image:match.image
+    }
+    return result;
+    }
 }

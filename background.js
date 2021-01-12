@@ -11,7 +11,19 @@ const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var update_flag = false;
 
  let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
-AVAILABLE_MODELS=[{weightage:100,webgl:false,src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true,dependencies:[]}],
+AVAILABLE_MODELS=[{
+    weightage:100,
+    webgl:false,
+    dependencies:[
+        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/externalCode/jsfeat.js",
+        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/orb-features.js"
+
+        ],
+    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/TemplateMatching.js",
+    name:"TemplateMatching",
+    label:"Template Matching",
+    selected:true,
+    }],
 globalCurrentTabId,
     tabInfoList = {};
 // var prediction_model=new PredictionModel();
@@ -316,13 +328,13 @@ async function redflagCheck(ti,testNow){
     let screenshot=await snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
         let result;
-try{
-        result=await predict(screenshot,AVAILABLE_MODELS);
-        console.log(result);
- } catch(err){
-         alert(err);
-         return;
-     }
+    try{
+            result=await predict(screenshot,AVAILABLE_MODELS);
+            console.log(result);
+    } catch(err){
+            alert(err);
+            return;
+        }
         if(result.site!="NaN"){
             let site = result.site
             site +=" with "
@@ -382,12 +394,12 @@ chrome.runtime.onInstalled.addListener(function(details) {
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
-
         update_flag = true;
         chrome.tabs.create({ url: "option.html" })
     }
 
 });
+
 
  function initFeeds() {
     let feeds =  Sites.getFeeds("all");
@@ -560,11 +572,24 @@ chrome.runtime.onInstalled.addListener(function(details) {
     chrome.storage.local.get("adv_config", function(result) {
         var data = result.adv_config;
         debug("Data received : ", data);
+
         if (data) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
             SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
-            AVAILABLE_MODELS=data.available_models?data.available_models:[{webgl:false,weightage:100,dependencies:[],src:"./TemplateMatching.js",name:"TemplateMatching",label:"Template Matching",selected:true}];
+            AVAILABLE_MODELS=data.available_models?data.available_models:[
+                {
+                    webgl:false,
+                    weightage:100,
+                    dependencies:[
+                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/externalCode/jsfeat.js",
+                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/orb-features.js"
+
+                        ],
+                    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/TemplateMatching.js",
+                    name:"TemplateMatching",
+                    label:"Template Matching",
+                    selected:true}];
             $.each(getAvailableModels(), function (i, item) {
                     injectScripts(item);
             });
@@ -574,7 +599,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
     });
 }
-
+chrome.runtime.onSuspend.addListener( function(){
+    console.log("onsuspend");
+})
  function saveAdvConfig() {
     chrome.storage.local.set(
         {adv_config :
