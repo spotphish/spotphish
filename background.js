@@ -15,11 +15,11 @@ AVAILABLE_MODELS=[{
     weightage:100,
     webgl:false,
     dependencies:[
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/externalCode/jsfeat.js",
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/orb-features.js"
+        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
+        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
 
         ],
-    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/TemplateMatching.js",
+    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
     name:"TemplateMatching",
     label:"Template Matching",
     selected:true,
@@ -582,11 +582,11 @@ chrome.runtime.onInstalled.addListener(function(details) {
                     webgl:false,
                     weightage:100,
                     dependencies:[
-                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/externalCode/jsfeat.js",
-                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/orb-features.js"
+                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
+                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
 
                         ],
-                    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/TemplateMatching.js",
+                    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
                     name:"TemplateMatching",
                     label:"Template Matching",
                     selected:true}];
@@ -594,6 +594,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
                     injectScripts(item);
             });
         } else {
+            $.each(getAvailableModels(), function (i, item) {
+                injectScripts(item);
+        });
             saveAdvConfig();
         }
 

@@ -1,12 +1,12 @@
 {
   "name": "default-feed",
-  "url": "https://vijay-coriolis.github.io/main.json",
+  "url": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
   "schema": "1.0",
   "version": "20171211104288",
   "sites": [
     {
       "name": "Facebook",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.facebook.com/",
@@ -49,7 +49,7 @@
     },
     {
       "name": "Paypal",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.paypal.com/in/signin"
@@ -82,7 +82,7 @@
     },
     {
       "name": "Google",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://accounts.google.com/signin/v2/identifier"
@@ -122,7 +122,7 @@
     },
     {
       "name": "Amazon",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.amazon.in/ap/signin"
@@ -201,7 +201,7 @@
     },
     {
       "name": "Dropbox",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.dropbox.com/"
@@ -232,7 +232,7 @@
     },
     {
       "name": "wikipedia",
-      "src": "https://spotphish.github.io/feeds/main/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "safe": [
         {
           "domain": "wikipedia.org"
@@ -241,7 +241,7 @@
     },
     {
       "name": "wikipedia",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "safe": [
         {
           "domain": "wikipedia.org"
@@ -249,8 +249,8 @@
       ]
     },
     {
-      "name": "HDFC Bank",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "name": "HDFCBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.hdfcbank.com/"
@@ -280,8 +280,8 @@
       ]
     },
     {
-      "name": "Union Bank",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "name": "UnionBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.unionbankofindia.co.in/english/home.aspx"
@@ -297,12 +297,77 @@
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union1.png",
           "checksum": "2a1d4ee6e6a1664645a70328d730f7482734e3207303fcbccea8bc364e26eeee"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union2.png",
+          "checksum": "826e87a462ac2bdff3ba0d99380f5fc5f9d0642d8b870c26670d0b9d4a924360"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union3.png",
+          "checksum": "584358ec1a742816b8246e80b34ae8a1c9a895399e0378587e119928a07b0ce2"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union4.png",
+          "checksum": "6ceaba7509a81106edfed5e8db7cdcad438dc0a09d70ec56700cb455898a3288"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union5.png",
+          "checksum": "734f41e48aaa2f3d6aafca9865e81b1e8538dd99a56fbccd3caf54e8a143b3ff"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union6.png",
+          "checksum": "9ad92040f848fa9c005b15930ca1046197f306f029292deba3bccbb33f6625b8"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union7.png",
+          "checksum": "ced29f3a08030f46338de361dd2cf621beba2fb87aaf199c96330603ccbaab0b"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union8.png",
+          "checksum": "6329d10c002ab4186f2c6c43dc91c00dd96d0a3c717a18e991d8ba922b03f110"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union9.png",
+          "checksum": "5895ff74a47de1a1ba10515b35c0663ce5a95659076a2baa9e2bf2ddcbda1eb1"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union10.png",
+          "checksum": "33a7facd1de25b9ac3cff7f401ee79cf33566e5fa2c67066ce49954a82520c84"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union11.png",
+          "checksum": "ffea3d375838db878c15a0204763247fc83972f95af243e65325599ef842064a"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union12.png",
+          "checksum": "1ed66c78217ad7d5eb42f545461153b8f0f2daa3233952d913e41ea032408acb"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union13.png",
+          "checksum": "ae84cd37e87ed321911e2d46932d8baeec6a0b5ce40a461f25d28a8c6a237fe2"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union16.png",
+          "checksum": "5be7cc750905fdd801f6482c8fa6ac43274533b4d5c9782851bd48b691cae556"
         }
       ]
     },
     {
-      "name": "ICICI Bank",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "name": "ICICIBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.icicibank.com/"
@@ -328,7 +393,7 @@
     },
     {
       "name": "SBI",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://onlinesbi.com/"
@@ -361,8 +426,8 @@
       ]
     },
     {
-      "name": "IDBI Bank",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "name": "IDBIBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.idbibank.in/index.asp"
@@ -377,8 +442,8 @@
       ]
     },
     {
-      "name": "Axis Bank",
-      "src": "https://vijay-coriolis.github.io/main.json",
+      "name": "AxisBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.axisbank.com/"

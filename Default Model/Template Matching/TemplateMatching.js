@@ -1,5 +1,4 @@
 export default class TemplateMatching{
-#templates;
     constructor(){
     }
     async  matchTemplates(scrFeatures,screenshot) {

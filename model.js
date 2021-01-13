@@ -167,13 +167,9 @@
                         patternCorners: result.patternCorners,
                         patternDescriptors: result.patternDescriptors,
                         site: data.name,
-
                         page: url1,
                         checksum: CryptoJS.SHA256(logo).toString()
                     };
-                    console.log("TEMPLATE PATTERN");
-                    console.log(pattern);
-
                     return this.dbTemplateList.put(pattern);
                 }).then(x => {
                     data.templates = [{page: url1, checksum: pattern.checksum}];
@@ -323,6 +319,7 @@
         }
 
         function syncTemplates() {
+            console.log("Sync Templates");
             /* Garbage collect deleted templates */
 
             /* flattened list of all templates, annotated by site name */
@@ -343,15 +340,21 @@
                 this.templateList.findIndex(y => y.checksum === x.checksum) === -1);
 
             if (newTemplates) {
+
                 const np = newTemplates.filter(t => t.image || t.base64)
-                    .map(x => createPatterns((x.image || x.base64))
-                        .then(result => {
+                    .map(async x =>{
+                        console.log(x)
+                        try {
+                            const result = await createPatterns((x.image || x.base64));
                             x.base64 = result.base64;
                             x.patternCorners = result.patternCorners;
                             x.patternDescriptors = result.patternDescriptors;
-                            return x;
-                        }).then(x => this.dbTemplateList.put(x))
-                        .catch(x => (console.log(x), null)));
+                            const x_1 = x;
+                            return this.dbTemplateList.put(x_1);
+                        } catch (x_2) {
+                            return (console.log(x_2), null);
+                        }
+                    });
 
                 res = res.then(x => Promise.all(np));
             }
