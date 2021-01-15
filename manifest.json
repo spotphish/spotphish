@@ -46,6 +46,7 @@
     "storage",
     "alarms",
     "tabs",
+    "management",
     "*://*/*",
     "<all_urls>"
   ],

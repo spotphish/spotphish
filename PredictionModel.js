@@ -13,6 +13,8 @@ let webglStatus=webgl_detect();
      let Model;
      Model=(await import(item.src)).default;
       let x=new Model();
+
+
       if(item.webgl){
         if(webglStatus){
           let z=await x.predict(screenshot);

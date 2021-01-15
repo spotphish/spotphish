@@ -14,13 +14,13 @@ var update_flag = false;
 AVAILABLE_MODELS=[{
     weightage:100,
     webgl:false,
+    name:"TemplateMatching",
     dependencies:[
         "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
         "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
 
         ],
     src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
-    name:"TemplateMatching",
     label:"Template Matching",
     selected:true,
     }],
@@ -78,34 +78,33 @@ Tabinfo.show = function() {
 loadDefaults();
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 
-
+function getUpdateFlag(){
+    return update_flag;
+}
 chrome.runtime.onConnect.addListener(port => {
     const ti = new Tabinfo(port.sender.tab.id, port.sender.tab, port);
-
     setIcon(ti, "init");
 
 });
+function unInstallPlugin(){
+    chrome.tabs.create({ url: "chrome://extensions/"});
+    chrome.management.uninstallSelf();
+}
 
 setInterval(watchdog, WATCHDOG_INTERVAL);
 
 function unInjectScripts(item){
-
-    if($("#"+item).length==0){
-
-       }else{
-        $("#"+item).empty();
-       }
-
-
+    $("#"+item).remove();
 
 }
  function injectScripts(item){
-
-   if($("#"+item.name).length==0){
+    if($("#"+item.name).length!==0){
+        return;
+    }
     let di = document.createElement('div');
     di.id=item.name;
     document.body.appendChild(di);
-   }
+
 
     //Nothing exported from user's algorithm, directly inject his scripts
     // let ga = document.createElement('script'); ga.type = 'text/javascript';
@@ -190,7 +189,6 @@ function unInjectScripts(item){
         }
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
-        console.log("...................................test_now");
 
         redflagCheck(ti, true);
     }
@@ -455,6 +453,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
 /********* Functions for Option Page *************/
 
   function getProtectedSitesData() {
+      console.log(Sites.getSites());
+      console.log(Sites.getTemplates());
+
             let data = Sites.getSites("exists").filter(x => {
                 let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
                 let templates = x.templates ? x.templates.filter(t => !t.deleted):[];
@@ -467,6 +468,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
                     site.templates = site.templates.filter(a => !a.deleted && !a.disabled)
                     .map(template => {
                         // let found = _.find(Sites.getTemplates(), x => x.checksum === template.checksum);
+
                         // if (found) {
                         //         template.base64 = found.base64;
                         //     } else {
@@ -523,6 +525,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
     });
 }
  function  loadDefaults() {
+
     initAdvConfigs();
     setDefaultSecurityImage();
     return Sites.init()
@@ -558,10 +561,15 @@ chrome.runtime.onInstalled.addListener(function(details) {
         .then(x =>  {
             if (!!data.secureImage){ setSecurityImage(data.secureImage);}
 
-            if (!!data.debugFlag){  setDebugFlag(data.debugFlag)}
-                if (!!data.secureImageFlag){  setSecureImageFlag(data.secureImageFlag)}
+            if (data.debugFlag!==null){  setDebugFlag(data.debugFlag)}
+                if (data.secureImageFlag!==null){  setSecureImageFlag(data.secureImageFlag)}
                     if (!!data.secureImageDuration){  setSecureImageDuration(data.secureImageDuration)}
-                        if (!!data.availableModels){   AVAILABLE_MODELS=data.availableModels}
+                        if (!!data.availableModels){   AVAILABLE_MODELS=data.availableModels
+                            $("body").empty();
+                            $.each(getAvailableModels(), function (i, item) {
+                                injectScripts(item);
+                        });
+                        }
 
     })
         .then(x =>  respond())
@@ -579,6 +587,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
             SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
             AVAILABLE_MODELS=data.available_models?data.available_models:[
                 {
+                    name:"TemplateMatching",
                     webgl:false,
                     weightage:100,
                     dependencies:[
@@ -587,7 +596,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
                         ],
                     src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
-                    name:"TemplateMatching",
+
                     label:"Template Matching",
                     selected:true}];
             $.each(getAvailableModels(), function (i, item) {
@@ -602,9 +611,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
     });
 }
-chrome.runtime.onSuspend.addListener( function(){
-    console.log("onsuspend");
-})
+
  function saveAdvConfig() {
     chrome.storage.local.set(
         {adv_config :

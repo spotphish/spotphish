@@ -172,7 +172,7 @@
                     };
                     return this.dbTemplateList.put(pattern);
                 }).then(x => {
-                    data.templates = [{page: url1, checksum: pattern.checksum}];
+                    data.templates = [{page: url1, checksum: pattern.checksum,image:logo}];
                     const out = mergeSite(data, cur);
                     return this.dbCustomSites.put(out);
                 });
@@ -319,7 +319,6 @@
         }
 
         function syncTemplates() {
-            console.log("Sync Templates");
             /* Garbage collect deleted templates */
 
             /* flattened list of all templates, annotated by site name */
@@ -343,7 +342,6 @@
 
                 const np = newTemplates.filter(t => t.image || t.base64)
                     .map(async x =>{
-                        console.log(x)
                         try {
                             const result = await createPatterns((x.image || x.base64));
                             x.base64 = result.base64;

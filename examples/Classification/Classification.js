@@ -1,5 +1,5 @@
 export default class Classification{
-   predict(img){
+  async predict(img){
      //Your code starts here..
       /*
           return {
@@ -12,3 +12,4 @@ export default class Classification{
       */
   }
 }
+Classification.dependencies=[]

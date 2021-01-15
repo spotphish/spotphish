@@ -1,4 +1,3 @@
-import {sayHello} from  "https://cdn.jsdelivr.net/gh/spotphish/spotphish/examples/LogoDetection/demoScript1.js"
 export default class LogoDetection {
     #label;
     #count;
@@ -6,11 +5,10 @@ export default class LogoDetection {
     #height;
     #model;
     #outputs;
-    #graph_model_url
+    #graph_model_url;
+
     constructor() {
         // this.label = ["Axis Bank", "Bank of Baroda","HDFC Bank","State Bank of India","Kotak Bank","ICICI Bank","Bandhan Bank","Federal Bank", "IndusInd Bank", "Punjab National Bank","RBL Bank","Facebook","Amazon","Paypal","Google","Dropbox","Bank of India","Bank of Maharashtra","Canara Bank","Central Bank of India","Indian Bank","Indian Overseas Bank","Punjab and Sind Bank","Union Bank of India","UCO Bank","Yes Bank"];
-       sayHello();
-       sayHi();
         this.label =  [
             "Axis Bank",
             "Bank of Baroda",
@@ -285,4 +283,7 @@ export default class LogoDetection {
         });
     }
 
-  }
+}
+LogoDetection.dependencies =[
+    "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js",
+]

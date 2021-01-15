@@ -277,44 +277,52 @@
                                             <div class="mdl-dialog__content">
                                                 <div
                                                     class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                    <input required class="mdl-textfield__input" type="text" id="label">
-                                                    <label class="mdl-textfield__label" for="label">Label (Display
-                                                        name of your model)</label>
+                                                    <input class="mdl-textfield__input" type="text" id="label">
+                                                    <label class="mdl-textfield__label" for="label">Display Name for
+                                                        your
+                                                        model</label>
                                                 </div>
-                                                <div
-                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                    <input required class="mdl-textfield__input" type="text" id="name">
-                                                    <label class="mdl-textfield__label" for="name">Name of the class in
-                                                        your algorithm</label>
 
-                                                </div>
                                                 <div
                                                     class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                    <input required class="mdl-textfield__input" type="url" id="src">
+                                                    <input class="mdl-textfield__input" type="url" id="src">
                                                     <label class="mdl-textfield__label" for="src">Source url of your
                                                         algorithm</label>
                                                     <span class="mdl-textfield__error">Invalid Url</span>
 
                                                 </div>
-                                                <h5>Dependencies</h5>
-                                                <div
-                                                    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                                    <input class="mdl-textfield__input" type="url" id="dependency">
-                                                    <label class="mdl-textfield__label" for="dependency">Dependency
-                                                        url</label>
-                                                    <span class="mdl-textfield__error">Invalid Url</span>
+                                                <div class="mdl-grid" id="checks">
+                                                    <div class="mdl-cell mdl-cell--6-col ">
+                                                        <span id="exportedClassName"
+                                                            style="font-size: 13px;line-height:21px;vertical-align:top;">
+                                                        </span>
+                                                        <span>
+                                                            <i style="color:green ;font-size: 21px;vertical-align:top;"
+                                                                class="material-icons">
+                                                                check_circle
+                                                            </i>
+                                                        </span>
+                                                    </div>
+                                                    <div class="mdl-cell mdl-cell--6-col ">
+                                                        <span
+                                                            style="font-size: 13px;line-height:21px;vertical-align:top;">
+                                                            Predict function
+                                                        </span>
+                                                        <span>
+                                                            <i style="color:green ;font-size: 21px;vertical-align:top;"
+                                                                class="material-icons">
+                                                                check_circle
+                                                            </i>
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <button id="addDependency" class="mdl-button  mdl-button--colored">
-                                                    Add
-                                                </button>
+
+
+                                                <h5>Dependencies</h5>
+
                                                 <div id="dependencies">
                                                 </div>
-                                                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
-                                                    for="webgl">
-                                                    <span class="mdl-switch__label">Does your algorithm require
-                                                        webgl?</span>
-                                                    <input type="checkbox" id="webgl" class="mdl-switch__input">
-                                                </label>
+
                                             </div>
                                             <div class="mdl-dialog__actions">
                                                 <button id="addModel" type="button"
@@ -322,10 +330,10 @@
 
                                                 <button type="button" class="mdl-button close">Cancel</button>
                                             </div>
-                                            <video width="100%" controls>
+                                            <!-- <video width="100%" controls>
                                                 <source src="./doc/img/add-model.webm" type="video/webm">
                                                 Your browser does not support HTML video.
-                                            </video>
+                                            </video> -->
                                         </dialog>
                                     </span>
                                 </li>
@@ -336,25 +344,6 @@
                                         <div class="mdl-cell mdl-cell--10-col">
                                             <p style="color: turquoise;" id="total-weight"></p>
                                             <ul id="kp-models" class="mdl-list ">
-                                                <!-- <li class="mdl-list__item  mdl-list__item--three-line">
-                                                <span class="mdl-list__item-primary-content ">
-                                                    <span>Template Matching</span>
-                                                    <span class="mdl-list__item-text-body">
-                                                        Match against various templates
-                                                    </span>
-
-                                                </span>
-                                                <span class="mdl-list__item-secondary-content ">
-                                                    <label class=" mdl-switch mdl-js-switch mdl-js-ripple-effect"
-                                                        for="TemplateMatching">
-                                                        <input type="checkbox" id="TemplateMatching" checked
-                                                            class="mdl-switch__input" />
-                                                    </label>
-
-                                                </span>
-
-
-                                            </li> -->
 
 
                                             </ul>
@@ -412,6 +401,21 @@
                                         <button
                                             class="full mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
                                             id="kp-restore-factory">Restore</button>
+                                    </span>
+                                </li>
+                                <li class="mdl-list__item mdl-list__item--three-line">
+                                    <span class="mdl-list__item-primary-content mdl-cell mdl-cell--9-col">
+                                        <i class="material-icons kp-settings-icon">delete</i>
+                                        <span>Remove this extension</span>
+                                        <span class="mdl-list__item-text-body">
+                                            Your settings will be saved and extension will be removed
+                                        </span>
+                                    </span>
+                                    <span
+                                        class="mdl-list__item-secondary-content mdl-cell mdl-cell--3-col kp-settings-button">
+                                        <button
+                                            class="full mdl-button mdl-button--accent mdl-js-button mdl-button--raised"
+                                            id="kp-remove">remove</button>
                                     </span>
                                 </li>
 

@@ -6,12 +6,12 @@
 const defaultImages = ["kp1.gif", "kp2.jpg", "kp3.jpg", "kp4.jpg"];
 var bkg = chrome.extension.getBackgroundPage();
 var ProtectedSitesData;
-var template_of_MLmodel={name:"",
+var template_of_MLmodel={
+    name:"",
             src:"",
             label:"",
             dependencies:[],
             selected:false,
-            model:undefined,
             weightage:0,
             webgl:false
 
@@ -52,25 +52,25 @@ function templateSafeDomain(data) {
 function templateWhitelist(data) {
     const checked = "check_box", unchecked ="check_box_outline_blank";
     let template_str = "";
-    // if (data.templates) {
+    if (data.templates) {
 
-    //     template_str = data.templates.filter(x=>!x.deleted ).reduce((a,b) => {
-    //         var logo_name = "";
-    //         if (b.name) {
-    //             logo_name = b.name;
-    //         }
-    //         var tmp = `
-    //             <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-    //                 <div class="mdl-card__media">
-    //                     <img class="template-image" src="${b.base64}" border="0" alt="">
-    //                 </div>
-    //                 <div class="mdl-card__supporting-text">
-    //                 ${logo_name}
-    //                 </div>
-    //             </div>`;
-    //         return a + tmp;
-    //     }, "");
-    // }
+        template_str = data.templates.filter(x=>!x.deleted ).reduce((a,b) => {
+            var logo_name = "";
+            if (b.name) {
+                logo_name = b.name;
+            }
+            var tmp = `
+                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+                    <div class="mdl-card__media">
+                        <img class="template-image" src="${b.image}" border="0" alt="">
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                    ${logo_name}
+                    </div>
+                </div>`;
+            return a + tmp;
+        }, "");
+    }
     let protected_urls = "";
     let enabled = data.disabled ? unchecked : checked;
     let disable_flag = data.disabled ?  "disabled" : "";
@@ -281,7 +281,7 @@ function renderAvailableModels(){
         <span class="mdl-list__item-primary-content ">
             <span>${item.label}</span>
             <span class="mdl-list__item-text-body">
-            ${item.name}
+
             </span>
 
         </span>
@@ -439,8 +439,8 @@ $(document).ready( function() {
                     msg = "Something went wrong, Error: " + error.message;
                     color = "#FF5722";
                 } else {
-                    initAdvanceTab();
-                    updateImage();
+                    // initAdvanceTab();
+                    // updateImage();
 
                     msg = "Restore data completed successfully.";
                     color = "#4CAF50";
@@ -487,7 +487,13 @@ $(document).ready( function() {
         reader.readAsDataURL(file);
 
     });
+    $("#kp-remove").on("click", function(e) {
+        bkg.backupDB( function(backupData) {
+           download(backupData);
+            bkg.unInstallPlugin();
+        });
 
+    })
     $("#kp-restore-factory").on("click", function(e) {
         if (confirm("This will delete all personal images, protected pages and image snippets added by you. Restore factory defaults?")) {
             bkg.cleanDB(function(){
@@ -602,7 +608,7 @@ $(document).ready( function() {
     $("#kp-models .delete").on("click", function(e) {
         let x=$(this).closest('li').attr("id");
 
-        if(  x!=="TemplateMatching") {
+        if(  x!=="TemplateMatching" ) {
             bkg.removeAvailableModels(x);
             if (params["tab"]) {
                 location.reload();
@@ -643,73 +649,67 @@ $(document).ready( function() {
       dialog.close();
 
     });
-    dialog.querySelector('#addDependency').addEventListener('click', function() {
-      if( ! $('#dependency').val().includes("https://cdn.jsdelivr.net/")){
-      alert("Unauthorized domain");
-      $('#dependency').val("")
-      return;
-      }
 
-        template_of_MLmodel.dependencies.push($('#dependency').val());
-        $("#dependency").val("");
-        $("#dependencies").empty();
-        $.each(template_of_MLmodel.dependencies, function (i, item) {
-            $("#dependencies").append(`<p>${item}</p>`);
-        });
-
-      });
       dialog.querySelector('#label').addEventListener("change", function(e) {
-        template_of_MLmodel.label=($(this).val());
+       if(modelNameExists($(this).val().trim().replace(/\s+/g,"_"))){alert("Name already exists");$(this).val(template_of_MLmodel.label);return;}
+        template_of_MLmodel.label=($(this).val().trim());
+        template_of_MLmodel.name=($(this).val().trim()).replace(/\s+/g,"_");
+
 
     });
-    dialog.querySelector('#name').addEventListener("change", function(e) {
+    $("#checks").hide()
 
-        template_of_MLmodel.name=($(this).val());
-
-    });
-    dialog.querySelector('#webgl').addEventListener("change", function(e) {
-        template_of_MLmodel.webgl=$(this).is(":checked");
-
-    });
-    dialog.querySelector('#src').addEventListener("change", function(e) {
-       let srcFile=$(this).val();
+    dialog.querySelector('#src').addEventListener("change",async function(e) {
+       let srcFile=$(this).val().trim();
         if(! srcFile.includes("https://cdn.jsdelivr.net/"))
-        {alert("Unauthorized domain"); $(this).val("");return;}
+        {alert("Unauthorized domain"); $(this).val(template_of_MLmodel.src);return;}
+       let remoteFile=(await import(srcFile));
+       let Model=remoteFile.default;
 
 
-        template_of_MLmodel.src=srcFile;
+
+        if(Model!==undefined){
+
+                    if(Model.prototype.predict!=null && (typeof Model.prototype.predict)==="function"  ){
+                   $("#exportedClassName").html("class "+Model.name);
+
+                        $("#checks").show()
+
+
+                       if (Model.dependencies!==undefined){
+                           template_of_MLmodel.dependencies=Model.dependencies;
+                       }else{
+                        template_of_MLmodel.dependencies=[];
+
+                       }
+                    }else{
+                        alert("Does not contain the predict function")
+                        $(this).val(template_of_MLmodel.src);
+                        return;
+                    }
+        }else{
+                alert("Some class must be exported");
+                $(this).val(template_of_MLmodel.src);
+                return;
+            }
+            template_of_MLmodel.src=srcFile;
+            $("#dependencies").empty();
+            $.each(template_of_MLmodel.dependencies, function (i, item) {
+                     $("#dependencies").append(`<p>${item}</p>`);
+                 });
 
     });
 
     dialog.querySelector('#addModel').addEventListener("click",async function(e) {
         if(!validateModel()){alert("All fields are mandatory");return;}
-        if(modelNameExists(template_of_MLmodel.name)){alert("Model with same name already exists");return;}
-            //Class or function is exported from user's algorithm
-            let srcFile=(await import(template_of_MLmodel.src));
-            let Model=srcFile.default;
-            if(Model!==undefined){
-                if(Model.toString().includes(template_of_MLmodel.name) ){
-                        if(Model.toString().includes("predict")){
-                            // template_of_MLmodel.model=Model.toString();
-                        }else{
-                            alert(template_of_MLmodel.label+" does not contain the predict function")
-                            return;
-                        }
-                }else{
-                        alert(template_of_MLmodel.label+" does not contain the "+template_of_MLmodel.name+" class");
-                        return;
-                    }
-            }else{
-                    alert(template_of_MLmodel.label+" does not export the "+template_of_MLmodel.name+" class");
-                    return;
-                }
+
             bkg.setAvailableModels(template_of_MLmodel);
-            template_of_MLmodel={name:"",
+            template_of_MLmodel={
+                name:"",
                         src:"",
                         label:"",
                         dependencies:[],
                         selected:false,
-                        model:undefined,
                         weightage:0,
                         webgl:false
                     };
@@ -726,10 +726,14 @@ $(document).ready( function() {
 
     });
     weightMessage();
+    if(!bkg.getUpdateFlag()){
+        $("#notifications").text("Remember to restore previous backup").css("visibility", "visible").css("color", "red");
+        setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 10000);
+    }
 });
 
 function validateModel(){
-  if(  !isEmpty(template_of_MLmodel.name) &&
+  if(
    ! isEmpty(template_of_MLmodel.label)&&
    ! isEmpty(template_of_MLmodel.src) ){
     return true;
@@ -737,8 +741,8 @@ function validateModel(){
    return false;
 }
 function modelNameExists(model_name){
-  return _.find(bkg.getAvailableModels(),x=>x.name===model_name)
-}
+    return _.find(bkg.getAvailableModels(),x=>x.name===model_name)
+  }
 function isEmpty(str) {
     return (!str || 0 === str.length);
 }
