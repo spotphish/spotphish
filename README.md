@@ -4,6 +4,7 @@ A browser extension for Chrome and Firefox which provides zero-hour phishing pro
 
 ## Contents
 
+- [Latest release](#latest-release)
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -15,6 +16,10 @@ A browser extension for Chrome and Firefox which provides zero-hour phishing pro
 - [History](#history)
 - [Credits](#credits)
 - [License](#license)
+
+## Latest release
+
+Latest stable release https://github.com/spotphish/spotphish/releases/latest
 
 ## Introduction
 
