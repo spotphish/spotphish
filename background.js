@@ -8,22 +8,11 @@ const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_d
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
+
 var update_flag = false;
-
+var restore_msg=false;
  let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
-AVAILABLE_MODELS=[{
-    weightage:100,
-    webgl:false,
-    name:"TemplateMatching",
-    dependencies:[
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
-
-        ],
-    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
-    label:"Template Matching",
-    selected:true,
-    }],
+AVAILABLE_MODELS=_.cloneDeep(defaultModels),
 globalCurrentTabId,
     tabInfoList = {};
 // var prediction_model=new PredictionModel();
@@ -74,8 +63,13 @@ Tabinfo.show = function() {
     }
 };
 
+// window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB ||window.msIndexedDB;
+// window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction ||window.msIDBTransaction;
+// window.IDBKeyRange = window.IDBKeyRange ||window.webkitIDBKeyRange || window.msIDBKeyRange
+
 
 loadDefaults();
+
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 
 function getUpdateFlag(){
@@ -87,6 +81,7 @@ chrome.runtime.onConnect.addListener(port => {
 
 });
 function unInstallPlugin(){
+
     chrome.tabs.create({ url: "chrome://extensions/"});
     chrome.management.uninstallSelf();
 }
@@ -104,33 +99,12 @@ function unInjectScripts(item){
     let di = document.createElement('div');
     di.id=item.name;
     document.body.appendChild(di);
-
-
-    //Nothing exported from user's algorithm, directly inject his scripts
-    // let ga = document.createElement('script'); ga.type = 'text/javascript';
-    //     ga.src = item.src;
-    //     $("#"+item.name).append(ga);
         for(let x of item.dependencies){
             let ga1 = document.createElement('script'); ga1.type = 'text/javascript';
                 ga1.src = x;
                 $("#"+item.name).append(ga1);
         }
 
-    /*webkitRequestFileSystem(PERSISTENT, 1024, function(filesystem) {
-        console.log(filesystem);
-        filesystem.root.getFile("vijaysharma", { create: true }, function(file) {
-        console.log(file.fullPath);
-         file.createWriter(function(writer) {
-        console.log(writer);
-          writer.addEventListener("write", function(event) {
-        //    location = file.toURL()
-        console.log("inside writer");
-          })
-          writer.addEventListener("error", console.error)
-          writer.write(new Blob([ "test" ]))
-         }, console.error)
-        }, console.error)
-       }, console.error)*/
 
 }
   chrome.runtime.onMessage.addListener(async function(msg, sender, respond) {
@@ -384,11 +358,17 @@ chrome.tabs.onRemoved.addListener((tabid, removeinfo) => {
 });
 
 
-
+function getRestoreMsg(){
+    return restore_msg;
+}
+function setRestoreMsg(){
+     restore_msg=false;
+}
 chrome.runtime.onInstalled.addListener(function(details) {
 
 
     if (details.reason === "install") {
+        restore_msg=true;
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
@@ -453,8 +433,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 /********* Functions for Option Page *************/
 
   function getProtectedSitesData() {
-      console.log(Sites.getSites());
-      console.log(Sites.getTemplates());
+
 
             let data = Sites.getSites("exists").filter(x => {
                 let protected = x.protected ? x.protected.filter(p => !p.deleted):[];
@@ -585,20 +564,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
             DEBUG = data.debug? true : false;
             SECURE_IMAGE = data.show_secure_image? true : false;
             SECURE_IMAGE_DURATION=data.secure_image_duration?data.secure_image_duration:1;
-            AVAILABLE_MODELS=data.available_models?data.available_models:[
-                {
-                    name:"TemplateMatching",
-                    webgl:false,
-                    weightage:100,
-                    dependencies:[
-                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
-                        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
-
-                        ],
-                    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
-
-                    label:"Template Matching",
-                    selected:true}];
+            AVAILABLE_MODELS=data.available_models?data.available_models:_.cloneDeep(defaultModels);
             $.each(getAvailableModels(), function (i, item) {
                     injectScripts(item);
             });
@@ -682,10 +648,17 @@ function setWeightage(model_name,weight) {
 }
 
  function setAvailableModels(value) {
-     console.log(value);
     AVAILABLE_MODELS.push (value);
     injectScripts(value);
     saveAdvConfig();
+}
+function setFactoryAvailableModels(){
+    AVAILABLE_MODELS=_.cloneDeep(defaultModels)
+    $.each(getAvailableModels(), function (i, item) {
+        injectScripts(item);
+    });
+    saveAdvConfig();
+
 }
  function removeAvailableModels(value) {
     AVAILABLE_MODELS.splice(AVAILABLE_MODELS.findIndex(a => a.name ===value ) , 1)

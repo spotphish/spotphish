@@ -329,15 +329,14 @@ function initAdvanceTab() {
 }
 
 $(document).ready( function() {
-    // $(".mdl-layout__tab").on("click", function(e){
-    //     let href = $(this).attr("href");
-    //     window.location.hash = href;
-    //     if (href === "#tab-safedomain") {
-    //         renderSafeDomainTable();
-    //     } else if (href === "#tab-whitelist") {
-    //         //bkg.syncWhiteList(renderWhitelistTable);
-    //     }
-    // });
+
+   setTimeout(()=>{
+    if(bkg.getRestoreMsg()){
+        backupReminderDialog.showModal()
+    }
+   },500)
+
+  $("#version") .html( chrome.runtime.getManifest().version)
 
     setTimeout(
         function(){
@@ -410,6 +409,7 @@ $(document).ready( function() {
     });
 
     $("#imageUpload").on("click", function(e) {
+
         $("#custom-img").click();
     });
     $("#backupFileUpload").on("click", function(e) {
@@ -514,13 +514,7 @@ $(document).ready( function() {
                 }
                 $("#kp-secure-image-duration").val(1);
                 bkg.setSecureImageDuration(1);
-                for(let deleteIcon of $("#kp-models .delete") ){
-                    let x=$(deleteIcon).closest('li').attr("id");
-                    if(x!=="TemplateMatching"){
-                        bkg.removeAvailableModels(x);
-                    }
-
-                }
+                bkg.setFactoryAvailableModels()
                 weightMessage()
                 if (params["tab"]) {
                     location.reload();
@@ -614,11 +608,9 @@ $(document).ready( function() {
                 location.reload();
             }else{
                 window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
-
             }
-
             }else{
-            alert("Not allowed")
+            alert("You cannot delete this model. Disable it if you want.")
         }
         weightMessage();
     });
@@ -636,21 +628,39 @@ $(document).ready( function() {
             bkg.setSecureImageDuration(val);
         }
     });
-    var dialog = document.querySelector('dialog');
+    var dialog = document.querySelector('#addModelDialog');
+    var backupReminderDialog = document.querySelector('#backupReminderDialog');
+
     var showDialogButton = document.querySelector('#kp-show-add-model-dialog');
     if (! dialog.showModal) {
       dialogPolyfill.registerDialog(dialog);
     }
+    if (! backupReminderDialog.showModal) {
+        dialogPolyfill.registerDialog(backupReminderDialog);
+      }
     showDialogButton.addEventListener('click', function() {
-
       dialog.showModal();
+
     });
     dialog.querySelector('.close').addEventListener('click', function() {
       dialog.close();
 
     });
+    backupReminderDialog.querySelector('.close').addEventListener('click', function() {
+        backupReminderDialog.close();
+    bkg.setRestoreMsg()
+    });
 
-      dialog.querySelector('#label').addEventListener("change", function(e) {
+      backupReminderDialog.querySelector('.restore-now').addEventListener("click",function(e) {
+        backupReminderDialog.close();
+    bkg.setRestoreMsg()
+
+        $("#backupFileUpload").click();
+
+
+
+    });
+    dialog.querySelector('#label').addEventListener("change", function(e) {
        if(modelNameExists($(this).val().trim().replace(/\s+/g,"_"))){alert("Name already exists");$(this).val(template_of_MLmodel.label);return;}
         template_of_MLmodel.label=($(this).val().trim());
         template_of_MLmodel.name=($(this).val().trim()).replace(/\s+/g,"_");
@@ -665,9 +675,6 @@ $(document).ready( function() {
         {alert("Unauthorized domain"); $(this).val(template_of_MLmodel.src);return;}
        let remoteFile=(await import(srcFile));
        let Model=remoteFile.default;
-
-
-
         if(Model!==undefined){
 
                     if(Model.prototype.predict!=null && (typeof Model.prototype.predict)==="function"  ){
@@ -676,10 +683,10 @@ $(document).ready( function() {
                         $("#checks").show()
 
 
-                       if (Model.dependencies!==undefined){
-                           template_of_MLmodel.dependencies=Model.dependencies;
+                       if (Model.dependencies!==undefined && Array.isArray(Model.dependencies)){
+                            template_of_MLmodel.dependencies=Model.dependencies;
                        }else{
-                        template_of_MLmodel.dependencies=[];
+                            template_of_MLmodel.dependencies=[];
 
                        }
                     }else{
@@ -725,11 +732,9 @@ $(document).ready( function() {
 
 
     });
+
     weightMessage();
-    if(!bkg.getUpdateFlag()){
-        $("#notifications").text("Remember to restore previous backup").css("visibility", "visible").css("color", "red");
-        setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 10000);
-    }
+
 });
 
 function validateModel(){

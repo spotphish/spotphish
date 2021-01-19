@@ -1,3 +1,5 @@
+//If your libraries/dependendent files can be imported
+//import ...
 export default class Classification{
   async predict(img){
      //Your code starts here..
@@ -12,4 +14,6 @@ export default class Classification{
       */
   }
 }
+//If your libraries/dependendent files can't be imported then specify them in dependencies variable below.
+//dependencies must be a list/array
 Classification.dependencies=[]

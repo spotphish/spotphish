@@ -66,8 +66,10 @@
 
         </header>
         <main class="mdl-layout__content">
+
             <section class="mdl-layout__tab-panel" id="tab-secure-img">
                 <div class="page-content">
+
                     <div class="mdl-grid kp-max-width">
                         <div class="mdl-grid mdl-cell mdl-cell--12-col mdl-cell--4-col-tablet mdl-card mdl-shadow--4dp">
                             <div class="mdl-card__media mdl-cell mdl-cell--12-col-tablet kp-security-image">
@@ -87,6 +89,7 @@
                                 <div class="mdl-card__supporting-text kp-hero-text">
                                     Your security image should be known only to you.
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -117,12 +120,15 @@
                                         id="imageUpload">
                                         Upload New Image
                                     </button>
+
+
                                 </div>
                             </div>
 
                         </div>
                     </div>
                 </div>
+
             </section>
             <section class="mdl-layout__tab-panel" id="tab-whitelist">
                 <div class="page-content">
@@ -272,7 +278,7 @@
                                             class="full mdl-button mdl-button--colored mdl-js-button mdl-button--raised"
                                             id="kp-show-add-model-dialog">Add Model</button>
 
-                                        <dialog class="mdl-dialog">
+                                        <dialog id="addModelDialog" class="mdl-dialog">
                                             <h4 class="mdl-dialog__title">Add New ML Model</h4>
                                             <div class="mdl-dialog__content">
                                                 <div
@@ -428,7 +434,7 @@
                     <div class="mdl-grid kp-max-width">
                         <div class="mdl-cell mdl-cell--12-col">
                             <h3>About</h3>
-                            <p>Version 1.0.0</p>
+                            <p id="version"></p>
                         </div>
                         <div class="mdl-cell mdl-cell--9-col mdl-grid">
                             <p class="kp-hero-text">
@@ -472,7 +478,22 @@
             </section>
         </main>
     </div>
+    <dialog id="backupReminderDialog" class="mdl-dialog">
+        <h4 class="mdl-dialog__title">Restore</h4>
+        <div class="mdl-dialog__content">
+            <h5>If you have any previous backup. Please restore it. </h5>
+            <h6>This can also be done later in Advanced settings</h6>
 
+        </div>
+        <div class="mdl-dialog__actions">
+
+            <button type="button"
+                class="mdl-button restore-now mdl-button--colored mdl-js-button mdl-button--raised">Restore
+                now</button>
+
+            <button type="button" class="mdl-button close">Cancel</button>
+        </div>
+    </dialog>
 </body>
 
 </html>
