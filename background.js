@@ -9,6 +9,7 @@ const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 
+
 var update_flag = false;
 var restore_msg=false;
  let DEBUG = false,SECURE_IMAGE=true,SECURE_IMAGE_DURATION=1,
@@ -69,7 +70,9 @@ Tabinfo.show = function() {
 
 
 loadDefaults();
-
+function getRootDir(){
+    return ROOT_DIR;
+}
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 
 function getUpdateFlag(){

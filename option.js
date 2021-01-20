@@ -15,7 +15,9 @@ var template_of_MLmodel={
             weightage:0,
             webgl:false
 
-        };
+};
+var ROOT_DIR=bkg.getRootDir();
+
 function templateImage(src, favorite, imageClass) {
     const temp = `
     <div class="mdl-cell mdl-cell--4-col mdl-card set-image ${imageClass === undefined ? "" :  imageClass }">
