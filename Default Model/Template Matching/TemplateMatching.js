@@ -1,4 +1,3 @@
-
 export default class TemplateMatching{
     constructor(){
     }
@@ -34,27 +33,24 @@ export default class TemplateMatching{
         }
         return Promise.resolve(result);
     }
-    makeCorrespondenceImage(match, screenshot, features) {
+      makeCorrespondenceImage(match, screenshot, features) {
         if (!match) {
             return Promise.resolve(null);
         }
         return findCorrespondence(screenshot, features.corners , match.template, match.matches, match.matchCount,
             match.mask);
-    }
-    async predict(screenshot) {
+      }
 
-        let features=await findOrbFeatures(screenshot);
-        let match=await this.matchTemplates(features,screenshot);
-        let result = {
-            site:match.template.site,
-            confidence:(match.goodMatches/match.ncorners)*100,
-            time_taken:match.time_taken,
-            image:match.image
-        }
-        return result;
+  async  predict(screenshot) {
+
+    let features=await findOrbFeatures(screenshot);
+    let match=await this.matchTemplates(features,screenshot);
+    let result = {
+        site:match.template.site,
+        confidence:(match.goodMatches/match.ncorners)*100,
+        time_taken:match.time_taken,
+        image:match.image
+    }
+    return result;
     }
 }
-TemplateMatching.dependencies =[
-    ROOT_DIR+"/models/Template Matching/jsfeat.js",
-        ROOT_DIR+"/models/Template Matching/orb-features.js"
-]

@@ -1,12 +1,12 @@
 {
   "name": "default-feed",
-  "url": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+  "url": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
   "schema": "1.0",
   "version": "20171211104288",
   "sites": [
     {
       "name": "Facebook",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.facebook.com/",
@@ -49,7 +49,7 @@
     },
     {
       "name": "Paypal",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.paypal.com/in/signin"
@@ -82,7 +82,7 @@
     },
     {
       "name": "Google",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://accounts.google.com/signin/v2/identifier"
@@ -122,7 +122,7 @@
     },
     {
       "name": "Amazon",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.amazon.in/ap/signin"
@@ -201,7 +201,7 @@
     },
     {
       "name": "Dropbox",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.dropbox.com/"
@@ -232,7 +232,7 @@
     },
     {
       "name": "wikipedia",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "safe": [
         {
           "domain": "wikipedia.org"
@@ -241,7 +241,7 @@
     },
     {
       "name": "wikipedia",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "safe": [
         {
           "domain": "wikipedia.org"
@@ -250,7 +250,7 @@
     },
     {
       "name": "HDFCBank",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.hdfcbank.com/"
@@ -281,7 +281,7 @@
     },
     {
       "name": "UnionBank",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.unionbankofindia.co.in/english/home.aspx"
@@ -367,7 +367,7 @@
     },
     {
       "name": "ICICIBank",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.icicibank.com/"
@@ -393,7 +393,7 @@
     },
     {
       "name": "SBI",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://onlinesbi.com/"
@@ -427,7 +427,7 @@
     },
     {
       "name": "IDBIBank",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.idbibank.in/index.asp"
@@ -443,7 +443,7 @@
     },
     {
       "name": "AxisBank",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json",
       "protected": [
         {
           "url": "https://www.axisbank.com/"
