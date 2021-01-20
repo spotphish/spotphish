@@ -1,4 +1,4 @@
-var ROOT_DIR="https://cdn.jsdelivr.net/gh/spotphish/spotphish@V"+chrome.runtime.getManifest().version;
+var ROOT_DIR="https://cdn.jsdelivr.net/gh/spotphish/spotphish@v"+chrome.runtime.getManifest().version;
 var defaultFeeds = [
     {
         "name": "main",
