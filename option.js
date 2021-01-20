@@ -673,7 +673,15 @@ $(document).ready( function() {
 
     dialog.querySelector('#src').addEventListener("change",async function(e) {
        let srcFile=$(this).val().trim();
-        if(! srcFile.includes("https://cdn.jsdelivr.net/"))
+    //    https://cdn.jsdelivr.net/gh/spotphish/spotphish/master/models/Classification/Classification.js
+    // https://github.com/spotphish/spotphish/blob/v1.2.3/models/Classification/Classification.js
+//    srcFile= srcFile.replace("github.com","cdn.jsdelivr.net/gh")
+//    srcFile= srcFile.replace("/blob","")
+//     splitted_domain=  srcFile.split("/")
+//     splitted_domain.splice(6,1)
+//     console.log(srcFile.split("/"));
+//     return;
+    if(! srcFile.includes("https://cdn.jsdelivr.net/"))
         {alert("Unauthorized domain"); $(this).val(template_of_MLmodel.src);return;}
        let remoteFile=(await import(srcFile));
        let Model=remoteFile.default;
