@@ -1,3 +1,4 @@
+
 export default class TemplateMatching{
     constructor(){
     }
@@ -54,6 +55,6 @@ export default class TemplateMatching{
     }
 }
 TemplateMatching.dependencies =[
-    "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
-    "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
+    ROOT_DIR+"/models/Template Matching/jsfeat.js",
+        ROOT_DIR+"/models/Template Matching/orb-features.js"
 ]

@@ -1,7 +1,8 @@
+var ROOT_DIR="https://cdn.jsdelivr.net/gh/spotphish/spotphish@V"+chrome.runtime.getManifest().version;
 var defaultFeeds = [
     {
         "name": "main",
-        "src":"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/main.json"
+        "src":ROOT_DIR+"/models/Template Matching/main.json"
     }
 ];
 const defaultModels=[{
@@ -9,11 +10,11 @@ const defaultModels=[{
     webgl:false,
     name:"TemplateMatching",
     dependencies:[
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/jsfeat.js",
-        "https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/orb-features.js"
+        ROOT_DIR+"/models/Template Matching/jsfeat.js",
+        ROOT_DIR+"/models/Template Matching/orb-features.js"
 
         ],
-    src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/Default Model/Template Matching/TemplateMatching.js",
+    src:ROOT_DIR+"/models/Template Matching/TemplateMatching.js",
     label:"Template Matching",
     selected:true,
     },
@@ -24,8 +25,7 @@ const defaultModels=[{
         dependencies:[
             "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js",
             ],
-        src:"https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/LogoDetection/LogoDetection.js",
-
+        src:ROOT_DIR+"/models/LogoDetection/LogoDetection.js",
         label:"Logo Detection",
         selected:false
     }
