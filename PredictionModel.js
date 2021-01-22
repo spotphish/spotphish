@@ -13,11 +13,11 @@ let webglStatus=webgl_detect();
      let Model;
      Model=(await import(item.src)).default;
       let x=new Model();
-
-
       if(item.webgl){
         if(webglStatus){
           let z=await x.predict(screenshot);
+      console.log(z);
+
           return {
             ...z,
             weightage:item.weightage
@@ -32,6 +32,7 @@ let webglStatus=webgl_detect();
         }
       }else{
       let z=await  x.predict(screenshot);
+      console.log(z);
       return {
         ...z,
         weightage:item.weightage
@@ -55,7 +56,6 @@ let webglStatus=webgl_detect();
 
    }
   }
-  console.log(result);
   result=result.filter(x=>x.site!=="NaN");
   if(result.length===0){
     return{

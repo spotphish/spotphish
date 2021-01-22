@@ -107,6 +107,13 @@ function unInjectScripts(item){
                 ga1.src = x;
                 $("#"+item.name).append(ga1);
         }
+    if(item.name==="LogoDetection"){
+      setTimeout(()=>{
+        primeWebgl();
+      },5000)
+
+
+    }
 
 
 }
@@ -372,6 +379,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
     if (details.reason === "install") {
         restore_msg=true;
+
         chrome.tabs.create({ url: "option.html" });
     }
     if (details.reason === "update") {
@@ -510,8 +518,10 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
     initAdvConfigs();
     setDefaultSecurityImage();
+
     return Sites.init()
         .then(x => initFeeds());
+
 }
 
  function cleanDB(respond) {
@@ -557,7 +567,12 @@ chrome.runtime.onInstalled.addListener(function(details) {
         .then(x =>  respond())
         .catch(x => respond({message: x.message}));
 }
-
+async function primeWebgl(){
+    let item=AVAILABLE_MODELS[1];
+   let  Model=(await import(item.src)).default;
+    let x=new Model();
+    await x.predict("./assets/img/pixel.png");
+}
  function initAdvConfigs() {
     chrome.storage.local.get("adv_config", function(result) {
         var data = result.adv_config;
@@ -576,6 +591,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
                 injectScripts(item);
         });
             saveAdvConfig();
+
         }
 
     });

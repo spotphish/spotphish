@@ -174,6 +174,8 @@ function find_transform(scrShot_corners, patternCorners, matches, count, homo3x3
 const loadImage = (imageUrl, canvasElement) => {
     return new Promise((resolve, reject) => {
         let image = new Image();
+        image.crossOrigin = "Anonymous";
+
         image.onload = () => {
             if (canvasElement) {
                 canvasElement.width = image.width;

@@ -27,7 +27,7 @@ function main() {
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
-               if(!isDialogOpen){ showRedflag(msg);}
+               showRedflag(msg);
             } else if (msg.op === "crop_template") {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
@@ -135,9 +135,7 @@ function showGreenflag(msg) {
     });
 
 }
-var isDialogOpen=false;
 function showRedflag(msg) {
-    isDialogOpen=true;
     let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=#tab-safedomain&host=" + window.location.hostname;
     function openSafeDomainLink() {
         window.open(safeDomainLink);
@@ -150,7 +148,7 @@ function showRedflag(msg) {
         img:img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
         extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: (e)=>{isDialogOpen=false}},
+        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
             {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`, onclick: openSafeDomainLink},
             {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`, onclick: null}]
     };

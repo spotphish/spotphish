@@ -20,22 +20,22 @@ function dialog(obj={}) {
         buttons = d.buttons.length ? `<div class="kpmdl-card__actions kpmdl-card--border">` +
             d.buttons.map(x => x.html).join(" ") + `</div>` : "",
         template = `
-<div class="kp-dialog kp-dialog-${d.type}">
-    <div class="kpmdl-card kpmdl-shadow--16dp">
-        <div class="kpmdl-card__title ${titlecol} kpmdl-color-text--primary-contrast">
-            <div class="kpmdl-card__title-text"><img class="kp-title-icon" src="${icon}"> &nbsp;${d.title}</div>
-        </div>
-        <div class="kpmdl-card__menu">
-            <button class="kpmdl-button kpmdl-button--icon kp-dialog-clear">
-                <i class="material-icons">clear</i>
-            </button>
-        </div>
-        ${main}
-        ${img}
-        ${extra}
-        ${buttons}
-    </div>
-</div>`;
+        <div class="kp-dialog kp-dialog-${d.type}">
+            <div class="kpmdl-card kpmdl-shadow--16dp">
+                <div class="kpmdl-card__title ${titlecol} kpmdl-color-text--primary-contrast">
+                    <div class="kpmdl-card__title-text"><img class="kp-title-icon" src="${icon}"> &nbsp;${d.title}</div>
+                </div>
+                <div class="kpmdl-card__menu">
+                    <button class="kpmdl-button kpmdl-button--icon kp-dialog-clear">
+                        <i class="material-icons">clear</i>
+                    </button>
+                </div>
+                ${main}
+                ${img}
+                ${extra}
+                ${buttons}
+            </div>
+        </div>`;
 
     function cleanup() {
         $(document).off("keyup", esc);
@@ -43,9 +43,14 @@ function dialog(obj={}) {
         setTimeout(x => $(".kp-dialog").remove(), 400);
     }
 
-    $("body").prepend(template);
+    if($("body").length>0){
+        $("body").prepend(template);
+    }else{
+        $("html").prepend(template);
+    }
+
     if (d.img) {
-        $(".kp-image-container").append(d.img);
+        $(".kp-image-container").html(d.img);
     }
     setTimeout(x => $(".kp-dialog").css({opacity: 1}), 50);
     $(document).on("keyup", esc);
