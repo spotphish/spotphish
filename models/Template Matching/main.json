@@ -22,6 +22,12 @@
         },
         {
           "url": "https://www.facebook.com/login.php"
+        },
+        {
+          "url": "https://www.facebook.com/r.php"
+        },
+        {
+          "url": "https://www.facebook.com/login/identify"
         }
       ],
       "templates": [
@@ -39,6 +45,11 @@
           "name": "Facebook new",
           "image": "https://vijay-coriolis.github.io/images/Facebook-new.png",
           "checksum": "0e09824fedc87e91ee9893aa97519187ef82fb3d9007bd73b37c88fb0f4ac925"
+        },
+        {
+          "name": "Facebook 2020",
+          "image": "https://vijay-coriolis.github.io/images/Facebook2020.png",
+          "checksum": "acd7264b6a68613e7f3712a0d7b1b6527464c2c4c9aae864104c6ba34b460819"
         }
       ],
       "safe": [
@@ -51,6 +62,9 @@
       "name": "Paypal",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
       "protected": [
+        {
+          "url": "https://www.paypal.com/in/home"
+        },
         {
           "url": "https://www.paypal.com/in/signin"
         },
@@ -77,6 +91,11 @@
           "name": "Paypal-old-logo",
           "image": "https://spotphish.github.io/feeds/main/images/pp-old.png",
           "checksum": "88820f238888b603bce20e915dec2049c86b97dde6863c09bd00be3a0e84dbd8"
+        },
+        {
+          "name": "Paypal new",
+          "image": "https://vijay-coriolis.github.io/images/Paypal-new.png",
+          "checksum": "7e7b83de2ca189b3b0437bc2e615e345e87ca8c2d493976809b58c1b8656c04f"
         }
       ]
     },
@@ -108,7 +127,18 @@
         {
           "name": "Gmail Icon",
           "image": "https://spotphish.github.io/feeds/main/images/gmail-icon.png",
-          "checksum": "d8935891857aec9f7a0de5a2e4def193dda3f67ff6b6f6135d60d24508003c80"
+          "checksum": "d8935891857aec9f7a0de5a2e4def193dda3f67ff6b6f6135d60d24508003c80",
+          "deleted": true
+        },
+        {
+          "name": "Google search",
+          "image": "https://vijay-coriolis.github.io/images/Google.png",
+          "checksum": "2e5e25a8bbae15c2ea3ee2d6ab046a01ea26c3c761d2e5227e08ac34c0e2bf27"
+        },
+        {
+          "name": "Google signin",
+          "image": "https://vijay-coriolis.github.io/images/Google1.png",
+          "checksum": "324740ee47fbe4c8592ba1e05ab5cd8d667cad6c2e99382a491c6de61d0646d2"
         }
       ],
       "safe": [
@@ -191,6 +221,11 @@
           "name": "AWS-2017",
           "image": "https://spotphish.github.io/feeds/main/images/aws-2017.png",
           "checksum": "042b2261eca282f60f37ef4c91ac734baa4ae84a7b62825e33b56e49f4f9fd0c"
+        },
+        {
+          "name": "Amazon",
+          "image": "https://vijay-coriolis.github.io/images/Amazon.png",
+          "checksum": "b8055ca0bf86923bab179708a562badd5c51ba313f085d50cce1634719adbd2f"
         }
       ],
       "safe": [
@@ -227,15 +262,16 @@
           "image": "https://spotphish.github.io/feeds/main/images/dropbox-2017.png",
           "checksum": "e41a7259bb599c84c647a3c99c24044cdde177fdeae982183b6418d123fe4364",
           "deleted": true
-        }
-      ]
-    },
-    {
-      "name": "wikipedia",
-      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
-      "safe": [
+        },
         {
-          "domain": "wikipedia.org"
+          "name": "Dropbox",
+          "image": "https://vijay-coriolis.github.io/images/Dropbox.png",
+          "checksum": "add0a1202304d380e65efa08d059d8d9030c69eb862c60ec2a0b7317fefa282d"
+        },
+        {
+          "name": "Dropbox new",
+          "image": "https://vijay-coriolis.github.io/images/Dropbox-new.png",
+          "checksum": "5eb27f4085d86b8c109bcdcf50805ac70afa27d2849e3cad92c9a3df1224a2fe"
         }
       ]
     },
@@ -251,9 +287,41 @@
     {
       "name": "HDFCBank",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "hdfcbank.com"
+        }
+      ],
       "protected": [
         {
           "url": "https://www.hdfcbank.com/"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/popuppages/Prepaid-card.htm"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/popuppages/netbanking.htm"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/netsafedemo/netsafedemo.htm"
+        },
+        {
+          "url": "https://netsafe.hdfcbank.com/ACSWeb/enrolljsp/HDFCValidate.jsp"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/CCLogin.html"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/LNLogin.html"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/htdocs/common/NetBanking/nbip-loan-accounts/nbip-loan-account.htm"
+        },
+        {
+          "url": "https://fastag.hdfcbank.com/RetailRoadUserLogin/Index"
         }
       ],
       "templates": [
@@ -282,9 +350,38 @@
     {
       "name": "UnionBank",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "unionbankofindia.co.in"
+        },
+        {
+          "domain": "unionbankonline.co.in"
+        }
+      ],
       "protected": [
         {
           "url": "https://www.unionbankofindia.co.in/english/home.aspx"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/personal-mob-overview.aspx"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/upi-bhim.aspx"
+        },
+        {
+          "url": "https://eremit.unionbankofindia.co.in/linkaadhaar/GUIs/unionaadhaar.aspx"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/saving-account.aspx"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/Ret_Phishing.html"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/Corp_Phishing.html"
         }
       ],
       "templates": [
@@ -301,17 +398,20 @@
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union2.png",
-          "checksum": "826e87a462ac2bdff3ba0d99380f5fc5f9d0642d8b870c26670d0b9d4a924360"
+          "checksum": "826e87a462ac2bdff3ba0d99380f5fc5f9d0642d8b870c26670d0b9d4a924360",
+          "deleted": true
         },
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union3.png",
-          "checksum": "584358ec1a742816b8246e80b34ae8a1c9a895399e0378587e119928a07b0ce2"
+          "checksum": "584358ec1a742816b8246e80b34ae8a1c9a895399e0378587e119928a07b0ce2",
+          "deleted": true
         },
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union4.png",
-          "checksum": "6ceaba7509a81106edfed5e8db7cdcad438dc0a09d70ec56700cb455898a3288"
+          "checksum": "6ceaba7509a81106edfed5e8db7cdcad438dc0a09d70ec56700cb455898a3288",
+          "deleted": true
         },
         {
           "name": "Union Bank",
@@ -321,7 +421,8 @@
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union6.png",
-          "checksum": "9ad92040f848fa9c005b15930ca1046197f306f029292deba3bccbb33f6625b8"
+          "checksum": "9ad92040f848fa9c005b15930ca1046197f306f029292deba3bccbb33f6625b8",
+          "deleted": true
         },
         {
           "name": "Union Bank",
@@ -331,12 +432,14 @@
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union8.png",
-          "checksum": "6329d10c002ab4186f2c6c43dc91c00dd96d0a3c717a18e991d8ba922b03f110"
+          "checksum": "6329d10c002ab4186f2c6c43dc91c00dd96d0a3c717a18e991d8ba922b03f110",
+          "deleted": true
         },
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union9.png",
-          "checksum": "5895ff74a47de1a1ba10515b35c0663ce5a95659076a2baa9e2bf2ddcbda1eb1"
+          "checksum": "5895ff74a47de1a1ba10515b35c0663ce5a95659076a2baa9e2bf2ddcbda1eb1",
+          "deleted": true
         },
         {
           "name": "Union Bank",
@@ -346,12 +449,14 @@
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union11.png",
-          "checksum": "ffea3d375838db878c15a0204763247fc83972f95af243e65325599ef842064a"
+          "checksum": "ffea3d375838db878c15a0204763247fc83972f95af243e65325599ef842064a",
+          "deleted": true
         },
         {
           "name": "Union Bank",
           "image": "https://vijay-coriolis.github.io/images/union12.png",
-          "checksum": "1ed66c78217ad7d5eb42f545461153b8f0f2daa3233952d913e41ea032408acb"
+          "checksum": "1ed66c78217ad7d5eb42f545461153b8f0f2daa3233952d913e41ea032408acb",
+          "deleted": true
         },
         {
           "name": "Union Bank",
@@ -368,9 +473,26 @@
     {
       "name": "ICICIBank",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "icicibank.com"
+        }
+      ],
       "protected": [
         {
           "url": "https://www.icicibank.com/"
+        },
+        {
+          "url": "https://www.icicibank.com/corporate/corp-index.page"
+        },
+        {
+          "url": "https://www.icicibank.com/nri-banking/nri-banking.page"
+        },
+        {
+          "url": "https://www.icicibank.com/business-banking/index.page"
+        },
+        {
+          "url": "https://www.icicibank.com/online-services/generate-password-personal.page"
         }
       ],
       "templates": [
@@ -394,12 +516,32 @@
     {
       "name": "SBI",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "onlinesbi.com"
+        },
+        {
+          "domain": "sbiyono.sbi"
+        },
+        {
+          "domain": "yonobusiness.sbi"
+        }
+      ],
       "protected": [
         {
           "url": "https://onlinesbi.com/"
         },
         {
           "url": "https://www.sbiyono.sbi/index.html"
+        },
+        {
+          "url": "https://yonobusiness.sbi/login/yonobusinesslogin"
+        },
+        {
+          "url": "https://corp.onlinesbi.com/corpuser/login.htm"
+        },
+        {
+          "url": "https://scfu.onlinesbi.com/vfim/login.htm"
         }
       ],
       "templates": [
@@ -428,9 +570,32 @@
     {
       "name": "IDBIBank",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "idbibank.in"
+        },
+        {
+          "domain": "idbibank.co.in"
+        }
+      ],
       "protected": [
         {
           "url": "https://www.idbibank.in/index.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/corporate-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/msme-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/agri-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/nri-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/customer-care-centre.asp"
         }
       ],
       "templates": [
@@ -444,9 +609,35 @@
     {
       "name": "AxisBank",
       "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/models/Template Matching/main.json",
+      "safe": [
+        {
+          "domain": "axisbank.com"
+        },
+        {
+          "domain": "axisbank.co.in"
+        }
+      ],
       "protected": [
         {
           "url": "https://www.axisbank.com/"
+        },
+        {
+          "url": "https://www.axisbank.com/business-banking"
+        },
+        {
+          "url": "https://www.axisbank.com/axis-bank-priority/youon_priority"
+        },
+        {
+          "url": "https://www.axisbank.com/burgundy-home-page"
+        },
+        {
+          "url": "https://www.axisbank.com/nri"
+        },
+        {
+          "url": "https://www.axisbank.com/about-us"
+        },
+        {
+          "url": "https://www.axisbank.com/bank-smart/internet-banking"
         }
       ],
       "templates": [

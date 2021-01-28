@@ -6,17 +6,17 @@
 const defaultImages = ["kp1.gif", "kp2.jpg", "kp3.jpg", "kp4.jpg"];
 var bkg = chrome.extension.getBackgroundPage();
 var ProtectedSitesData;
-var template_of_MLmodel={
-    name:"",
-            src:"",
-            label:"",
-            dependencies:[],
-            selected:false,
-            weightage:0,
-            webgl:false
+var template_of_MLmodel = {
+    root: "",
+    name: "",
+    src: "",
+    label: "",
+    dependencies: [],
+    selected: false,
+    weightage: 0,
+    webgl: false
 
 };
-var ROOT_DIR=bkg.getRootDir();
 
 function templateImage(src, favorite, imageClass) {
     const temp = `
@@ -50,13 +50,13 @@ function templateSafeDomain(data) {
     return template;
 }
 
-//   <a class="mdl-list__item-secondary-action" href="#"><i class="material-icons kp-sl-delete">delete</i></a>
 function templateWhitelist(data) {
-    const checked = "check_box", unchecked ="check_box_outline_blank";
+    const checked = "check_box",
+        unchecked = "check_box_outline_blank";
     let template_str = "";
     if (data.templates) {
 
-        template_str = data.templates.filter(x=>!x.deleted ).reduce((a,b) => {
+        template_str = data.templates.filter(x => !x.deleted).reduce((a, b) => {
             var logo_name = "";
             if (b.name) {
                 logo_name = b.name;
@@ -75,11 +75,11 @@ function templateWhitelist(data) {
     }
     let protected_urls = "";
     let enabled = data.disabled ? unchecked : checked;
-    let disable_flag = data.disabled ?  "disabled" : "";
+    let disable_flag = data.disabled ? "disabled" : "";
     if (data.protected) {
         let protectedList = data.protected.filter(x => !x.deleted);
-        protected_urls = protectedList.reduce((a,b) => {
-            let url_disabled = b.disabled? unchecked : checked;
+        protected_urls = protectedList.reduce((a, b) => {
+            let url_disabled = b.disabled ? unchecked : checked;
             var tmp = `
                 <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
@@ -95,7 +95,7 @@ function templateWhitelist(data) {
                     </td>
                 </tr>`;
             return a + tmp;
-        },"");
+        }, "");
     }
     const site = `
             <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
@@ -122,26 +122,28 @@ function templateWhitelist(data) {
                 </div>
             </div>
             `;
-   return site;
+    return site;
 
 }
 
 function updateImage(data) {
     if (data) {
-        chrome.storage.local.set({ "secure_img": data }, function() {
+        chrome.storage.local.set({
+            "secure_img": data
+        }, function () {
             console.log("Data Saved : ", data);
             $("#secureimage").attr("src", data.src);
         });
         // For Selected Image
     } else {
-        chrome.storage.local.get("secure_img", function(result) {
+        chrome.storage.local.get("secure_img", function (result) {
             data = result.secure_img;
             $("#secureimage").attr("src", data.src);
-            if (data.type === "custom"){
+            if (data.type === "custom") {
                 $("#imagegallery #customimage").attr("src", data.src);
                 $("#imagegallery #kp-custom-icons").text("favorite");
                 $("#imageUpload").text("Change Image");
-            } else if (data.type === "suggested" || data.type === "default" ){
+            } else if (data.type === "suggested" || data.type === "default") {
                 let p = "img[src$='" + data.src.split("assets/")[1] + "']:last";
                 $(p).closest(".set-image").find(".kp-active-icons").text("favorite");
             }
@@ -150,105 +152,107 @@ function updateImage(data) {
 }
 
 async function renderProtectedList() {
-  return new Promise(function(resolve,reject){
+    return new Promise(function (resolve, reject) {
 
-    let data;
-     if(ProtectedSitesData==undefined){
-          data = bkg.getProtectedSitesData();
-         ProtectedSitesData=data;
+        let data;
+        if (ProtectedSitesData == undefined) {
+            data = bkg.getProtectedSitesData();
+            ProtectedSitesData = data;
 
-     }else{
-         data=ProtectedSitesData;
-     }
-         //console.log("Protected-data", data);
-         $(".kp-wl-site").remove();
-         for(let x of data){
-             $(".kp-wl-main").append(templateWhitelist(x));
-         }
-         $(".kp-wl-site").on("click", function(e) {
-             var name = $(this).data("name");
-             if ($(e.target).is(".kp-wl-site-delete")) {
-                 var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
-                 if (res) {
-                    bkg.removeSite(name,(res)=>{
+        } else {
+            data = ProtectedSitesData;
+        }
+        //console.log("Protected-data", data);
+        $(".kp-wl-site").remove();
+        for (let x of data) {
+            $(".kp-wl-main").append(templateWhitelist(x));
+        }
+        $(".kp-wl-site").on("click", function (e) {
+            var name = $(this).data("name");
+            if ($(e.target).is(".kp-wl-site-delete")) {
+                var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
+                if (res) {
+                    bkg.removeSite(name, (res) => {
                         if (res.error) {
                             return alert(res.error);
                         }
                         $(this).remove();
                     })
 
-                 }
-             } else if ($(e.target).is(".kp-wl-site-check")) {
-                 const checked = "check_box", unchecked ="check_box_outline_blank";
-                 var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
-                 var value = icon.innerHTML.trim();
-                 if (value === checked) {
-                    bkg.toggleSite( name, false, res => {
-                         if (res.error) {
-                             return alert(res.error);
-                         }
-                         icon.innerHTML = unchecked;
-                         $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
-                         $(this).find("i.kp-wl-url-delete").removeClass("enable");
-                         $(this).find("i.kp-wl-url-check").each((i,x) => {
-                             x.innerHTML = unchecked;
-                             $(x).removeClass("enable");
-                         });
-                     });
-                 } else {
-                    bkg.toggleSite( name, true, res => {
-                         if (res.error) {
-                             return alert(res.error);
-                         }
-                         $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
-                         $(this).find("i.kp-wl-url-delete").addClass("enable");
-                         $(this).find("i.kp-wl-url-check").each((i,x) => {
-                             x.innerHTML = checked;
-                             $(x).addClass("enable");
-                         });
-                         icon.innerHTML = checked;
-                     });
-                 }
-             }
-         });
-         $(".kp-wl-url-row").on("click", function(e){
-             e.stopPropagation();
-             if ($(e.target).is(".kp-wl-url-delete.enable")) {
-                 let url = $(this).data("url");
-                 bkg.removeURL( url, res => {
-                     if (res.error) {
-                         return alert(res.error);
-                     }
-                     $(this).remove();
-                 });
-             }
-             if ($(e.target).is(".kp-wl-url-check.enable")) {
-                 let url = $(this).data("url");
-                 const checked = "check_box", unchecked ="check_box_outline_blank";
-                 let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
-                 let value = icon.innerHTML.trim();
-                 if (value === checked) {
-                     bkg.toggleURL( url,false, res => {
-                         if (res.error) {
-                             return alert(res.error);
-                         }
-                         icon.innerHTML = unchecked;
-                     });
-                 } else {
-                    bkg.toggleURL( url,  true, res => {
-                         if (res.error) {
-                             return alert(res.error);
-                         }
-                         icon.innerHTML = checked;
-                     });
-                 }
-             }
-         });
+                }
+            } else if ($(e.target).is(".kp-wl-site-check")) {
+                const checked = "check_box",
+                    unchecked = "check_box_outline_blank";
+                var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+                var value = icon.innerHTML.trim();
+                if (value === checked) {
+                    bkg.toggleSite(name, false, res => {
+                        if (res.error) {
+                            return alert(res.error);
+                        }
+                        icon.innerHTML = unchecked;
+                        $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
+                        $(this).find("i.kp-wl-url-delete").removeClass("enable");
+                        $(this).find("i.kp-wl-url-check").each((i, x) => {
+                            x.innerHTML = unchecked;
+                            $(x).removeClass("enable");
+                        });
+                    });
+                } else {
+                    bkg.toggleSite(name, true, res => {
+                        if (res.error) {
+                            return alert(res.error);
+                        }
+                        $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
+                        $(this).find("i.kp-wl-url-delete").addClass("enable");
+                        $(this).find("i.kp-wl-url-check").each((i, x) => {
+                            x.innerHTML = checked;
+                            $(x).addClass("enable");
+                        });
+                        icon.innerHTML = checked;
+                    });
+                }
+            }
+        });
+        $(".kp-wl-url-row").on("click", function (e) {
+            e.stopPropagation();
+            if ($(e.target).is(".kp-wl-url-delete.enable")) {
+                let url = $(this).data("url");
+                bkg.removeURL(url, res => {
+                    if (res.error) {
+                        return alert(res.error);
+                    }
+                    $(this).remove();
+                });
+            }
+            if ($(e.target).is(".kp-wl-url-check.enable")) {
+                let url = $(this).data("url");
+                const checked = "check_box",
+                    unchecked = "check_box_outline_blank";
+                let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+                let value = icon.innerHTML.trim();
+                if (value === checked) {
+                    bkg.toggleURL(url, false, res => {
+                        if (res.error) {
+                            return alert(res.error);
+                        }
+                        icon.innerHTML = unchecked;
+                    });
+                } else {
+                    bkg.toggleURL(url, true, res => {
+                        if (res.error) {
+                            return alert(res.error);
+                        }
+                        icon.innerHTML = checked;
+                    });
+                }
+            }
+        });
 
 
-         return;
+        return;
 
-  });
+    });
 
 }
 
@@ -260,13 +264,13 @@ function renderSafeDomainTable() {
         $(".kp-safelist").append(templateSafeDomain(x));
     });
 
-    $(".kp-safelist-row").on("click", function(e) {
+    $(".kp-safelist-row").on("click", function (e) {
         //e.preventDefault();
         if ($(e.target).is(".kp-sl-delete")) {
             var domain = $(this).data("name");
             var res = confirm("Do you want to delete " + domain + " from the list of safe domains?");
             if (res) {
-                bkg.removeSafeDomain( domain, res => {
+                bkg.removeSafeDomain(domain, res => {
                     if (res.error) {
                         return alert(res.error);
                     }
@@ -276,7 +280,8 @@ function renderSafeDomainTable() {
         }
     });
 }
-function renderAvailableModels(){
+
+function renderAvailableModels() {
     $('#kp-models').empty();
     $.each(bkg.getAvailableModels(), function (i, item) {
         $('#kp-models').append(`   <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
@@ -318,58 +323,59 @@ function renderAvailableModels(){
     </li>`);
     });
 }
+
 function initAdvanceTab() {
     if (bkg.getDebugFlag()) {
         $("#kp-debug-switch").click();
     }
-    if(bkg.getSecureImageFlag()){
+    if (bkg.getSecureImageFlag()) {
         $("#kp-secure-image-switch").click();
     }
-   renderAvailableModels()
+    renderAvailableModels()
     $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
 
 }
 
-$(document).ready( function() {
+$(document).ready(function () {
 
-   setTimeout(()=>{
-    if(bkg.getRestoreMsg()){
-        backupReminderDialog.showModal()
-    }
-   },500)
+    setTimeout(() => {
+        if (bkg.getRestoreMsg()) {
+            backupReminderDialog.showModal()
+        }
+    }, 500)
 
-  $("#version") .html( chrome.runtime.getManifest().version)
+    $("#version").html(chrome.runtime.getManifest().version)
 
     setTimeout(
-        function(){
+        function () {
             renderProtectedList();
             renderSafeDomainTable();
 
-        },1000)
+        }, 1000)
 
     let params = getUrlVars();
     if (params["tab"]) {
 
-    $(params["tab"]).addClass("is-active");
+        $(params["tab"]).addClass("is-active");
 
         if (params["host"]) {
             $("label[for=kp-safelist-input]").attr("style", "visibility: hidden");
             $("#kp-safelist-input").focus();
             $("#kp-safelist-input").val(params["host"]);
         }
-    }else{
+    } else {
         $("#tab-secure-img").addClass("is-active");
 
     }
 
     initAdvanceTab();
     updateImage();
-    defaultImages.forEach(function(img) {
+    defaultImages.forEach(function (img) {
         let imagePath = "assets/img/secure_img/" + img;
         $("#imagegallery .mdl-cell:last").before(templateImage(imagePath, "favorite_border"));
     });
 
-    $(".set-image").on("click", function(event) {
+    $(".set-image").on("click", function (event) {
         event.preventDefault();
         var data = {};
         data.type = "suggested";
@@ -379,8 +385,8 @@ $(document).ready( function() {
 
         $(".kp-active-icons").text("favorite_border");
 
-        if (data.type != "custom"){
-            if (!$("#customimage").attr("src")){
+        if (data.type != "custom") {
+            if (!$("#customimage").attr("src")) {
                 $("#kp-custom-icons").text("");
             }
         }
@@ -389,11 +395,11 @@ $(document).ready( function() {
         $(icon).text("favorite");
     });
 
-    $("#kp-custom-btn-icons").on("click", function(event) {
+    $("#kp-custom-btn-icons").on("click", function (event) {
         $(".kp-custom-icons").click();
     });
 
-    $(".kp-custom-icons").on("click", function(event) {
+    $(".kp-custom-icons").on("click", function (event) {
         var data = {};
         event.preventDefault();
         data.type = "custom";
@@ -405,39 +411,40 @@ $(document).ready( function() {
         }
     });
 
-    $(".img-edit").on("click", function(e) {
+    $(".img-edit").on("click", function (e) {
         $(".whitelist-container").addClass("hide");
         $(".img-uploader-container").removeClass("hide");
     });
 
-    $("#imageUpload").on("click", function(e) {
+    $("#imageUpload").on("click", function (e) {
 
         $("#custom-img").click();
     });
-    $("#backupFileUpload").on("click", function(e) {
+    $("#backupFileUpload").on("click", function (e) {
         $("#backup-file").click();
     });
 
-    $("#backup-file").change(function(e) {
+    $("#backup-file").change(function (e) {
         let file = e.target.files[0];
         let reader = new FileReader();
-        reader.onloadend = function() {
+        reader.onloadend = function () {
             let fileData = reader.result;
             let jsonData;
             try {
                 jsonData = JSON.parse(fileData);
-            }
-            catch (err) {
+            } catch (err) {
                 $("#notifications").text("Please upload a valid file").css("visibility", "visible").css("color", "red");
-                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+                setTimeout(function () {
+                    $("#notifications").css("visibility", "hidden");
+                }, 6000);
                 return;
             }
 
-            bkg.restoreBackup(jsonData, function(error){
+            bkg.restoreBackup(jsonData, function (error) {
 
                 let msg = "",
                     color = "";
-                if (error){
+                if (error) {
                     msg = "Something went wrong, Error: " + error.message;
                     color = "#FF5722";
                 } else {
@@ -449,11 +456,13 @@ $(document).ready( function() {
                 }
                 $("#notifications").text(msg).css("visibility", "visible").css("color", color);
 
-                setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 6000);
+                setTimeout(function () {
+                    $("#notifications").css("visibility", "hidden");
+                }, 6000);
                 if (params["tab"]) {
                     location.reload();
-                }else{
-                    window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+                } else {
+                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?tab=#tab-advanced");
 
                 }
             });
@@ -462,7 +471,7 @@ $(document).ready( function() {
         reader.readAsText(file);
     });
 
-    $("#custom-img").change(function(e) {
+    $("#custom-img").change(function (e) {
 
         var file = e.target.files[0];
         if (!file.type.startsWith("image")) {
@@ -474,7 +483,7 @@ $(document).ready( function() {
             return;
         }
         var reader = new FileReader();
-        reader.onloadend = function() {
+        reader.onloadend = function () {
             var data = {};
             data.type = "custom";
             data.src = reader.result;
@@ -489,16 +498,16 @@ $(document).ready( function() {
         reader.readAsDataURL(file);
 
     });
-    $("#kp-remove").on("click", function(e) {
-        bkg.backupDB( function(backupData) {
-           download(backupData);
+    $("#kp-remove").on("click", function (e) {
+        bkg.backupDB(function (backupData) {
+            download(backupData);
             bkg.unInstallPlugin();
         });
 
     })
-    $("#kp-restore-factory").on("click", function(e) {
+    $("#kp-restore-factory").on("click", function (e) {
         if (confirm("This will delete all personal images, protected pages and image snippets added by you. Restore factory defaults?")) {
-            bkg.cleanDB(function(){
+            bkg.cleanDB(async function () {
                 bkg.setDefaultSecurityImage(function () {
                     $("#imagegallery .cutsom-image").remove();
                     $("#imagegallery #customimage").attr("src", "");
@@ -516,12 +525,12 @@ $(document).ready( function() {
                 }
                 $("#kp-secure-image-duration").val(1);
                 bkg.setSecureImageDuration(1);
-                bkg.setFactoryAvailableModels()
+                await bkg.setFactoryAvailableModels()
                 weightMessage()
                 if (params["tab"]) {
                     location.reload();
-                }else{
-                    window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+                } else {
+                    window.location.href = window.location.href.replace(/[\?#].*|$/, "?tab=#tab-advanced");
 
                 }
 
@@ -530,27 +539,31 @@ $(document).ready( function() {
     });
 
     // get backup of all the custom settings
-    $("#sp-backup").on("click", function(e) {
-        bkg.backupDB(function(backupData) {
+    $("#sp-backup").on("click", function (e) {
+        bkg.backupDB(function (backupData) {
             download(backupData);
             $("#notifications").text("Backup has completed successfully.").css("visibility", "visible").css("color", "green");
-            setTimeout(function(){ $("#notifications").css("visibility","hidden"); }, 5000);
+            setTimeout(function () {
+                $("#notifications").css("visibility", "hidden");
+            }, 5000);
         });
     });
 
     // download db backup file
     function download(content) {
         let a = document.createElement("a");
-        let blob = new Blob([JSON.stringify(content, null, 4)], {"type": "application/json"});
+        let blob = new Blob([JSON.stringify(content, null, 4)], {
+            "type": "application/json"
+        });
         a.href = window.URL.createObjectURL(blob);
-        let date =  new Date();
-        let datetime = date.getFullYear().toString() + (date.getMonth() + 1).toString() +  date.getDate().toString() + date.getHours().toString() + date.getMinutes().toString() + date.getSeconds().toString();
+        let date = new Date();
+        let datetime = date.getFullYear().toString() + (date.getMonth() + 1).toString() + date.getDate().toString() + date.getHours().toString() + date.getMinutes().toString() + date.getSeconds().toString();
         a.download = `SpotPhish-backup-${datetime}.json`;
         a.click();
     }
 
 
-    $(".kp-safelist-add-btn").on("click", function(e) {
+    $(".kp-safelist-add-btn").on("click", function (e) {
         let input = $("#kp-safelist-input").val().trim();
         let val;
         if (input.length > 0) {
@@ -564,7 +577,7 @@ $(document).ready( function() {
                 alert("Incorrect domain entered, please try again");
                 return;
             }
-            bkg.addSafeDomain( val, res => {
+            bkg.addSafeDomain(val, res => {
                 if (res.error) {
                     return alert(res.error);
                 }
@@ -574,7 +587,7 @@ $(document).ready( function() {
         $("#kp-safelist-input").val("");
 
     });
-    $("#kp-debug-switch").on("click", function(e) {
+    $("#kp-debug-switch").on("click", function (e) {
         let val = $(this).is(":checked");
         if (val) {
             bkg.setDebugFlag(true);
@@ -582,7 +595,7 @@ $(document).ready( function() {
             bkg.setDebugFlag(false);
         }
     });
-    $("#kp-secure-image-switch").on("click", function(e) {
+    $("#kp-secure-image-switch").on("click", function (e) {
         let val = $(this).is(":checked");
         if (val) {
             bkg.setSecureImageFlag(true);
@@ -590,7 +603,7 @@ $(document).ready( function() {
             bkg.setSecureImageFlag(false);
         }
     });
-    $("#kp-models .select-switch").on("click", function(e) {
+    $("#kp-models .select-switch").on("click", function (e) {
 
         let val = $(this).is(":checked");
         console.log(val);
@@ -601,32 +614,31 @@ $(document).ready( function() {
         }
         weightMessage()
     });
-    $("#kp-models .delete").on("click", function(e) {
-        let x=$(this).closest('li').attr("id");
+    $("#kp-models .delete").on("click", function (e) {
+        let x = $(this).closest('li').attr("id");
 
-        if(  x!=="TemplateMatching" ) {
+        if (x !== "TemplateMatching") {
             bkg.removeAvailableModels(x);
             if (params["tab"]) {
                 location.reload();
-            }else{
-                window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+            } else {
+                window.location.href = window.location.href.replace(/[\?#].*|$/, "?tab=#tab-advanced");
             }
-            }else{
+        } else {
             alert("You cannot delete this model. Disable it if you want.")
         }
         weightMessage();
     });
-    $("#kp-models .weightage-input").on("change paste keyup", function(e) {
-        bkg.setWeightage( $(this).closest('li').attr("id"),parseInt( $(this).val()))
+    $("#kp-models .weightage-input").on("change paste keyup", function (e) {
+        bkg.setWeightage($(this).closest('li').attr("id"), parseInt($(this).val()))
         weightMessage()
 
     });
-    $("#kp-secure-image-duration").on("change paste keyup", function(e) {
+    $("#kp-secure-image-duration").on("change paste keyup", function (e) {
         let val = $(this).val();
-        if(val===""){
+        if (val === "") {
             bkg.setSecureImageDuration(1);
-        }
-        else{
+        } else {
             bkg.setSecureImageDuration(val);
         }
     });
@@ -634,111 +646,126 @@ $(document).ready( function() {
     var backupReminderDialog = document.querySelector('#backupReminderDialog');
 
     var showDialogButton = document.querySelector('#kp-show-add-model-dialog');
-    if (! dialog.showModal) {
-      dialogPolyfill.registerDialog(dialog);
+    if (!dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
     }
-    if (! backupReminderDialog.showModal) {
+    if (!backupReminderDialog.showModal) {
         dialogPolyfill.registerDialog(backupReminderDialog);
-      }
-    showDialogButton.addEventListener('click', function() {
-      dialog.showModal();
+    }
+    showDialogButton.addEventListener('click', function () {
+        dialog.showModal();
 
     });
-    dialog.querySelector('.close').addEventListener('click', function() {
-      dialog.close();
+    dialog.querySelector('.close').addEventListener('click', function () {
+        dialog.close();
 
     });
-    backupReminderDialog.querySelector('.close').addEventListener('click', function() {
+    backupReminderDialog.querySelector('.close').addEventListener('click', function () {
         backupReminderDialog.close();
-    bkg.setRestoreMsg()
+        bkg.setRestoreMsg()
     });
 
-      backupReminderDialog.querySelector('.restore-now').addEventListener("click",function(e) {
+    backupReminderDialog.querySelector('.restore-now').addEventListener("click", function (e) {
         backupReminderDialog.close();
-    bkg.setRestoreMsg()
+        bkg.setRestoreMsg()
 
         $("#backupFileUpload").click();
 
 
 
     });
-    dialog.querySelector('#label').addEventListener("change", function(e) {
-       if(modelNameExists($(this).val().trim().replace(/\s+/g,"_"))){alert("Name already exists");$(this).val(template_of_MLmodel.label);return;}
-        template_of_MLmodel.label=($(this).val().trim());
-        template_of_MLmodel.name=($(this).val().trim()).replace(/\s+/g,"_");
+    dialog.querySelector('#label').addEventListener("change", function (e) {
+        if (modelNameExists($(this).val().trim().replace(/\s+/g, "_"))) {
+            alert("Name already exists");
+            $(this).val(template_of_MLmodel.label);
+            return;
+        }
+        template_of_MLmodel.label = ($(this).val().trim());
+        template_of_MLmodel.name = ($(this).val().trim()).replace(/\s+/g, "_");
 
 
     });
     $("#checks").hide()
+    dialog.querySelector('#src').addEventListener("change", async function (e) {
+        let srcFile = $(this).val().trim();
 
-    dialog.querySelector('#src').addEventListener("change",async function(e) {
-       let srcFile=$(this).val().trim();
-    //    https://cdn.jsdelivr.net/gh/spotphish/spotphish/master/models/Classification/Classification.js
-    // https://github.com/spotphish/spotphish/blob/v1.2.3/models/Classification/Classification.js
-//    srcFile= srcFile.replace("github.com","cdn.jsdelivr.net/gh")
-//    srcFile= srcFile.replace("/blob","")
-//     splitted_domain=  srcFile.split("/")
-//     splitted_domain.splice(6,1)
-//     console.log(srcFile.split("/"));
-//     return;
-    if(! srcFile.includes("https://cdn.jsdelivr.net/"))
-        {alert("Unauthorized domain"); $(this).val(template_of_MLmodel.src);return;}
-       let remoteFile=(await import(srcFile));
-       let Model=remoteFile.default;
-        if(Model!==undefined){
+        srcFile = srcFile.replace("github.com", "cdn.jsdelivr.net/gh")
+        srcFile = srcFile.replace("tree/", "")
+        splitted_domain = srcFile.split("/")
+        splitted_domain.splice(6, 1)
+        let latest_version = await loadLatestVersion(splitted_domain[4], splitted_domain[5])
+        if (latest_version.name !== undefined) {
+            splitted_domain[5] = splitted_domain[5] + "@" + latest_version.name;
+        }
+        ROOT_DIR = splitted_domain.slice(0, 6).join("/")
+        srcFile = splitted_domain.join("/");
+        srcFile += "/Model.js"
 
-                    if(Model.prototype.predict!=null && (typeof Model.prototype.predict)==="function"  ){
-                   $("#exportedClassName").html("class "+Model.name);
+        if (!srcFile.includes("https://cdn.jsdelivr.net/")) {
+            alert("Unauthorized domain");
+            $(this).val(template_of_MLmodel.src);
+            return;
+        }
+        let remoteFile = (await import(srcFile));
+        let Model = remoteFile.default;
+        if (Model !== undefined) {
+            if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
+                $("#exportedClassName").html("class " + Model.name);
+                $("#checks").show()
 
-                        $("#checks").show()
 
+                if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
+                    template_of_MLmodel.dependencies = Model.dependencies;
+                } else {
+                    template_of_MLmodel.dependencies = [];
 
-                       if (Model.dependencies!==undefined && Array.isArray(Model.dependencies)){
-                            template_of_MLmodel.dependencies=Model.dependencies;
-                       }else{
-                            template_of_MLmodel.dependencies=[];
-
-                       }
-                    }else{
-                        alert("Does not contain the predict function")
-                        $(this).val(template_of_MLmodel.src);
-                        return;
-                    }
-        }else{
-                alert("Some class must be exported");
+                }
+            } else {
+                alert("Does not contain the predict function")
                 $(this).val(template_of_MLmodel.src);
                 return;
             }
-            template_of_MLmodel.src=srcFile;
-            $("#dependencies").empty();
-            $.each(template_of_MLmodel.dependencies, function (i, item) {
-                     $("#dependencies").append(`<p>${item}</p>`);
-                 });
+        } else {
+            alert("Some class must be exported");
+            $(this).val(template_of_MLmodel.src);
+            return;
+        }
+        template_of_MLmodel.root = ROOT_DIR;
+        template_of_MLmodel.src = srcFile;
+        $("#dependencies").empty();
+        $.each(template_of_MLmodel.dependencies, function (i, item) {
+            $("#dependencies").append(`<p>${item}</p>`);
+        });
+
 
     });
 
-    dialog.querySelector('#addModel').addEventListener("click",async function(e) {
-        if(!validateModel()){alert("All fields are mandatory");return;}
+    dialog.querySelector('#addModel').addEventListener("click", async function (e) {
+        if (!validateModel()) {
+            alert("All fields are mandatory");
+            return;
+        }
 
-            bkg.setAvailableModels(template_of_MLmodel);
-            template_of_MLmodel={
-                name:"",
-                        src:"",
-                        label:"",
-                        dependencies:[],
-                        selected:false,
-                        weightage:0,
-                        webgl:false
-                    };
+        bkg.setAvailableModels(template_of_MLmodel);
+        template_of_MLmodel = {
+            root: "",
+            name: "",
+            src: "",
+            label: "",
+            dependencies: [],
+            selected: false,
+            weightage: 0,
+            webgl: false
+        };
 
 
-            dialog.close();
-            if (params["tab"]) {
-                location.reload();
-            }else{
-                window.location.href = window.location.href.replace( /[\?#].*|$/, "?tab=#tab-advanced" );
+        dialog.close();
+        if (params["tab"]) {
+            location.reload();
+        } else {
+            window.location.href = window.location.href.replace(/[\?#].*|$/, "?tab=#tab-advanced");
 
-            }
+        }
 
 
     });
@@ -747,33 +774,42 @@ $(document).ready( function() {
 
 });
 
-function validateModel(){
-  if(
-   ! isEmpty(template_of_MLmodel.label)&&
-   ! isEmpty(template_of_MLmodel.src) ){
-    return true;
-   }
-   return false;
+function validateModel() {
+    if (
+        !isEmpty(template_of_MLmodel.label) &&
+        !isEmpty(template_of_MLmodel.src)) {
+        return true;
+    }
+    return false;
 }
-function modelNameExists(model_name){
-    return _.find(bkg.getAvailableModels(),x=>x.name===model_name)
-  }
+
+function modelNameExists(model_name) {
+    return _.find(bkg.getAvailableModels(), x => x.name === model_name)
+}
+
 function isEmpty(str) {
     return (!str || 0 === str.length);
 }
+
 function getSum(total, num) {
     return total + num.weightage;
 }
-function weightMessage(){
-    let total= bkg.getAvailableModels().filter(item=>item.selected).reduce(getSum, 0);
 
-    if(total>100){
+function weightMessage() {
+    let total = bkg.getAvailableModels().filter(item => item.selected).reduce(getSum, 0);
+
+    if (total > 100) {
         $("#total-weight").html("Total exceeding 100%")
 
-    }else  if(total<100){
+    } else if (total < 100) {
         $("#total-weight").html("Please ensure total weight is 100%");
-    }else{
+    } else {
         $("#total-weight").html("Total Weightage : 100%");
 
     }
+}
+async function loadLatestVersion(USER, PROJECT) {
+    let response = await fetch("https://api.github.com/repos/" + USER + "/" + PROJECT + "/releases/latest");
+    let data = await response.json();
+    return data;
 }
