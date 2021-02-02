@@ -1,18 +1,19 @@
 var defaultFeeds = [{
     "name": "main",
-    "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish@v" + chrome.runtime.getManifest().version + "/models/Template Matching/main.json"
+    "src": "./main.json"
+    // "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish@v" + chrome.runtime.getManifest().version + "/main.json"
 }];
 const defaultModels = [{
-        root: "https://github.com/spotphish/spotphish/tree/master/models/Template Matching",
+        root: "https://github.com/spotphish/models/tree/master/Template Matching",
         weightage: 20,
         webgl: false,
         label: "Template Matching",
-        selected: true,
+        selected: false,
     },
     {
-        root: "https://github.com/spotphish/spotphish/tree/master/models/LogoDetection",
+        root: "https://github.com/spotphish/models/tree/master/LogoDetection",
         webgl: true,
-        weightage: 80,
+        weightage: 100,
         label: "Logo Detection",
         selected: true
     }

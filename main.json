@@ -1,0 +1,653 @@
+{
+  "name": "default-feed",
+  "url": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+  "schema": "1.0",
+  "version": "20171211104288",
+  "sites": [{
+      "name": "Facebook",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "protected": [{
+          "url": "https://www.facebook.com/",
+          "login_check": {
+            "password": 2
+          }
+        },
+        {
+          "url": "https://www.facebook.com/login/"
+        },
+        {
+          "url": "https://www.facebook.com/reg/"
+        },
+        {
+          "url": "https://www.facebook.com/login.php"
+        },
+        {
+          "url": "https://www.facebook.com/r.php"
+        },
+        {
+          "url": "https://www.facebook.com/login/identify"
+        }
+      ],
+      "templates": [{
+          "name": "Facebook",
+          "image": "https://spotphish.github.io/feeds/main/images/fb-logo_lnx.png",
+          "checksum": "d4a727986420faac68c45aeff948f182968788047f3c9e2cefaa4231033a3b9e"
+        },
+        {
+          "name": "Facebook pre 2016-1",
+          "image": "https://spotphish.github.io/feeds/main/images/fb-old.png",
+          "checksum": "a7ec51b4ed1d92d322e1f3cf5633328e459ac21148ff96533a7111ea79698386"
+        },
+        {
+          "name": "Facebook new",
+          "image": "https://vijay-coriolis.github.io/images/Facebook-new.png",
+          "checksum": "0e09824fedc87e91ee9893aa97519187ef82fb3d9007bd73b37c88fb0f4ac925"
+        },
+        {
+          "name": "Facebook 2020",
+          "image": "https://vijay-coriolis.github.io/images/Facebook2020.png",
+          "checksum": "acd7264b6a68613e7f3712a0d7b1b6527464c2c4c9aae864104c6ba34b460819"
+        }
+      ],
+      "safe": [{
+        "domain": "facebook.com"
+      }]
+    },
+    {
+      "name": "Paypal",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "protected": [{
+          "url": "https://www.paypal.com/in/home"
+        },
+        {
+          "url": "https://www.paypal.com/in/signin"
+        },
+        {
+          "url": "https://www.paypal.com/us/cgi-bin"
+        },
+        {
+          "url": "https://www.paypal.com/signin"
+        },
+        {
+          "url": "https://www.paypal.com/jp/signin"
+        },
+        {
+          "url": "https://www.paypal.com/signin/authorize"
+        }
+      ],
+      "templates": [{
+          "name": "Paypal",
+          "image": "https://spotphish.github.io/feeds/main/images/paypal-linux.png",
+          "checksum": "488377a4467f60e279e93fce31063091076d414da10f8145610210599b02ceee"
+        },
+        {
+          "name": "Paypal-old-logo",
+          "image": "https://spotphish.github.io/feeds/main/images/pp-old.png",
+          "checksum": "88820f238888b603bce20e915dec2049c86b97dde6863c09bd00be3a0e84dbd8"
+        },
+        {
+          "name": "Paypal new",
+          "image": "https://vijay-coriolis.github.io/images/Paypal-new.png",
+          "checksum": "7e7b83de2ca189b3b0437bc2e615e345e87ca8c2d493976809b58c1b8656c04f"
+        }
+      ]
+    },
+    {
+      "name": "Google",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "protected": [{
+          "url": "https://accounts.google.com/signin/v2/identifier"
+        },
+        {
+          "url": "https://accounts.google.com/signin/oauth/identifier"
+        },
+        {
+          "url": "https://accounts.google.com/signin/v2/sl/pwd"
+        }
+      ],
+      "templates": [{
+          "name": "Google 2016",
+          "image": "https://spotphish.github.io/feeds/main/images/google-old.png",
+          "checksum": "eae2d41d1d199d57ee6515953a143596572f425cb8217cd4912165d535686a9d"
+        },
+        {
+          "name": "Google mid 2017",
+          "image": "https://spotphish.github.io/feeds/main/images/google-logo-big.png",
+          "checksum": "e097bc85e7f1e6d47f8f03f533eff7c3321a2268dc169e989c36cc6e00f93b3e"
+        },
+        {
+          "name": "Gmail Icon",
+          "image": "https://spotphish.github.io/feeds/main/images/gmail-icon.png",
+          "checksum": "d8935891857aec9f7a0de5a2e4def193dda3f67ff6b6f6135d60d24508003c80",
+          "deleted": true
+        },
+        {
+          "name": "Google search",
+          "image": "https://vijay-coriolis.github.io/images/Google.png",
+          "checksum": "2e5e25a8bbae15c2ea3ee2d6ab046a01ea26c3c761d2e5227e08ac34c0e2bf27"
+        },
+        {
+          "name": "Google signin",
+          "image": "https://vijay-coriolis.github.io/images/Google1.png",
+          "checksum": "324740ee47fbe4c8592ba1e05ab5cd8d667cad6c2e99382a491c6de61d0646d2"
+        }
+      ],
+      "safe": [{
+          "domain": "google.com"
+        },
+        {
+          "domain": "google.co.in"
+        }
+      ]
+    },
+    {
+      "name": "Amazon",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "protected": [{
+          "url": "https://www.amazon.in/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.com/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.co.uk/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.com.au/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.co.jp/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.cn/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.sg/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.fr/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.de/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.it/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.nl/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.es/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.ca/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.com.mx/ap/signin"
+        },
+        {
+          "url": "https://www.amazon.com.br/ap/signin"
+        },
+        {
+          "url": "https://signin.aws.amazon.com/signin"
+        },
+        {
+          "url": "https://portal.aws.amazon.com/billing/signup"
+        }
+      ],
+      "templates": [{
+          "name": "Amazon",
+          "image": "https://spotphish.github.io/feeds/main/images/amazon-logo.png",
+          "checksum": "36f9b0d596baeb86de96d280d8aea07823cbc721a061ed50175787be44a5d408"
+        },
+        {
+          "name": "AWS",
+          "image": "https://spotphish.github.io/feeds/main/images/aws-logo.png",
+          "checksum": "1bc597bd41be741075033a872bff81ee74d8aa88097903166748086096b7ecff"
+        },
+        {
+          "name": "AWS-2017",
+          "image": "https://spotphish.github.io/feeds/main/images/aws-2017.png",
+          "checksum": "042b2261eca282f60f37ef4c91ac734baa4ae84a7b62825e33b56e49f4f9fd0c"
+        },
+        {
+          "name": "Amazon",
+          "image": "https://vijay-coriolis.github.io/images/Amazon.png",
+          "checksum": "b8055ca0bf86923bab179708a562badd5c51ba313f085d50cce1634719adbd2f"
+        }
+      ],
+      "safe": [{
+        "domain": "www.amazonbusiness.in"
+      }]
+    },
+    {
+      "name": "Dropbox",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "protected": [{
+          "url": "https://www.dropbox.com/"
+        },
+        {
+          "url": "https://www.dropbox.com/business"
+        }
+      ],
+      "templates": [{
+          "name": "Dropbox-1",
+          "image": "https://spotphish.github.io/feeds/main/images/db1.png",
+          "checksum": "b7b6705da70a8cc7c731b040afcffa1bd929c7a578d00b9448b3954302be1e13"
+        },
+        {
+          "name": "Dropbox-2",
+          "image": "https://spotphish.github.io/feeds/main/images/db2.png",
+          "checksum": "6e2d61093405ac6c252fcb7d195867e093707ebf07f09f5ba11cbdf125d4687d",
+          "deleted": true
+        },
+        {
+          "name": "Dropbox 2017",
+          "image": "https://spotphish.github.io/feeds/main/images/dropbox-2017.png",
+          "checksum": "e41a7259bb599c84c647a3c99c24044cdde177fdeae982183b6418d123fe4364",
+          "deleted": true
+        },
+        {
+          "name": "Dropbox",
+          "image": "https://vijay-coriolis.github.io/images/Dropbox.png",
+          "checksum": "add0a1202304d380e65efa08d059d8d9030c69eb862c60ec2a0b7317fefa282d"
+        },
+        {
+          "name": "Dropbox new",
+          "image": "https://vijay-coriolis.github.io/images/Dropbox-new.png",
+          "checksum": "5eb27f4085d86b8c109bcdcf50805ac70afa27d2849e3cad92c9a3df1224a2fe"
+        }
+      ]
+    },
+    {
+      "name": "wikipedia",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+        "domain": "wikipedia.org"
+      }]
+    },
+    {
+      "name": "HDFCBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+        "domain": "hdfcbank.com"
+      }],
+      "protected": [{
+          "url": "https://www.hdfcbank.com/"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/popuppages/Prepaid-card.htm"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/popuppages/netbanking.htm"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/assets/netsafedemo/netsafedemo.htm"
+        },
+        {
+          "url": "https://netsafe.hdfcbank.com/ACSWeb/enrolljsp/HDFCValidate.jsp"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/CCLogin.html"
+        },
+        {
+          "url": "https://netbanking.hdfcbank.com/netbanking/LNLogin.html"
+        },
+        {
+          "url": "https://v1.hdfcbank.com/htdocs/common/NetBanking/nbip-loan-accounts/nbip-loan-account.htm"
+        },
+        {
+          "url": "https://fastag.hdfcbank.com/RetailRoadUserLogin/Index"
+        }
+      ],
+      "templates": [{
+          "name": "HDFC Bank",
+          "image": "https://vijay-coriolis.github.io/images/HDFC.png",
+          "checksum": "f66670f8a5bfa6c43636d2649e39953d8ec9f4917f54cb8c110f256ae2d851e6"
+        },
+        {
+          "name": "HDFC Bank",
+          "image": "https://vijay-coriolis.github.io/images/HDFC1.png",
+          "checksum": "627597f56467e309f9d9bb5b8772e2cbf23ed28767ee7510d1b75c12d79dbf39"
+        },
+        {
+          "name": "HDFC Bank",
+          "image": "https://vijay-coriolis.github.io/images/HDFC2.png",
+          "checksum": "c24004d151e1c6094493fe503d685b915b7f966859efbdfc9e82bcadc6e99ae6"
+        },
+        {
+          "name": "HDFC Bank",
+          "image": "https://vijay-coriolis.github.io/images/HDFC3.png",
+          "checksum": "f80f10c352cb57397f6c9a323dc773b67a7a9da875046464bc8c6c21a2696d95"
+        }
+      ]
+    },
+    {
+      "name": "UnionBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+          "domain": "unionbankofindia.co.in"
+        },
+        {
+          "domain": "unionbankonline.co.in"
+        }
+      ],
+      "protected": [{
+          "url": "https://www.unionbankofindia.co.in/english/home.aspx"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/personal-mob-overview.aspx"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/upi-bhim.aspx"
+        },
+        {
+          "url": "https://eremit.unionbankofindia.co.in/linkaadhaar/GUIs/unionaadhaar.aspx"
+        },
+        {
+          "url": "https://www.unionbankofindia.co.in/english/saving-account.aspx"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/Ret_Phishing.html"
+        },
+        {
+          "url": "https://www.unionbankonline.co.in/Corp_Phishing.html"
+        }
+      ],
+      "templates": [{
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union.png",
+          "checksum": "2256f217905c5bb8d6cc3a09fe732e6cf43611b38b144caa8a09b0b55491db90"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union1.png",
+          "checksum": "2a1d4ee6e6a1664645a70328d730f7482734e3207303fcbccea8bc364e26eeee"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union2.png",
+          "checksum": "826e87a462ac2bdff3ba0d99380f5fc5f9d0642d8b870c26670d0b9d4a924360",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union3.png",
+          "checksum": "584358ec1a742816b8246e80b34ae8a1c9a895399e0378587e119928a07b0ce2",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union4.png",
+          "checksum": "6ceaba7509a81106edfed5e8db7cdcad438dc0a09d70ec56700cb455898a3288",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union5.png",
+          "checksum": "734f41e48aaa2f3d6aafca9865e81b1e8538dd99a56fbccd3caf54e8a143b3ff"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union6.png",
+          "checksum": "9ad92040f848fa9c005b15930ca1046197f306f029292deba3bccbb33f6625b8",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union7.png",
+          "checksum": "ced29f3a08030f46338de361dd2cf621beba2fb87aaf199c96330603ccbaab0b"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union8.png",
+          "checksum": "6329d10c002ab4186f2c6c43dc91c00dd96d0a3c717a18e991d8ba922b03f110",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union9.png",
+          "checksum": "5895ff74a47de1a1ba10515b35c0663ce5a95659076a2baa9e2bf2ddcbda1eb1",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union10.png",
+          "checksum": "33a7facd1de25b9ac3cff7f401ee79cf33566e5fa2c67066ce49954a82520c84"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union11.png",
+          "checksum": "ffea3d375838db878c15a0204763247fc83972f95af243e65325599ef842064a",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union12.png",
+          "checksum": "1ed66c78217ad7d5eb42f545461153b8f0f2daa3233952d913e41ea032408acb",
+          "deleted": true
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union13.png",
+          "checksum": "ae84cd37e87ed321911e2d46932d8baeec6a0b5ce40a461f25d28a8c6a237fe2"
+        },
+        {
+          "name": "Union Bank",
+          "image": "https://vijay-coriolis.github.io/images/union16.png",
+          "checksum": "5be7cc750905fdd801f6482c8fa6ac43274533b4d5c9782851bd48b691cae556"
+        }
+      ]
+    },
+    {
+      "name": "ICICIBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+        "domain": "icicibank.com"
+      }],
+      "protected": [{
+          "url": "https://www.icicibank.com/"
+        },
+        {
+          "url": "https://www.icicibank.com/corporate/corp-index.page"
+        },
+        {
+          "url": "https://www.icicibank.com/nri-banking/nri-banking.page"
+        },
+        {
+          "url": "https://www.icicibank.com/business-banking/index.page"
+        },
+        {
+          "url": "https://www.icicibank.com/online-services/generate-password-personal.page"
+        }
+      ],
+      "templates": [{
+          "name": "ICICI Bank",
+          "image": "https://vijay-coriolis.github.io/images/ICICI.png",
+          "checksum": "db50407e2e3d68c6efab3639e96bbaeabf8010354d87e67be24bf251abd09364"
+        },
+        {
+          "name": "ICICI Bank",
+          "image": "https://vijay-coriolis.github.io/images/ICICI1.png",
+          "checksum": "0f5e82cd8bcf792fe73fc567d4899cdb17c85acfda17df7562918ce11f298924"
+        },
+        {
+          "name": "ICICI Bank",
+          "image": "https://vijay-coriolis.github.io/images/ICICI2.png",
+          "checksum": "2c57c30ec94741dcb2748406225d6090d52c56cf262e40674962293b2dfedd90"
+        }
+      ]
+    },
+    {
+      "name": "SBI",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+          "domain": "onlinesbi.com"
+        },
+        {
+          "domain": "sbiyono.sbi"
+        },
+        {
+          "domain": "yonobusiness.sbi"
+        }
+      ],
+      "protected": [{
+          "url": "https://onlinesbi.com/"
+        },
+        {
+          "url": "https://www.sbiyono.sbi/index.html"
+        },
+        {
+          "url": "https://yonobusiness.sbi/login/yonobusinesslogin"
+        },
+        {
+          "url": "https://corp.onlinesbi.com/corpuser/login.htm"
+        },
+        {
+          "url": "https://scfu.onlinesbi.com/vfim/login.htm"
+        }
+      ],
+      "templates": [{
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI.png",
+          "checksum": "2759a12caadf923aaa61463ee0b408d66e95ef1c0a8f0382b7c65d93b04a575b"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI1.png",
+          "checksum": "a069113420f2cea7a1e4259281ad862d6842dfa43ac68931d9dceb1f0a59abb3"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI2.png",
+          "checksum": "7e9074da25c6d700286e3514493442670c8464217d4d2209125f29e9b5f872de"
+        },
+        {
+          "name": "SBI Bank",
+          "image": "https://vijay-coriolis.github.io/images/SBI3.png",
+          "checksum": "b33748edcfac749bb0ea114a799073a08279ce421099c76b74812491ce46e73b"
+        }
+      ]
+    },
+    {
+      "name": "IDBIBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+          "domain": "idbibank.in"
+        },
+        {
+          "domain": "idbibank.co.in"
+        }
+      ],
+      "protected": [{
+          "url": "https://www.idbibank.in/index.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/corporate-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/msme-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/agri-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/nri-banking.asp"
+        },
+        {
+          "url": "https://www.idbibank.in/customer-care-centre.asp"
+        }
+      ],
+      "templates": [{
+        "name": "IDBI Bank",
+        "image": "https://vijay-coriolis.github.io/images/IDBI.png",
+        "checksum": "109948522c11bff6c6360caac5285303241d4a15b9944b7b07f90f5b10052d26"
+      }]
+    },
+    {
+      "name": "AxisBank",
+      "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish/main.json",
+      "safe": [{
+          "domain": "axisbank.com"
+        },
+        {
+          "domain": "axisbank.co.in"
+        }
+      ],
+      "protected": [{
+          "url": "https://www.axisbank.com/"
+        },
+        {
+          "url": "https://www.axisbank.com/business-banking"
+        },
+        {
+          "url": "https://www.axisbank.com/axis-bank-priority/youon_priority"
+        },
+        {
+          "url": "https://www.axisbank.com/burgundy-home-page"
+        },
+        {
+          "url": "https://www.axisbank.com/nri"
+        },
+        {
+          "url": "https://www.axisbank.com/about-us"
+        },
+        {
+          "url": "https://www.axisbank.com/bank-smart/internet-banking"
+        }
+      ],
+      "templates": [{
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS.png",
+          "checksum": "fa1021ec474f6fe4e7edb7893c71e3c4d165c0d84d4b0f35bf4642966a800b0d"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS1.png",
+          "checksum": "6ee3d4ef89d28505c4ba5ad009a16fa7b27bf0419f60c88b49844bce50d31bae"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS2.png",
+          "checksum": "d35178e4ff91164f3cc21d8fd6ace5d39660df815113b29cd90dbd34cac5b420"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS3.png",
+          "checksum": "7018119941b44113236083239d71239a8cf8898142ccabb23c7b9911a4bba1db"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS4.png",
+          "checksum": "877def756adb65f6ee2e85a79fb54b8fda265be6bf148176cc8bc6273204709a"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS5.png",
+          "checksum": "37f073bf8889839c2749699103cf3ed14ed5ab86290f778e80c631dc94abff56"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS6.png",
+          "checksum": "1d545b7261608fb986cbe9dcbbd69918f168c86ba2aab885eed03f06fb0b70b9"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS7.png",
+          "checksum": "e899c855296ede8ecd76ca62acc2c1da2c0f44273739b7327d08c3246bbfaa28"
+        },
+        {
+          "name": "Axis Bank",
+          "image": "https://vijay-coriolis.github.io/images/AXIS8.png",
+          "checksum": "e42d55ef62165868c8aa16c0d76a4c108c710f7613ebfc7feee6a08c9156ab54"
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,6 @@ window.predict = async function predict(screenshot, available_models) {
   if (total !== 100) {
     alert("Please corrects the weights.")
     ROOT_DIR = undefined;
-
     return;
   }
   let webglStatus = webgl_detect();
@@ -22,7 +21,9 @@ window.predict = async function predict(screenshot, available_models) {
       if (webglStatus) {
         let z;
         try {
+          let startTime = performance.now()
           z = await x.predict(screenshot);
+          console.log(performance.now() - startTime);
         } catch (e) {
           ROOT_DIR = undefined
 
@@ -48,7 +49,10 @@ window.predict = async function predict(screenshot, available_models) {
     } else {
       let z;
       try {
+        let startTime = performance.now()
         z = await x.predict(screenshot);
+        console.log(performance.now() - startTime);
+
       } catch (e) {
         ROOT_DIR = undefined
         return {

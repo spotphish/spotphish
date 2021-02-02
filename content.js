@@ -27,7 +27,7 @@ function main() {
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
-               showRedflag(msg);
+                showRedflag(msg);
             } else if (msg.op === "crop_template") {
                 injectCropModal();
             } else if (msg.op === "crop_duplicate") {
@@ -47,7 +47,10 @@ function main() {
 
 
 function do_init() {
-    const init = { op: "init", top: false };
+    const init = {
+        op: "init",
+        top: false
+    };
     if (window === top) {
         init.top = true;
         init.dpr = devicePixelRatio;
@@ -71,7 +74,9 @@ function do_init() {
     function urgentCheck() {
         console.log("key event captured");
 
-        rpc({ op: "urgent_check"});
+        rpc({
+            op: "urgent_check"
+        });
         $(document).off("keypress");
     }
 
@@ -86,7 +91,9 @@ function startUrlPoll() {
     upolls++;
     if (url !== topUrl) {
         topUrl = url;
-        rpc({ op: "url_change" });
+        rpc({
+            op: "url_change"
+        });
     }
     if (upolls < MAX_UPOLLS) {
         return setTimeout(startUrlPoll, URL_POLL_INTERVAL);
@@ -101,7 +108,10 @@ function startChecking() {
     //const visible = document.querySelectorAll("input[type=\"password\"]");
     if (visible.length > 0) {
         debug("KP: password field found");
-        rpc({ op: "checkdata", data: visible });
+        rpc({
+            op: "checkdata",
+            data: visible
+        });
     } else {
         if (npolls < MAX_POLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
@@ -110,33 +120,35 @@ function startChecking() {
 }
 
 function showGreenflag(msg) {
-    chrome.storage.local.get("adv_config", function(result) {
-       let imgVisible=  result.adv_config.show_secure_image;
-       let imgVisibilityDuration=  result.adv_config.secure_image_duration;
+    chrome.storage.local.get("adv_config", function (result) {
+        let imgVisible = result.adv_config.show_secure_image;
+        let imgVisibilityDuration = result.adv_config.secure_image_duration;
 
-       if(imgVisible){
-        chrome.storage.local.get("secure_img", function(result) {
-            var data = result.secure_img;
-            let img = document.createElement("img");
-            img.id = "kp-secure-img";
-            img.src = data.src;
+        if (imgVisible) {
+            chrome.storage.local.get("secure_img", function (result) {
+                var data = result.secure_img;
+                let img = document.createElement("img");
+                img.id = "kp-secure-img";
+                img.src = data.src;
 
-            const greenflag = {
-                title: "Security Image",
-                type: "info",
-                img: img,
-                extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
-                buttons: [],
-                dismiss_after: (imgVisibilityDuration*1000)
-            };
-            dialog(greenflag);
-        });
-       }
+                const greenflag = {
+                    title: "Security Image",
+                    type: "info",
+                    img: img,
+                    extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
+                    buttons: [],
+                    dismiss_after: (imgVisibilityDuration * 1000)
+                };
+                dialog(greenflag);
+            });
+        }
     });
 
 }
+
 function showRedflag(msg) {
     let safeDomainLink = chrome.extension.getURL("option.html") + "?tab=#tab-safedomain&host=" + window.location.hostname;
+
     function openSafeDomainLink() {
         window.open(safeDomainLink);
     }
@@ -145,22 +157,34 @@ function showRedflag(msg) {
     let warn = {
         title: "Are you being phished?",
         type: "warning",
-        img:img,
+        img: img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>. But it isn't!</div>`,
         extra: "In case you get frequent false alarms on a trusted site, add it to the <em>Safe Domains</em> list.",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`, onclick: null},
-            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`, onclick: openSafeDomainLink},
-            {html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`, onclick: null}]
+        buttons: [{
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Dismiss</button>`,
+                onclick: null
+            },
+            {
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1 >Add To Safe Domains</button>`,
+                onclick: openSafeDomainLink
+            },
+            {
+                html: `<button class="kpmdl-button kpmdl-button--colored kpmdl-button--disabled" kp-button-index=2>Report Phishing</button>`,
+                onclick: null
+            }
+        ]
     };
 
-        dialog(warn);
+    dialog(warn);
 
 }
 
 function rpc(msg) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(msg, res => {
-            return (res === undefined) ? reject({ error: chrome.runtime.lastError }) : resolve(res);
+            return (res === undefined) ? reject({
+                error: chrome.runtime.lastError
+            }) : resolve(res);
         });
     });
 }
@@ -172,7 +196,10 @@ function injectAckModal(message = "All done", image) {
         type: "info",
         main: message,
         extra: null,
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        buttons: [{
+            html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`,
+            onclick: null
+        }],
         dismiss_after: 3000
     };
     if (image) {
@@ -196,8 +223,15 @@ function injectCropModal() {
         type: "info",
         main: "Basic or Enhanced?",
         extra: "<div>With <b>basic protection</b>, your personal security image will be displayed every time you visit this page.</div><br><div>For <b>enhanced protection</b>, identify the most recognizable part of the page, like the area around the logo. You will be alerted if any other page looks like this one.</div>",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Enhance!</button>`, onclick: crop},
-            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Basic</button>`, onclick: basic}]
+        buttons: [{
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Enhance!</button>`,
+                onclick: crop
+            },
+            {
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Basic</button>`,
+                onclick: basic
+            }
+        ]
     };
 
     dialog(cropDialog);
@@ -211,7 +245,10 @@ function showMatch(msg) {
         type: "info",
         img: img,
         main: `<div class="kpmdl-color-text--accent"> This looks like <b>${msg.site}</b>.</div>`,
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        buttons: [{
+            html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`,
+            onclick: null
+        }],
     };
     dialog(warn);
 }
@@ -222,7 +259,10 @@ function showNoMatch() {
         type: "info",
         main: "No matches found for this page.",
         extra: null,
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`, onclick: null}],
+        buttons: [{
+            html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>OK</button>`,
+            onclick: null
+        }],
         dismiss_after: 3000
     };
     dialog(ack1);
@@ -230,7 +270,7 @@ function showNoMatch() {
 
 function scanInputFields() {
     let ip = {};
-    $("input").filter(":visible").map(function() {
+    $("input").filter(":visible").map(function () {
         if (ip[this.type]) {
             ip[this.type]++;
         } else {

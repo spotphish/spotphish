@@ -1,4 +1,3 @@
-
 var filename = () => {
     var pad = (n) => ((n = n + "") && (n.length >= 2 ? n : "0" + n));
     var timestamp = ((now) => [pad(now.getFullYear()), pad(now.getMonth() + 1), pad(now.getDate())].join("-") + " - " + [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join("-"))(new Date());
@@ -16,7 +15,7 @@ var save = (image) => {
 function crop(image, area, dpr, crop) {
     return new Promise((resolve, reject) => {
         console.log(dpr);
-        var browser = typeof(InstallTrigger) !== "undefined" ? "firefox" : "chrome";
+        var browser = typeof (InstallTrigger) !== "undefined" ? "firefox" : "chrome";
         dpr = browser === "firefox" ? 1 : dpr;
         var top = area.y * dpr;
         var left = area.x * dpr;

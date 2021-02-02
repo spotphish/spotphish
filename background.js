@@ -9,6 +9,8 @@ const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_d
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
+const MODEL_UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 10 hours
+
 
 
 var update_flag = false;
@@ -67,8 +69,10 @@ Tabinfo.show = function () {
         console.log("TAB", ti.tab.id, ti.tab.url, ti.state);
     }
 };
+
 async function loadPreconfiguredModels() {
     for (let item of defaultModels) {
+
         ROOT_DIR = undefined
         let x = _.cloneDeep(item);
         x.name = (x.label).replace(/\s+/g, "_");
@@ -77,10 +81,10 @@ async function loadPreconfiguredModels() {
         srcFile = srcFile.replace("tree/", "")
         splitted_domain = srcFile.split("/")
         splitted_domain.splice(6, 1)
-        // let latest_version = await loadLatestVersion(splitted_domain[4], splitted_domain[5])
-        // if (latest_version.name !== undefined) {
-        splitted_domain[5] = splitted_domain[5] + "@v" + chrome.runtime.getManifest().version;
-        // }
+        let latest_version = await loadLatestVersion(splitted_domain[4], splitted_domain[5])
+        if (latest_version.name !== undefined) {
+            splitted_domain[5] = splitted_domain[5] + "@" + latest_version.name;
+        }
         ROOT_DIR = splitted_domain.slice(0, 6).join("/")
         srcFile = splitted_domain.join("/");
         srcFile += "/Model.js"
@@ -92,6 +96,7 @@ async function loadPreconfiguredModels() {
         try {
             remoteFile = (await import(srcFile));
         } catch (e) {
+            console.log(e);
             continue
         }
         let Model = remoteFile.default;
@@ -116,6 +121,52 @@ async function loadPreconfiguredModels() {
     console.log(AVAILABLE_MODELS);
 }
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
+setInterval(async () => {
+    for (let item of getAvailableModels()) {
+        // if (item.root.includes("@")) {
+        //     let splitted_domain = item.root.split("/")
+        //     let user = splitted_domain[4]
+        //     let repo = splitted_domain[5].split("@")[0];
+        //     let currentVersion = splitted_domain[5].split("@")[1]
+        //     let newVersion = await loadLatestVersion(user, repo);
+
+        //     item.src.replace(currentVersion, newVersion.name)
+
+        //     ROOT_DIR = item.root.replace(currentVersion, newVersion.name)
+        //     srcFile = splitted_domain.join("/");
+        //     srcFile += "/Model.js"
+        //     if (!srcFile.includes("https://cdn.jsdelivr.net/")) {
+        //         continue;
+        //     }
+
+        //     let remoteFile;
+        //     try {
+        //         remoteFile = (await import(srcFile));
+        //     } catch (e) {
+        //         continue
+        //     }
+        //     let Model = remoteFile.default;
+        //     if (Model !== undefined) {
+        //         if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
+        //             if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
+        //                 x.dependencies = Model.dependencies;
+        //             } else {
+        //                 x.dependencies = [];
+        //             }
+        //         } else {
+        //             continue
+        //         }
+        //     } else {
+        //         continue
+        //     }
+        //     x.src = srcFile;
+        //     x.root = ROOT_DIR
+        //     ROOT_DIR = undefined
+
+        // }
+    }
+}, MODEL_UPDATE_CHECK_INTERVAL);
+
 async function loadLatestVersion(USER, PROJECT) {
     let response = await fetch("https://api.github.com/repos/" + USER + "/" + PROJECT + "/releases/latest");
     let data = await response.json();
@@ -163,11 +214,7 @@ function injectScripts(item) {
         setTimeout(async () => {
             await primeWebgl(item);
         }, 5000)
-
-
     }
-
-
 }
 chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
 
@@ -419,7 +466,9 @@ async function redflagCheck(ti, testNow) {
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
     let result;
     try {
+        let startTime = performance.now();
         result = await predict(screenshot, AVAILABLE_MODELS);
+        console.log(performance.now() - startTime)
         console.log(result);
     } catch (err) {
         alert(err);
@@ -721,6 +770,7 @@ function restoreBackup(data, respond) {
         }));
 }
 async function primeWebgl(item) {
+    console.log("webgl priming...")
     let Model = (await import(item.src)).default;
     ROOT_DIR = item.root
     let x = new Model();
@@ -744,7 +794,6 @@ async function initAdvConfigs() {
                 res()
             } else {
                 saveAdvConfig();
-
                 loadPreconfiguredModels().then(() => {
                     res()
                 });

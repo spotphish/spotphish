@@ -3,9 +3,10 @@
  * This program is free software - see the file LICENSE for license details.
  */
 
-function dialog(obj={}) {
+function dialog(obj = {}) {
     const icon = chrome.extension.getURL("assets/icons/icon128.png"),
-        d = Object.assign({}, {title: "SpotPhish",
+        d = Object.assign({}, {
+            title: "SpotPhish",
             type: "info",
             main: "",
             img: "",
@@ -18,7 +19,7 @@ function dialog(obj={}) {
         main = d.main ? `<div class="kpmdl-card__supporting-text kp-main">${d.main}</div>` : "",
         extra = d.extra ? `<div class="kpmdl-card__supporting-text kp-extra">${d.extra}</div>` : "",
         buttons = d.buttons.length ? `<div class="kpmdl-card__actions kpmdl-card--border">` +
-            d.buttons.map(x => x.html).join(" ") + `</div>` : "",
+        d.buttons.map(x => x.html).join(" ") + `</div>` : "",
         template = `
         <div class="kp-dialog kp-dialog-${d.type}">
             <div class="kpmdl-card kpmdl-shadow--16dp">
@@ -39,27 +40,31 @@ function dialog(obj={}) {
 
     function cleanup() {
         $(document).off("keyup", esc);
-        $(".kp-dialog").css({opacity: 0});
+        $(".kp-dialog").css({
+            opacity: 0
+        });
         setTimeout(x => $(".kp-dialog").remove(), 400);
     }
 
-    if($("body").length>0){
+    if ($("body").length > 0) {
         $("body").prepend(template);
-    }else{
+    } else {
         $("html").prepend(template);
     }
 
     if (d.img) {
         $(".kp-image-container").html(d.img);
     }
-    setTimeout(x => $(".kp-dialog").css({opacity: 1}), 50);
+    setTimeout(x => $(".kp-dialog").css({
+        opacity: 1
+    }), 50);
     $(document).on("keyup", esc);
 
-    $(".kp-dialog-clear").on("click", function(e) {
+    $(".kp-dialog-clear").on("click", function (e) {
         e.preventDefault();
         cleanup();
     });
-    $(".kp-dialog .kpmdl-button").on("click", function(e) {
+    $(".kp-dialog .kpmdl-button").on("click", function (e) {
         e.preventDefault();
         const i = $(e.target).attr("kp-button-index"),
             handler = d.buttons[i] ? d.buttons[i].onclick : null;
@@ -150,7 +155,7 @@ function startCrop() {
                 sel = null;
                 hideMenu();
             }
-        }, function() {
+        }, function () {
             jc = this;
             $(".jcrop-hline, .jcrop-vline").css({
                 backgroundImage: "url(" + chrome.runtime.getURL("/assets/img/Jcrop.gif") + ")"
@@ -166,8 +171,15 @@ function injectErrorModal() {
         type: "info",
         main: "Selected area is not distinctive enough",
         extra: "<div>The area is too small or has too few details to be recognized.</div>",
-        buttons: [{html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Try again</button>`, onclick: crop},
-            {html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Cancel</button>`, onclick: null} ]
+        buttons: [{
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=0>Try again</button>`,
+                onclick: crop
+            },
+            {
+                html: `<button class="kpmdl-button kpmdl-button--colored" kp-button-index=1>Cancel</button>`,
+                onclick: null
+            }
+        ]
     };
 
     dialog(cropDialog);
