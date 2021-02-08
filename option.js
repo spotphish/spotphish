@@ -288,7 +288,7 @@ function renderAvailableModels() {
         <span class="mdl-list__item-primary-content ">
             <span>${item.label}</span>
             <span class="mdl-list__item-text-body">
-
+                ${item.root}
             </span>
 
         </span>
