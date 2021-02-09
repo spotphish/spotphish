@@ -9,9 +9,7 @@ const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_d
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
-const MODEL_UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 10 hours
-
-
+var MODEL_UPDATE_TIME = +new Date()
 
 var update_flag = false;
 var restore_msg = false;
@@ -71,15 +69,15 @@ Tabinfo.show = function () {
 };
 
 async function loadPreconfiguredModels() {
-    for (let item of defaultModels) {
 
+    for (let item of defaultModels) {
         ROOT_DIR = undefined
         let x = _.cloneDeep(item);
         x.name = (x.label).replace(/\s+/g, "_");
         let srcFile = x.root;
         srcFile = srcFile.replace("github.com", "cdn.jsdelivr.net/gh")
         srcFile = srcFile.replace("tree/", "")
-        splitted_domain = srcFile.split("/")
+        let splitted_domain = srcFile.split("/")
         splitted_domain.splice(6, 1)
         let latest_version = await loadLatestVersion(splitted_domain[4], splitted_domain[5])
         if (latest_version.name !== undefined) {
@@ -121,51 +119,66 @@ async function loadPreconfiguredModels() {
     console.log(AVAILABLE_MODELS);
 }
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
-setInterval(async () => {
+setInterval(() => {
+    modelsUpdateCheck().then(() => {
+        MODEL_UPDATE_TIME = +new Date();
+        saveAdvConfig()
+    });
+}, UPDATE_CHECK_INTERVAL)
+async function modelsUpdateCheck() {
     for (let item of getAvailableModels()) {
-        // if (item.root.includes("@")) {
-        //     let splitted_domain = item.root.split("/")
-        //     let user = splitted_domain[4]
-        //     let repo = splitted_domain[5].split("@")[0];
-        //     let currentVersion = splitted_domain[5].split("@")[1]
-        //     let newVersion = await loadLatestVersion(user, repo);
+        let splitted_domain = item.src.split("/")
+        let user = splitted_domain[4]
+        let repo = splitted_domain[5].split("@")[0];
+        let currentVersion = splitted_domain[5].split("@")[1]
+        let newVersion = await loadLatestVersion(user, repo);
+        console.log(item.name + " " + currentVersion + "-->" + newVersion.name)
+        if (currentVersion === newVersion.name) {
+            continue;
+        }
+        if (newVersion.name !== undefined) {
+            splitted_domain[5] = repo + "@" + newVersion.name
+        } else {
+            splitted_domain[5] = repo;
+        }
+        ROOT_DIR = undefined
+        ROOT_DIR = splitted_domain.slice(0, 6).join("/")
+        let srcFile = splitted_domain.join("/");
 
-        //     item.src.replace(currentVersion, newVersion.name)
+        if (!srcFile.includes("https://cdn.jsdelivr.net/")) {
+            continue;
+        }
 
-        //     ROOT_DIR = item.root.replace(currentVersion, newVersion.name)
-        //     srcFile = splitted_domain.join("/");
-        //     srcFile += "/Model.js"
-        //     if (!srcFile.includes("https://cdn.jsdelivr.net/")) {
-        //         continue;
-        //     }
-
-        //     let remoteFile;
-        //     try {
-        //         remoteFile = (await import(srcFile));
-        //     } catch (e) {
-        //         continue
-        //     }
-        //     let Model = remoteFile.default;
-        //     if (Model !== undefined) {
-        //         if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
-        //             if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
-        //                 x.dependencies = Model.dependencies;
-        //             } else {
-        //                 x.dependencies = [];
-        //             }
-        //         } else {
-        //             continue
-        //         }
-        //     } else {
-        //         continue
-        //     }
-        //     x.src = srcFile;
-        //     x.root = ROOT_DIR
-        //     ROOT_DIR = undefined
-
-        // }
+        let remoteFile;
+        try {
+            remoteFile = (await import(srcFile));
+        } catch (e) {
+            console.log(e);
+            continue
+        }
+        let Model = remoteFile.default;
+        if (Model !== undefined) {
+            if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
+                if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
+                    item.dependencies = Model.dependencies;
+                } else {
+                    item.dependencies = [];
+                }
+            } else {
+                continue
+            }
+        } else {
+            continue
+        }
+        item.src = srcFile;
+        item.root = ROOT_DIR
+        ROOT_DIR = undefined
+        unInjectScripts(item.name)
+        injectScripts(item)
+        saveAdvConfig()
     }
-}, MODEL_UPDATE_CHECK_INTERVAL);
+}
+
 
 async function loadLatestVersion(USER, PROJECT) {
     let response = await fetch("https://api.github.com/repos/" + USER + "/" + PROJECT + "/releases/latest");
@@ -210,11 +223,7 @@ function injectScripts(item) {
         ga1.src = x;
         $("#" + item.name).append(ga1);
     }
-    if (item.webgl) {
-        setTimeout(async () => {
-            await primeWebgl(item);
-        }, 5000)
-    }
+
 }
 chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
 
@@ -554,20 +563,28 @@ function setRestoreMsg() {
 }
 
 chrome.runtime.onInstalled.addListener(function (details) {
-    setTimeout(() => {
-        if (details.reason === "install") {
-            restore_msg = true;
-            chrome.tabs.create({
-                url: "option.html"
-            });
-        }
-        if (details.reason === "update") {
-            update_flag = true;
-            chrome.tabs.create({
-                url: "option.html"
-            })
-        }
-    }, 5000)
+    function checkReady() {
+        setTimeout(() => {
+            if (ready) {
+                if (details.reason === "install") {
+                    restore_msg = true;
+                    chrome.tabs.create({
+                        url: "option.html"
+                    });
+                }
+                if (details.reason === "update") {
+                    update_flag = true;
+                    chrome.tabs.create({
+                        url: "option.html"
+                    })
+                }
+                return;
+            } else {
+                checkReady()
+            }
+        }, 1000)
+    }
+    checkReady();
 
 });
 
@@ -598,7 +615,7 @@ function checkUpdates() {
         let result = activeFeeds.reduce((p, feed) => {
             return p.then(x => updateFeed(feed));
         }, Promise.resolve());
-        result.then(x => debug("Resolved "));
+        result.then(x => debug("Resolved"));
     });
 }
 
@@ -703,13 +720,25 @@ function setDefaultSecurityImage(cb) {
     });
 }
 loadDefaults()
-
+var ready = false;
 async function loadDefaults() {
     await initAdvConfigs();
     setDefaultSecurityImage();
     await Sites.init()
     await initFeeds()
-
+    for (let x of getAvailableModels()) {
+        if (x.webgl) {
+            await primeWebgl(x)
+            break;
+        }
+    }
+    if (+new Date() - MODEL_UPDATE_TIME > UPDATE_CHECK_INTERVAL) {
+        modelsUpdateCheck().then(() => {
+            MODEL_UPDATE_TIME = +new Date();
+            saveAdvConfig()
+        });
+    }
+    ready = true;
 }
 
 function cleanDB(respond) {
@@ -788,6 +817,7 @@ async function initAdvConfigs() {
                 SECURE_IMAGE = data.show_secure_image ? true : false;
                 SECURE_IMAGE_DURATION = data.secure_image_duration ? data.secure_image_duration : 1;
                 AVAILABLE_MODELS = data.available_models ? data.available_models : [];
+                MODEL_UPDATE_TIME = data.MODEL_UPDATE_TIME ? data.MODEL_UPDATE_TIME : +new Date()
                 $.each(getAvailableModels(), function (i, item) {
                     injectScripts(item);
                 });
@@ -810,7 +840,8 @@ function saveAdvConfig() {
             debug: DEBUG,
             show_secure_image: SECURE_IMAGE,
             secure_image_duration: SECURE_IMAGE_DURATION,
-            available_models: AVAILABLE_MODELS
+            available_models: AVAILABLE_MODELS,
+            MODEL_UPDATE_TIME: MODEL_UPDATE_TIME
 
         }
     });

@@ -1,3 +1,4 @@
 *.sw*
 js/*
 .DS_Store
+.vscode/*

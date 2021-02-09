@@ -1,7 +1,6 @@
 var defaultFeeds = [{
     "name": "main",
-    "src": "./main.json"
-    // "src": "https://cdn.jsdelivr.net/gh/spotphish/spotphish@v" + chrome.runtime.getManifest().version + "/main.json"
+    "src": "https://spotphish.github.io/feeds/main/main.json"
 }];
 const defaultModels = [{
         root: "https://github.com/spotphish/models/tree/master/Template Matching",
