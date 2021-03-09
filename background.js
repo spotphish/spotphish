@@ -2,7 +2,7 @@
  * Copyright (C) 2017 by Coriolis Technologies Pvt Ltd.
  * This program is free software - see the file LICENSE for license details.
  */
-
+var GPU_BUSY = false;
 const watches = [0, 4000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
@@ -20,7 +20,11 @@ let DEBUG = false,
     globalCurrentTabId,
     tabInfoList = {};
 var ROOT_DIR;
-
+let REVISIT_DURATION = 30 * 1000,
+    EXEMPT_CHECKS = false,
+    SECURE_IMAGE_SHOWN = false,
+    CHECKS_RESULT;
+var CONVERTER = undefined;
 class Tabinfo {
     constructor(id, tab, port) {
         this.id = id;
@@ -69,7 +73,6 @@ Tabinfo.show = function () {
 };
 
 async function loadPreconfiguredModels() {
-
     for (let item of defaultModels) {
         ROOT_DIR = undefined
         let x = _.cloneDeep(item);
@@ -113,7 +116,13 @@ async function loadPreconfiguredModels() {
         }
         x.src = srcFile;
         x.root = ROOT_DIR
+        fetch(splitted_domain.join("/") + "/brands.json").then(response => response.json())
+            .then(data => {
+                x.brands = data
+            });
+
         ROOT_DIR = undefined
+
         setAvailableModels(x);
     }
     console.log(AVAILABLE_MODELS);
@@ -124,7 +133,9 @@ setInterval(() => {
         MODEL_UPDATE_TIME = +new Date();
         saveAdvConfig()
     });
+    fetchBrandToDomainConverter()
 }, UPDATE_CHECK_INTERVAL)
+
 async function modelsUpdateCheck() {
     for (let item of getAvailableModels()) {
         let splitted_domain = item.src.split("/")
@@ -172,6 +183,10 @@ async function modelsUpdateCheck() {
         }
         item.src = srcFile;
         item.root = ROOT_DIR
+        fetch(splitted_domain.join("/") + "/brands.json").then(response => response.json())
+            .then(data => {
+                item.brands = data
+            });
         ROOT_DIR = undefined
         unInjectScripts(item.name)
         injectScripts(item)
@@ -235,7 +250,8 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
     }
 
     if (msg.op === "init") {
-        init(msg, sender, respond);
+        init(msg, sender).then(x => respond(x)).catch(x => console.log(x));
+
     } else if (msg.op === "checkdata") {
         checkdata(msg, sender, respond);
     } else if (msg.op === "url_change") {
@@ -301,14 +317,13 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
         });
         let ti = Tabinfo.get(sender.tab.id);
         let tabState = ti.state;
-        if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-            console.log("...................................urgent_check");
+        // if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
+        //     redflagCheck(ti);
+        // }
+        blockPassword(ti);
 
-            redflagCheck(ti);
-        }
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
-
         redflagCheck(ti, true);
     } else {
         console.log("KPBG: Unknown message", msg);
@@ -329,71 +344,186 @@ function inject(tab) {
     }
 }
 
-function init(msg, sender, respond) {
-    const ti = Tabinfo.get(sender.tab.id);
-    if (ti == undefined) {
-        return;
-    }
-    const tab = ti.tab;
-    //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
-    if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
-    if (END_STATES.indexOf(ti.state) !== -1) {
-        return respond({
-            action: "nop"
-        });
+function blockPassword(ti) {
+    if (CHECKS_RESULT != undefined && (!SECURE_IMAGE_SHOWN || (SECURE_IMAGE_SHOWN && CHECKS_RESULT.op === "redflag"))) {
+        ti.port.postMessage(CHECKS_RESULT)
+        SECURE_IMAGE_SHOWN = true
     }
+    CHECKS_RESULT = undefined
+}
 
-    if (msg.top) {
-        ti.dpr = msg.dpr;
-        ti.topReady = true;
-        ti.inputFields = msg.inputFields;
-        let res = Sites.getProtectedURL(tab.url);
-        debug("Result check Protected : ", res);
-        if (res) {
-            let greenFlag = true;
-            if (res.green_check) {
-                let rules = res.green_check;
-                for (let key in rules) {
-                    if (!ti.inputFields[key] || ti.inputFields[key] !== rules[key]) {
-                        greenFlag = false;
-                        break;
-                    }
-                }
-            }
-            if (greenFlag) {
-                respond({
-                    action: "nop"
-                });
-                ti.state = "greenflagged";
-                setIcon(ti, "greenflagged", {
-                    site: res.site
-                });
-                ti.port.postMessage({
-                    op: "greenflag",
-                    site: res.site
-                });
-                return;
-            }
+async function init(msg, sender) {
+    return new Promise((res, rej) => {
+        CHECKS_RESULT = undefined
+        const ti = Tabinfo.get(sender.tab.id);
+        if (ti == undefined) {
+            res({
+                action: "nop"
+            });
         }
-    }
+        const tab = ti.tab;
+        //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+        // if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
 
-    if (Sites.getSafeDomain(tab.url)) {
-        ti.state = "safe";
-        setIcon(ti, "safe");
-        return respond({
-            action: "nop"
-        });
-    }
+        if (END_STATES.indexOf(ti.state) !== -1) {
+            res({
+                action: "nop"
+            });
+        }
 
-    if (!ti.checkState) {
-        return respond({
+        res({
             action: "check"
         });
+        if (msg.top) {
+
+            ti.dpr = msg.dpr;
+            ti.topReady = true;
+            ti.inputFields = msg.inputFields;
+            let currentDomain = tab.url.split("/")[2];
+
+            let currentTime = +new Date();
+            let lastDomain, lastTime, lastState;
+            chrome.storage.local.get("" + tab.id + "", async function (result) {
+                result = result["" + tab.id + ""];
+                if (!_.isEmpty(result)) {
+                    lastDomain = result.last_domain;
+                    lastTime = result.last_time;
+                    lastState = result.last_state;
+                }
+                if (currentDomain != lastDomain || currentTime - lastTime >= REVISIT_DURATION) {
+                    //domain change
+                    let isInSafeDomains = Sites.getSafeDomain(currentDomain) != undefined ? true : false;
+                    if (EXEMPT_CHECKS && isInSafeDomains) {
+                        // ti.state = "safe"
+                        setIcon(ti, "safe");
+                        ti.port.postMessage({
+                            op: "greenflag",
+                            site: currentDomain,
+                            type: 1
+                        });
+                        SECURE_IMAGE_SHOWN = true;
+                        console.log("safe domain");
+
+                    } else {
+                        let screenshot = await snapTab(tab)
+                            .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
+                        let result;
+                        try {
+                            let startTime = performance.now();
+                            result = await predict(screenshot, AVAILABLE_MODELS);
+                            GPU_BUSY = false;
+
+                            console.log(performance.now() - startTime)
+                            console.log(result);
+                        } catch (err) {
+                            alert(err);
+                            GPU_BUSY = false;
+                            result = undefined;
+                        }
+                        if (result !== undefined && result.site !== "NaN") {
+                            //predicted
+                            SECURE_IMAGE_SHOWN = true;
+                            let site = result.site
+                            site += " with "
+                            site += categorize(result.confidence)
+                            if (equalStrings(currentDomain, result.site)) {
+
+                                ti.state = "greenflagged";
+                                setIcon(ti, "greenflagged", {
+                                    site: currentDomain
+                                });
+                                ti.port.postMessage({
+                                    op: "greenflag",
+                                    site: currentDomain,
+                                    type: 2
+                                });
+                                console.log("predicted safe");
+                            } else {
+                                ti.state = "redflagged";
+                                setIcon(ti, "redflagged", {
+                                    site: result.site
+                                });
+                                ti.port.postMessage({
+                                    op: "redflag",
+                                    site: site,
+                                    img: result.image
+                                })
+                                console.log("predicted unsafe");
+                            }
+
+                        } else {
+                            //not predicted
+                            if (isInSafeDomains) {
+                                // ti.state = "safe"
+
+                                setIcon(ti, "safe");
+                                ti.port.postMessage({
+                                    op: "greenflag",
+                                    site: currentDomain,
+                                    type: 1
+
+                                });
+                                SECURE_IMAGE_SHOWN = true;
+
+                                console.log("safe domain");
+
+                            } else {
+                                SECURE_IMAGE_SHOWN = false;
+
+                                ti.nchecks++;
+                                if (ti.state !== "redflagged" && ti.watches.length === 0) {
+                                    ti.state = "red_done";
+                                }
+                                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
+                                    setIcon(ti, "checked"); // The page is checked atleast once.
+                                }
+                                console.log("nothing safe");
+
+                            }
+                        }
+
+                    }
+
+                    chrome.storage.local.set({
+                        [tab.id]: {
+                            last_time: currentTime,
+                            last_domain: currentDomain,
+                            last_state: ti.state
+                        },
+                    })
+                } else {
+                    //domain not changed
+                    SECURE_IMAGE_SHOWN = false;
+                    ti.state = lastState;
+                    setIcon(ti, lastState, {
+                        site: currentDomain
+                    });
+                }
+            });
+
+        } else {
+
+        }
+    })
+
+
+
+
+}
+
+function equalStrings(a, b) {
+    a = a.replace(/\s+/g, "").toLowerCase(); //www.onlinesbi.com
+    b = b.replace(/\s+/g, "").toLowerCase(); //sbi
+
+
+
+
+    if (CONVERTER != undefined && CONVERTER[b] != undefined && CONVERTER[b].includes(a)) {
+        return true;
     }
-    return respond({
-        action: "nop"
-    });
+    return false;
+
 }
 
 function checkdata(msg, sender, respond) {
@@ -442,7 +572,7 @@ function watchdog() {
         const id = tabs[0].id,
             ti = Tabinfo.get(id) || {};
         const now = Date.now();
-        if (ti.state === "watching" && ti.topReady) {
+        if ((ti.state === "watching") && ti.topReady && !GPU_BUSY) {
             assert("watchdog.2", ti.watches.length > 0);
             let redcheck = false;
             while (ti.watches.length && now > ti.watches[0]) {
@@ -450,7 +580,6 @@ function watchdog() {
                 ti.watches.shift();
             }
             if (redcheck) {
-                console.log("...................................watchdog");
                 redflagCheck(ti);
             }
         }
@@ -470,6 +599,7 @@ function categorize(confidence) {
     }
 }
 async function redflagCheck(ti, testNow) {
+    console.log("........................Called redflag....................................");
     const tab = ti.tab;
     let screenshot = await snapTab(tab)
         .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
@@ -477,13 +607,16 @@ async function redflagCheck(ti, testNow) {
     try {
         let startTime = performance.now();
         result = await predict(screenshot, AVAILABLE_MODELS);
+        GPU_BUSY = false;
         console.log(performance.now() - startTime)
         console.log(result);
     } catch (err) {
         alert(err);
-        return;
+        GPU_BUSY = false;
+
+        result = undefined
     }
-    if (result.site != "NaN") {
+    if (result !== undefined && result.site !== "NaN") {
         let site = result.site
         site += " with "
         site += categorize(result.confidence)
@@ -496,15 +629,31 @@ async function redflagCheck(ti, testNow) {
             });
         }
         ti.nchecks++;
-        ti.state = "redflagged";
-        setIcon(ti, "redflagged", {
-            site
-        });
-        return ti.port.postMessage({
-            op: "redflag",
-            site,
-            img: corr_img
-        });
+        let currentDomain = tab.url.split("/")[2];
+        if (equalStrings(currentDomain, result.site)) {
+
+            ti.state = "greenflagged";
+            setIcon(ti, "greenflagged", {
+                site: currentDomain
+            });
+            CHECKS_RESULT = {
+                op: "greenflag",
+                site: currentDomain,
+                type: 2
+            }
+
+        } else {
+            ti.state = "redflagged";
+            setIcon(ti, "redflagged", {
+                site: result.site
+            });
+            CHECKS_RESULT = {
+                op: "redflag",
+                site: site,
+                img: corr_img
+            }
+
+        }
     } else {
         if (testNow) {
             return ti.port.postMessage({
@@ -591,6 +740,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
 
 async function initFeeds() {
     let feeds = Sites.getFeeds("all");
+
     let res = Promise.resolve(true);
 
     let val = _.values(_.merge(
@@ -727,7 +877,7 @@ async function loadDefaults() {
     await Sites.init()
     await initFeeds()
     for (let x of getAvailableModels()) {
-        if (x.webgl) {
+        if (x.webgl && x.selected) {
             await primeWebgl(x)
             break;
         }
@@ -737,6 +887,7 @@ async function loadDefaults() {
             MODEL_UPDATE_TIME = +new Date();
             saveAdvConfig()
         });
+        fetchBrandToDomainConverter()
     }
     ready = true;
 }
@@ -761,7 +912,10 @@ function backupDB(respond) {
                 debugFlag: getDebugFlag(),
                 secureImageFlag: getSecureImageFlag(),
                 secureImageDuration: getSecureImageDuration(),
-                availableModels: getAvailableModels()
+                availableModels: getAvailableModels(),
+                exemptChecks: getExemptChecksFlag(),
+                converter: getConverter()
+
             });
         });
     });
@@ -781,6 +935,9 @@ function restoreBackup(data, respond) {
             if (data.secureImageFlag !== null) {
                 setSecureImageFlag(data.secureImageFlag)
             }
+            if (data.exemptChecks !== null) {
+                setExemptChecksFlag(data.exemptChecks)
+            }
             if (!!data.secureImageDuration) {
                 setSecureImageDuration(data.secureImageDuration)
             }
@@ -790,6 +947,9 @@ function restoreBackup(data, respond) {
                 $.each(getAvailableModels(), function (i, item) {
                     injectScripts(item);
                 });
+            }
+            if (!!data.converter) {
+                setConverter(data.converter)
             }
 
         })
@@ -816,8 +976,10 @@ async function initAdvConfigs() {
                 DEBUG = data.debug ? true : false;
                 SECURE_IMAGE = data.show_secure_image ? true : false;
                 SECURE_IMAGE_DURATION = data.secure_image_duration ? data.secure_image_duration : 1;
+                EXEMPT_CHECKS = data.EXEMPT_CHECKS ? data.EXEMPT_CHECKS : false;
                 AVAILABLE_MODELS = data.available_models ? data.available_models : [];
-                MODEL_UPDATE_TIME = data.MODEL_UPDATE_TIME ? data.MODEL_UPDATE_TIME : +new Date()
+                MODEL_UPDATE_TIME = data.MODEL_UPDATE_TIME ? data.MODEL_UPDATE_TIME : +new Date();
+                CONVERTER = data.converter ? data.converter : undefined;
                 $.each(getAvailableModels(), function (i, item) {
                     injectScripts(item);
                 });
@@ -829,9 +991,23 @@ async function initAdvConfigs() {
                 });
 
             }
+            if (CONVERTER === undefined) {
+                fetchBrandToDomainConverter()
+            }
 
         });
     })
+}
+
+function fetchBrandToDomainConverter() {
+    ajax_get(brandToDomainConverter.src)
+        .then(data => {
+            setConverter(data)
+
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }
 
 function saveAdvConfig() {
@@ -840,8 +1016,10 @@ function saveAdvConfig() {
             debug: DEBUG,
             show_secure_image: SECURE_IMAGE,
             secure_image_duration: SECURE_IMAGE_DURATION,
+            EXEMPT_CHECKS: EXEMPT_CHECKS,
             available_models: AVAILABLE_MODELS,
-            MODEL_UPDATE_TIME: MODEL_UPDATE_TIME
+            MODEL_UPDATE_TIME: MODEL_UPDATE_TIME,
+            converter: CONVERTER
 
         }
     });
@@ -855,6 +1033,24 @@ function setDebugFlag(enable) {
 
 function getDebugFlag() {
     return DEBUG;
+}
+
+function setExemptChecksFlag(enable) {
+    EXEMPT_CHECKS = enable;
+    saveAdvConfig();
+}
+
+function getExemptChecksFlag() {
+    return EXEMPT_CHECKS;
+}
+
+function getConverter() {
+    return CONVERTER;
+}
+
+function setConverter(x) {
+    CONVERTER = x;
+    saveAdvConfig();
 }
 
 function setSecureImageFlag(enable) {

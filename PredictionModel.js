@@ -1,5 +1,5 @@
 window.predict = async function predict(screenshot, available_models) {
-
+  GPU_BUSY = true;
   let total = available_models.filter(item => item.selected).reduce(function (total, num) {
     return total + num.weightage;
   }, 0);
