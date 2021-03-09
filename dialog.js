@@ -14,8 +14,10 @@ function dialog(obj = {}) {
             buttons: [],
             dismiss_after: 0
         }, obj),
-        titlecol = d.type === "info" ? "kpmdl-color--primary" : "kpmdl-color--accent",
-        img = d.img ? `<div class="kp-image-container"></div>` : "",
+        titlecol = d.type === "info" ? "kpmdl-color--primary" : d.type === "warning" ?
+        "kpmdl-color--accent" : "kpmdl-color--secondary",
+
+        img = `<div class="kp-image-container"></div>`,
         main = d.main ? `<div class="kpmdl-card__supporting-text kp-main">${d.main}</div>` : "",
         extra = d.extra ? `<div class="kpmdl-card__supporting-text kp-extra">${d.extra}</div>` : "",
         buttons = d.buttons.length ? `<div class="kpmdl-card__actions kpmdl-card--border">` +
@@ -54,10 +56,18 @@ function dialog(obj = {}) {
 
     if (d.img) {
         $(".kp-image-container").html(d.img);
+    } else {
+        $(".kp-image-container").html(`<img src="${chrome.extension.getURL("assets/img/secure_img/kp2.jpg")}">`);
     }
-    setTimeout(x => $(".kp-dialog").css({
+    $(".kp-dialog").css({
         opacity: 1
-    }), 50);
+    });
+
+    if (d.dismiss_after) {
+        setTimeout(cleanup, d.dismiss_after);
+    }
+
+
     $(document).on("keyup", esc);
 
     $(".kp-dialog-clear").on("click", function (e) {
@@ -71,9 +81,7 @@ function dialog(obj = {}) {
         cleanup();
         handler && handler();
     });
-    if (d.dismiss_after) {
-        setTimeout(cleanup, d.dismiss_after);
-    }
+
 
     function esc(e) {
         if (e.which === 27) {

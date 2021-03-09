@@ -14,7 +14,8 @@ var template_of_MLmodel = {
     dependencies: [],
     selected: false,
     weightage: 0,
-    webgl: false
+    webgl: false,
+    brands: []
 
 };
 
@@ -50,81 +51,126 @@ function templateSafeDomain(data) {
     return template;
 }
 
-function templateWhitelist(data) {
-    const checked = "check_box",
-        unchecked = "check_box_outline_blank";
-    let template_str = "";
-    if (data.templates) {
-
-        template_str = data.templates.filter(x => !x.deleted).reduce((a, b) => {
-            var logo_name = "";
-            if (b.name) {
-                logo_name = b.name;
-            }
-            var tmp = `
-                <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
-                    <div class="mdl-card__media">
-                        <img class="template-image" src="${b.image}" border="0" alt="">
-                    </div>
-                    <div class="mdl-card__supporting-text">
-                    ${logo_name}
-                    </div>
-                </div>`;
-            return a + tmp;
-        }, "");
-    }
-    let protected_urls = "";
-    let enabled = data.disabled ? unchecked : checked;
-    let disable_flag = data.disabled ? "disabled" : "";
-    if (data.protected) {
-        let protectedList = data.protected.filter(x => !x.deleted);
-        protected_urls = protectedList.reduce((a, b) => {
-            let url_disabled = b.disabled ? unchecked : checked;
-            var tmp = `
-                <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
-                    <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
-                    <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
-                          <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
-                        </button>
-                    </td>
-                    <td>
-                        <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
-                            <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
-                        </button>
-                    </td>
-                </tr>`;
-            return a + tmp;
-        }, "");
-    }
-    const site = `
-            <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
-                <div class="mdl-card__title mdl-card--border">
-                    <h2 class="mdl-card__title-text">${data.name}</h2>
-                </div>
-                <div class="mdl-card__menu">
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-check">
-                      <i class="material-icons kp-wl-site-check">${enabled}</i>
-                    </button>
-                    <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-delete">
-                      <i class="material-icons kp-wl-site-delete">delete</i>
-                    </button>
-                 </div>
-                <div class="mdl-grid kp-template-container">
-                ${template_str}
-                </div>
-                <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
-                    <table class="mdl-data-table mdl-js-data-table kp-url-table">
-                        <tbody>
-                        ${protected_urls}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            `;
-    return site;
-
+function renderBrandList() {
+    $(".kp-wl-site").remove();
+    $.each(bkg.getAvailableModels(), function (i, item) {
+        if (item.selected) {
+            $(".kp-wl-main").append(templateBrands(item));
+        }
+    })
 }
+
+function templateBrands(item) {
+    let name = item.label,
+        brands = item.brands ? item.brands : [];
+
+    let template_str = brands.reduce((a, b) => {
+        var tmp = `
+                    <div class = " mdl-card mdl-cell mdl-cell--3-col mdl-shadow--2dp" >
+
+ <div class = "mdl-card__media mdl-card--expand " style="background-color:white" >
+                          <img src="${b.image}" style="width:100%" alt="${b.name}">
+                      </div>
+
+<div class = "mdl-card__supporting-text"style = "padding:16px;height:25px;background: rgba(0, 0, 0, 0.3);" >
+                     <span style = "color:white;font-size: 14px;" > ${
+         b.name
+     } </span>
+                     </div>
+
+
+
+                    </div>`;
+        return a + tmp;
+    }, "");
+
+    const site = `
+                <div class="mdl-cell mdl-cell--12-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${name} >
+                    <div class="mdl-card__title mdl-card--border">
+                        <h2 class="mdl-card__title-text">${name}</h2>
+                    </div>
+                    <div class="mdl-grid kp-template-container">
+                    ${template_str}
+                    </div>
+                </div>
+                `;
+    return site;
+}
+// function templateWhitelist(data) {
+//     const checked = "check_box",
+//         unchecked = "check_box_outline_blank";
+//     let template_str = "";
+//     if (data.templates) {
+
+//         template_str = data.templates.filter(x => !x.deleted).reduce((a, b) => {
+//             var logo_name = "";
+//             if (b.name) {
+//                 logo_name = b.name;
+//             }
+//             var tmp = `
+//                 <div class="mdl-cell mdl-cell--6-col mdl-card kp-template-card">
+//                     <div class="mdl-card__media">
+//                         <img class="template-image" src="${b.image}" border="0" alt="">
+//                     </div>
+//                     <div class="mdl-card__supporting-text">
+//                     ${logo_name}
+//                     </div>
+//                 </div>`;
+//             return a + tmp;
+//         }, "");
+//     }
+//     let protected_urls = "";
+//     let enabled = data.disabled ? unchecked : checked;
+//     let disable_flag = data.disabled ? "disabled" : "";
+//     if (data.protected) {
+//         let protectedList = data.protected.filter(x => !x.deleted);
+//         protected_urls = protectedList.reduce((a, b) => {
+//             let url_disabled = b.disabled ? unchecked : checked;
+//             var tmp = `
+//                 <tr class="kp-wl-url-row" data-name=${data.name} data-url=${b.url} >
+//                     <td class="mdl-data-table__cell--non-numeric kp-login-url">${b.url}</td>
+//                     <td>
+//                         <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-check" ${disable_flag}>
+//                           <i class="material-icons kp-wl-url-check ${data.disabled? "" : "enable"}">${url_disabled}</i>
+//                         </button>
+//                     </td>
+//                     <td>
+//                         <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-url-delete" ${disable_flag}>
+//                             <i class="material-icons kp-wl-url-delete ${data.disabled? "" : "enable"}">delete</i>
+//                         </button>
+//                     </td>
+//                 </tr>`;
+//             return a + tmp;
+//         }, "");
+//     }
+//     const site = `
+//             <div class="mdl-cell mdl-cell--6-col mdl-card mdl-shadow--4dp kp-wl-site" data-name=${data.name} >
+//                 <div class="mdl-card__title mdl-card--border">
+//                     <h2 class="mdl-card__title-text">${data.name}</h2>
+//                 </div>
+//                 <div class="mdl-card__menu">
+//                     <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-check">
+//                       <i class="material-icons kp-wl-site-check">${enabled}</i>
+//                     </button>
+//                     <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect mdl-button--colored kp-wl-site-delete">
+//                       <i class="material-icons kp-wl-site-delete">delete</i>
+//                     </button>
+//                  </div>
+//                 <div class="mdl-grid kp-template-container">
+//                 ${template_str}
+//                 </div>
+//                 <div class="mdl-cell mdl-cell--12-col kp-url-table-container">
+//                     <table class="mdl-data-table mdl-js-data-table kp-url-table">
+//                         <tbody>
+//                         ${protected_urls}
+//                         </tbody>
+//                     </table>
+//                 </div>
+//             </div>
+//             `;
+//     return site;
+
+// }
 
 function updateImage(data) {
     if (data) {
@@ -151,115 +197,122 @@ function updateImage(data) {
     }
 }
 
-async function renderProtectedList() {
-    return new Promise(function (resolve, reject) {
+// async function renderProtectedList() {
+//     return new Promise(function (resolve, reject) {
 
-        let data;
-        if (ProtectedSitesData == undefined) {
-            data = bkg.getProtectedSitesData();
-            ProtectedSitesData = data;
+//         let data;
+//         if (ProtectedSitesData == undefined) {
+//             data = bkg.getProtectedSitesData();
+//             ProtectedSitesData = data;
 
-        } else {
-            data = ProtectedSitesData;
-        }
-        //console.log("Protected-data", data);
-        $(".kp-wl-site").remove();
-        for (let x of data) {
-            $(".kp-wl-main").append(templateWhitelist(x));
-        }
-        $(".kp-wl-site").on("click", function (e) {
-            var name = $(this).data("name");
-            if ($(e.target).is(".kp-wl-site-delete")) {
-                var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
-                if (res) {
-                    bkg.removeSite(name, (res) => {
-                        if (res.error) {
-                            return alert(res.error);
-                        }
-                        $(this).remove();
-                    })
+//         } else {
+//             data = ProtectedSitesData;
+//         }
+//         //console.log("Protected-data", data);
+//         $(".kp-wl-site").remove();
+//         for (let x of data) {
+//             $(".kp-wl-main").append(templateWhitelist(x));
+//         }
+//         $(".kp-wl-site").on("click", function (e) {
+//             var name = $(this).data("name");
+//             if ($(e.target).is(".kp-wl-site-delete")) {
+//                 var res = confirm("Do you want to delete " + name + " from the list of protected pages?");
+//                 if (res) {
+//                     bkg.removeSite(name, (res) => {
+//                         if (res.error) {
+//                             return alert(res.error);
+//                         }
+//                         $(this).remove();
+//                     })
 
-                }
-            } else if ($(e.target).is(".kp-wl-site-check")) {
-                const checked = "check_box",
-                    unchecked = "check_box_outline_blank";
-                var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
-                var value = icon.innerHTML.trim();
-                if (value === checked) {
-                    bkg.toggleSite(name, false, res => {
-                        if (res.error) {
-                            return alert(res.error);
-                        }
-                        icon.innerHTML = unchecked;
-                        $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
-                        $(this).find("i.kp-wl-url-delete").removeClass("enable");
-                        $(this).find("i.kp-wl-url-check").each((i, x) => {
-                            x.innerHTML = unchecked;
-                            $(x).removeClass("enable");
-                        });
-                    });
-                } else {
-                    bkg.toggleSite(name, true, res => {
-                        if (res.error) {
-                            return alert(res.error);
-                        }
-                        $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
-                        $(this).find("i.kp-wl-url-delete").addClass("enable");
-                        $(this).find("i.kp-wl-url-check").each((i, x) => {
-                            x.innerHTML = checked;
-                            $(x).addClass("enable");
-                        });
-                        icon.innerHTML = checked;
-                    });
-                }
-            }
-        });
-        $(".kp-wl-url-row").on("click", function (e) {
-            e.stopPropagation();
-            if ($(e.target).is(".kp-wl-url-delete.enable")) {
-                let url = $(this).data("url");
-                bkg.removeURL(url, res => {
-                    if (res.error) {
-                        return alert(res.error);
-                    }
-                    $(this).remove();
-                });
-            }
-            if ($(e.target).is(".kp-wl-url-check.enable")) {
-                let url = $(this).data("url");
-                const checked = "check_box",
-                    unchecked = "check_box_outline_blank";
-                let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
-                let value = icon.innerHTML.trim();
-                if (value === checked) {
-                    bkg.toggleURL(url, false, res => {
-                        if (res.error) {
-                            return alert(res.error);
-                        }
-                        icon.innerHTML = unchecked;
-                    });
-                } else {
-                    bkg.toggleURL(url, true, res => {
-                        if (res.error) {
-                            return alert(res.error);
-                        }
-                        icon.innerHTML = checked;
-                    });
-                }
-            }
-        });
+//                 }
+//             } else if ($(e.target).is(".kp-wl-site-check")) {
+//                 const checked = "check_box",
+//                     unchecked = "check_box_outline_blank";
+//                 var icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+//                 var value = icon.innerHTML.trim();
+//                 if (value === checked) {
+//                     bkg.toggleSite(name, false, res => {
+//                         if (res.error) {
+//                             return alert(res.error);
+//                         }
+//                         icon.innerHTML = unchecked;
+//                         $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").attr("disabled", "disabled");
+//                         $(this).find("i.kp-wl-url-delete").removeClass("enable");
+//                         $(this).find("i.kp-wl-url-check").each((i, x) => {
+//                             x.innerHTML = unchecked;
+//                             $(x).removeClass("enable");
+//                         });
+//                     });
+//                 } else {
+//                     bkg.toggleSite(name, true, res => {
+//                         if (res.error) {
+//                             return alert(res.error);
+//                         }
+//                         $(this).find("button.kp-wl-url-delete, button.kp-wl-url-check").removeAttr("disabled");
+//                         $(this).find("i.kp-wl-url-delete").addClass("enable");
+//                         $(this).find("i.kp-wl-url-check").each((i, x) => {
+//                             x.innerHTML = checked;
+//                             $(x).addClass("enable");
+//                         });
+//                         icon.innerHTML = checked;
+//                     });
+//                 }
+//             }
+//         });
+//         $(".kp-wl-url-row").on("click", function (e) {
+//             e.stopPropagation();
+//             if ($(e.target).is(".kp-wl-url-delete.enable")) {
+//                 let url = $(this).data("url");
+//                 bkg.removeURL(url, res => {
+//                     if (res.error) {
+//                         return alert(res.error);
+//                     }
+//                     $(this).remove();
+//                 });
+//             }
+//             if ($(e.target).is(".kp-wl-url-check.enable")) {
+//                 let url = $(this).data("url");
+//                 const checked = "check_box",
+//                     unchecked = "check_box_outline_blank";
+//                 let icon = $(e.target)[0].getElementsByTagName("i").length > 0 ? $(e.target)[0].getElementsByTagName("i")[0] : $(e.target)[0];
+//                 let value = icon.innerHTML.trim();
+//                 if (value === checked) {
+//                     bkg.toggleURL(url, false, res => {
+//                         if (res.error) {
+//                             return alert(res.error);
+//                         }
+//                         icon.innerHTML = unchecked;
+//                     });
+//                 } else {
+//                     bkg.toggleURL(url, true, res => {
+//                         if (res.error) {
+//                             return alert(res.error);
+//                         }
+//                         icon.innerHTML = checked;
+//                     });
+//                 }
+//             }
+//         });
 
 
-        return;
+//         return;
 
-    });
+//     });
 
-}
+// }
 
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let safeSites = bkg.getSafeDomainsData();
-
+    safeSites.sort(function (a, b) {
+        var keyA = a.domain,
+            keyB = b.domain;
+        // Compare the 2 dates
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+    });
     safeSites.forEach(x => {
         $(".kp-safelist").append(templateSafeDomain(x));
     });
@@ -284,7 +337,8 @@ function renderSafeDomainTable() {
 function renderAvailableModels() {
     $('#kp-models').empty();
     $.each(bkg.getAvailableModels(), function (i, item) {
-        $('#kp-models').append(`   <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
+        $('#kp-models').append(`
+          <li id="${item.name}" class="mdl-list__item  mdl-list__item--three-line">
         <span class="mdl-list__item-primary-content ">
             <span>${item.label}</span>
             <span class="mdl-list__item-text-body">
@@ -294,7 +348,7 @@ function renderAvailableModels() {
         </span>
         <span class="  mdl-list__item-secondary-content mdl-cell mdl-cell--3-col ">
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input class= " weightage-input mdl-textfield__input"  type="number" min="0" value="${item.weightage}"
+            <input ${item.selected?"" :"disabled"} class= " weightage-input mdl-textfield__input"  type="number" min="0" value="${item.weightage}"
             max="100">
             <label class="mdl-textfield__label" >% weightage
                 </label>
@@ -331,6 +385,9 @@ function initAdvanceTab() {
     if (bkg.getSecureImageFlag()) {
         $("#kp-secure-image-switch").click();
     }
+    if (bkg.getExemptChecksFlag()) {
+        $("#kp-exempt-checks-switch").click();
+    }
     renderAvailableModels()
     $("#kp-secure-image-duration").val(bkg.getSecureImageDuration());
 
@@ -348,7 +405,8 @@ $(document).ready(function () {
 
     setTimeout(
         function () {
-            renderProtectedList();
+            // renderProtectedList();
+            renderBrandList()
             renderSafeDomainTable();
 
         }, 1000)
@@ -523,6 +581,10 @@ $(document).ready(function () {
                 if (!val1) {
                     $("#kp-secure-image-switch").click();
                 }
+                let val2 = $("#kp-exempt-checks-switch").is(":checked");
+                if (val2) {
+                    $("#kp-exempt-checks-switch").click();
+                }
                 $("#kp-secure-image-duration").val(1);
                 bkg.setSecureImageDuration(1);
                 await bkg.setFactoryAvailableModels()
@@ -603,16 +665,33 @@ $(document).ready(function () {
             bkg.setSecureImageFlag(false);
         }
     });
+    $("#kp-exempt-checks-switch").on("click", function (e) {
+        let val = $(this).is(":checked");
+        if (val) {
+            bkg.setExemptChecksFlag(true);
+        } else {
+            bkg.setExemptChecksFlag(false);
+        }
+    });
+
     $("#kp-models .select-switch").on("click", function (e) {
 
         let val = $(this).is(":checked");
-        console.log(val);
         if (val) {
             bkg.selectModel($(this).closest('li').attr('id'));
+            // $(this).closest('li').find('input.weightage-input').attr('disabled', false)
+
         } else {
             bkg.unSelectModel($(this).closest('li').attr('id'));
+            // $(this).closest('li').find('input.weightage-input').attr('disabled', true)
+
         }
         weightMessage()
+        if (params["tab"]) {
+            location.reload();
+        } else {
+            window.location.href = window.location.href.replace(/[\?#].*|$/, "?tab=#tab-advanced");
+        }
     });
     $("#kp-models .delete").on("click", function (e) {
         let x = $(this).closest('li').attr("id");
@@ -732,6 +811,11 @@ $(document).ready(function () {
         }
         template_of_MLmodel.root = ROOT_DIR;
         template_of_MLmodel.src = srcFile;
+        fetch(splitted_domain.join("/") + "/brands.json").then(response => response.json())
+            .then(data => {
+                template_of_MLmodel.brands = data
+            });
+
         $("#dependencies").empty();
         $.each(template_of_MLmodel.dependencies, function (i, item) {
             $("#dependencies").append(`<p>${item}</p>`);
@@ -745,7 +829,6 @@ $(document).ready(function () {
             alert("All fields are mandatory");
             return;
         }
-
         bkg.setAvailableModels(template_of_MLmodel);
         template_of_MLmodel = {
             root: "",
@@ -755,7 +838,8 @@ $(document).ready(function () {
             dependencies: [],
             selected: false,
             weightage: 0,
-            webgl: false
+            webgl: false,
+            brands: []
         };
 
 

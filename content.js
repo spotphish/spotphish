@@ -19,11 +19,11 @@ function main() {
 
     if (window === top) {
         port = chrome.runtime.connect();
+        console.log(port);
         port.onMessage.addListener(msg => {
             if (!msg.op) {
                 console.log("KP: Invalid msg from background?!", msg);
             }
-
             if (msg.op === "greenflag") {
                 showGreenflag(msg);
             } else if (msg.op === "redflag") {
@@ -57,7 +57,6 @@ function do_init() {
         init.inputFields = scanInputFields();
     }
     topUrl = stripQueryParams(window.location.href);
-
     rpc(init).then(x => {
         if (x.action === "check") {
             startChecking();
@@ -68,7 +67,7 @@ function do_init() {
         }
     });
     if (window === top) {
-        startUrlPoll();
+        // startUrlPoll();
     }
 
     function urgentCheck() {
@@ -80,8 +79,9 @@ function do_init() {
         $(document).off("keypress");
     }
 
-    $(document).on("keypress", urgentCheck);
+    $(document).on("keypress", "input[type=password]", urgentCheck);
 }
+
 
 let upolls = 0;
 
@@ -106,6 +106,7 @@ function startChecking() {
     npolls++;
     const visible = $("input[type=\"password\"]").filter(":visible");
     //const visible = document.querySelectorAll("input[type=\"password\"]");
+    console.log(visible);
     if (visible.length > 0) {
         debug("KP: password field found");
         rpc({
@@ -113,6 +114,8 @@ function startChecking() {
             data: visible
         });
     } else {
+        debug("KP: password field not found");
+
         if (npolls < MAX_POLLS) {
             return setTimeout(startChecking, POLL_INTERVAL);
         }
@@ -134,12 +137,13 @@ function showGreenflag(msg) {
                 const greenflag = {
                     title: "Security Image",
                     type: "info",
-                    img: img,
+                    img: msg.type === 1 ? img : null,
                     extra: msg.site ? `Verified <b>${msg.site}</b>` : "",
                     buttons: [],
                     dismiss_after: (imgVisibilityDuration * 1000)
                 };
                 dialog(greenflag);
+
             });
         }
     });
@@ -181,7 +185,7 @@ function showRedflag(msg) {
 
 function rpc(msg) {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(msg, res => {
+        chrome.runtime.sendMessage(msg, async res => {
             return (res === undefined) ? reject({
                 error: chrome.runtime.lastError
             }) : resolve(res);
