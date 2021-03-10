@@ -57,7 +57,7 @@ function dialog(obj = {}) {
     if (d.img) {
         $(".kp-image-container").html(d.img);
     } else {
-        $(".kp-image-container").html(`<img src="${chrome.extension.getURL("assets/img/secure_img/kp2.jpg")}">`);
+        $(".kp-image-container").html(`<img src="${chrome.extension.getURL("assets/img/secure_img/kp4.jpg")}">`);
     }
     $(".kp-dialog").css({
         opacity: 1
