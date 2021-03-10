@@ -20,7 +20,7 @@ let DEBUG = false,
     globalCurrentTabId,
     tabInfoList = {};
 var ROOT_DIR;
-let REVISIT_DURATION = 30 * 1000,
+let REVISIT_DURATION = 10 * 60 * 1000,
     EXEMPT_CHECKS = false,
     SECURE_IMAGE_SHOWN = false,
     CHECKS_RESULT;
