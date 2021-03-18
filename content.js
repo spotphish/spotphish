@@ -30,6 +30,8 @@ function main() {
                 showRedflag(msg);
             } else if (msg.op === "crop_template") {
                 injectCropModal();
+            } else if (msg.op === "check") {
+                startChecking();
             } else if (msg.op === "crop_duplicate") {
                 alert("This site already added to whitelist");
             } else if (msg.op == "test_match") {
@@ -76,7 +78,7 @@ function do_init() {
         rpc({
             op: "urgent_check"
         });
-        $(document).off("keypress");
+        // $(document).off("keypress");
     }
 
     $(document).on("keypress", "input[type=password]", urgentCheck);

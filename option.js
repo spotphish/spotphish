@@ -305,10 +305,11 @@ function updateImage(data) {
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let safeSites = bkg.getSafeDomainsData();
+    console.log(safeSites);
     safeSites.sort(function (a, b) {
         var keyA = a.domain,
             keyB = b.domain;
-        // Compare the 2 dates
+
         if (keyA < keyB) return -1;
         if (keyA > keyB) return 1;
         return 0;
@@ -643,6 +644,7 @@ $(document).ready(function () {
                 if (res.error) {
                     return alert(res.error);
                 }
+                bkg.addToSafeDomain(val)
                 renderSafeDomainTable();
             });
         }

@@ -8,7 +8,6 @@ window.predict = async function predict(screenshot, available_models) {
     ROOT_DIR = undefined;
     return;
   }
-  let webglStatus = webgl_detect();
 
   let result = await Promise.all(available_models.filter(item => item.selected).map(async function (item) {
     // let model = eval("new " + item.name + "()");
@@ -25,6 +24,7 @@ window.predict = async function predict(screenshot, available_models) {
           z = await x.predict(screenshot);
           console.log(performance.now() - startTime);
         } catch (e) {
+          console.log(e)
           ROOT_DIR = undefined
 
           return {
@@ -38,7 +38,7 @@ window.predict = async function predict(screenshot, available_models) {
           weightage: item.weightage
         }
       } else {
-        alert("Webgl not present. Skipped " + item.label);
+        // alert("Webgl not present. Skipped " + item.label);
         ROOT_DIR = undefined
 
         return {
@@ -118,33 +118,4 @@ window.predict = async function predict(screenshot, available_models) {
     confidence: max,
     image: correct_model.image
   }
-}
-
-function webgl_detect() {
-  if (!!window.WebGLRenderingContext) {
-    var canvas = document.createElement("canvas"),
-      names = ["webgl2", "webgl", "experimental-webgl", "moz-webgl", "webkit-3d"],
-      context = false;
-
-    for (var i = 0; i < names.length; i++) {
-      try {
-        context = canvas.getContext(names[i]);
-        if (context && typeof context.getParameter == "function") {
-          // WebGL is enabled
-
-          // else, return just true
-          return true;
-        }
-      } catch (e) {}
-    }
-
-    // WebGL is supported, but disabled
-    alert("Enable Webgl flag")
-    return false;
-  }
-
-  // WebGL not supported
-  alert("Webgl not supported on this device")
-
-  return false;
 }
