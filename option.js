@@ -15,7 +15,9 @@ var template_of_MLmodel = {
     selected: false,
     weightage: 0,
     webgl: false,
-    brands: []
+    brands: [],
+    model_url: "",
+    model: ""
 
 };
 
@@ -801,6 +803,13 @@ $(document).ready(function () {
                     template_of_MLmodel.dependencies = [];
 
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    template_of_MLmodel.model_url = Model.model;
+                } else {
+                    template_of_MLmodel.model_url = "";
+                }
+                template_of_MLmodel.model = "indexeddb://" + Model.name
+
             } else {
                 alert("Does not contain the predict function")
                 $(this).val(template_of_MLmodel.src);
@@ -841,7 +850,9 @@ $(document).ready(function () {
             selected: false,
             weightage: 0,
             webgl: false,
-            brands: []
+            brands: [],
+            model_url: "",
+            model: ""
         };
 
 

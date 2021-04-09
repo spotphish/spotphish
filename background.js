@@ -75,6 +75,7 @@ Tabinfo.show = function () {
 };
 
 async function loadPreconfiguredModels() {
+
     for (let item of defaultModels) {
         ROOT_DIR = undefined
         let x = _.cloneDeep(item);
@@ -107,9 +108,17 @@ async function loadPreconfiguredModels() {
             if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
                 if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
                     x.dependencies = Model.dependencies;
+
                 } else {
                     x.dependencies = [];
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    x.model_url = Model.model;
+                } else {
+                    x.model_url = "";
+                }
+                x.model = "indexeddb://" + Model.name
+
             } else {
                 continue
             }
@@ -128,12 +137,16 @@ async function loadPreconfiguredModels() {
         setAvailableModels(x);
     }
     console.log(AVAILABLE_MODELS);
+
 }
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 setInterval(() => {
     modelsUpdateCheck().then(() => {
         MODEL_UPDATE_TIME = +new Date();
         saveAdvConfig()
+
+
+
     });
     fetchBrandToDomainConverter()
 }, UPDATE_CHECK_INTERVAL)
@@ -177,6 +190,12 @@ async function modelsUpdateCheck() {
                 } else {
                     item.dependencies = [];
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    item.model_url = Model.model;
+                } else {
+                    item.model_url = "";
+                }
+                item.model = "indexeddb://" + Model.name
             } else {
                 continue
             }
@@ -185,13 +204,17 @@ async function modelsUpdateCheck() {
         }
         item.src = srcFile;
         item.root = ROOT_DIR
-        fetch(splitted_domain.join("/") + "/brands.json").then(response => response.json())
+        fetch(splitted_domain.slice(0, -1).join("/") + "/brands.json").then(response => response.json())
             .then(data => {
                 item.brands = data
             });
         ROOT_DIR = undefined
         unInjectScripts(item.name)
         injectScripts(item)
+        setTimeout(() => {
+            saveModelToIndexedDB(_.cloneDeep(item))
+
+        }, 1000);
         saveAdvConfig()
     }
 }
@@ -915,7 +938,7 @@ async function primeWebgl(item) {
     let x = new Model();
     if (webglStatus) {
         try {
-            await x.predict("./assets/img/pixel.png");
+            await x.predict("./assets/img/pixel.png", item.model);
         } catch (e) {
             console.log(e);
         }
@@ -1100,6 +1123,20 @@ function setAvailableModels(value) {
     AVAILABLE_MODELS.push(value);
     injectScripts(value);
     saveAdvConfig();
+    setTimeout(() => {
+        saveModelToIndexedDB(value);
+
+    }, 1000);
+
+}
+
+async function saveModelToIndexedDB(item) {
+    if (item.name === "Template_Matching") {
+        return;
+    }
+    let x = await tf.loadGraphModel(item.model_url);
+    let z = await x.save(item.model)
+
 }
 
 async function setFactoryAvailableModels() {
@@ -1269,3 +1306,4 @@ function webgl_detect() {
 
     return false;
 }
+// --------------------------------------------------------------------------------------------------------------

@@ -6,7 +6,11 @@ window.predict = async function predict(screenshot, available_models) {
   if (total !== 100) {
     alert("Please corrects the weights.")
     ROOT_DIR = undefined;
-    return;
+    return {
+      site: "NaN",
+      confidence: 0,
+      image: screenshot
+    };
   }
 
   let result = await Promise.all(available_models.filter(item => item.selected).map(async function (item) {
@@ -17,19 +21,20 @@ window.predict = async function predict(screenshot, available_models) {
 
     let x = new Model();
     if (item.webgl) {
+
       if (webglStatus) {
         let z;
         try {
           let startTime = performance.now()
-          z = await x.predict(screenshot);
+          z = await x.predict(screenshot, item.model);
           console.log(performance.now() - startTime);
         } catch (e) {
-          console.log(e)
+          console.log(e);
           ROOT_DIR = undefined
-
           return {
             site: "NaN",
-            weightage: item.weightage
+            weightage: item.weightage,
+            image: screenshot
           }
         }
         ROOT_DIR = undefined
@@ -43,21 +48,23 @@ window.predict = async function predict(screenshot, available_models) {
 
         return {
           site: "NaN",
-          weightage: item.weightage
+          weightage: item.weightage,
+          image: screenshot
         }
       }
     } else {
       let z;
       try {
         let startTime = performance.now()
-        z = await x.predict(screenshot);
+        z = await x.predict(screenshot, item.model);
         console.log(performance.now() - startTime);
 
       } catch (e) {
         ROOT_DIR = undefined
         return {
           site: "NaN",
-          weightage: item.weightage
+          weightage: item.weightage,
+          image: screenshot
         }
       }
       ROOT_DIR = undefined
@@ -77,6 +84,8 @@ window.predict = async function predict(screenshot, available_models) {
 
     return {
       site: "NaN",
+      confidence: 0,
+      image: screenshot
     }
   } else if (enabled_models === 1) {
     result = result[0];
@@ -86,7 +95,6 @@ window.predict = async function predict(screenshot, available_models) {
       site: result.site,
       confidence: result.weightage,
       image: result.image
-
     }
   }
   result = result.filter(x => x.site !== "NaN");
@@ -94,7 +102,9 @@ window.predict = async function predict(screenshot, available_models) {
     ROOT_DIR = undefined;
 
     return {
-      site: "NaN"
+      site: "NaN",
+      confidence: 100,
+      image: screenshot
     }
   }
   let map = new Map();
