@@ -3,14 +3,14 @@
  * This program is free software - see the file LICENSE for license details.
  */
 var GPU_BUSY = false;
-const watches = [0, 4000];
+const watches = [0, 4000, 8000];
 const WATCHDOG_INTERVAL = 1000; /* How often to run the redflag watchdog */
 const STATES = ["init", "watching", "safe", "greenflagged", "redflagged", "red_done"];
 const END_STATES = ["safe", "greenflagged", "redflagged", "red_done"];
 const DEFAULT_IMG = chrome.extension.getURL("assets/img/secure_img/kp3.jpg");
 const UPDATE_CHECK_INTERVAL = 10 * 60 * 60 * 1000; // 10 hours
 var MODEL_UPDATE_TIME = +new Date()
-
+var SAFE_DOMAINS = []
 var update_flag = false;
 var restore_msg = false;
 let DEBUG = false,
@@ -20,7 +20,9 @@ let DEBUG = false,
     globalCurrentTabId,
     tabInfoList = {};
 var ROOT_DIR;
-let REVISIT_DURATION = 10 * 60 * 1000,
+var webglStatus = false;
+
+let REVISIT_DURATION = 10 * 60 * 1000, //10 minutes
     EXEMPT_CHECKS = false,
     SECURE_IMAGE_SHOWN = false,
     CHECKS_RESULT;
@@ -73,6 +75,7 @@ Tabinfo.show = function () {
 };
 
 async function loadPreconfiguredModels() {
+
     for (let item of defaultModels) {
         ROOT_DIR = undefined
         let x = _.cloneDeep(item);
@@ -105,9 +108,17 @@ async function loadPreconfiguredModels() {
             if (Model.prototype.predict != null && (typeof Model.prototype.predict) === "function") {
                 if (Model.dependencies !== undefined && Array.isArray(Model.dependencies)) {
                     x.dependencies = Model.dependencies;
+
                 } else {
                     x.dependencies = [];
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    x.model_url = Model.model;
+                } else {
+                    x.model_url = "";
+                }
+                x.model = "indexeddb://" + Model.name
+
             } else {
                 continue
             }
@@ -126,12 +137,16 @@ async function loadPreconfiguredModels() {
         setAvailableModels(x);
     }
     console.log(AVAILABLE_MODELS);
+
 }
 setInterval(checkUpdates, UPDATE_CHECK_INTERVAL);
 setInterval(() => {
     modelsUpdateCheck().then(() => {
         MODEL_UPDATE_TIME = +new Date();
         saveAdvConfig()
+
+
+
     });
     fetchBrandToDomainConverter()
 }, UPDATE_CHECK_INTERVAL)
@@ -175,6 +190,12 @@ async function modelsUpdateCheck() {
                 } else {
                     item.dependencies = [];
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    item.model_url = Model.model;
+                } else {
+                    item.model_url = "";
+                }
+                item.model = "indexeddb://" + Model.name
             } else {
                 continue
             }
@@ -183,13 +204,17 @@ async function modelsUpdateCheck() {
         }
         item.src = srcFile;
         item.root = ROOT_DIR
-        fetch(splitted_domain.join("/") + "/brands.json").then(response => response.json())
+        fetch(splitted_domain.slice(0, -1).join("/") + "/brands.json").then(response => response.json())
             .then(data => {
                 item.brands = data
             });
         ROOT_DIR = undefined
         unInjectScripts(item.name)
         injectScripts(item)
+        setTimeout(() => {
+            saveModelToIndexedDB(_.cloneDeep(item))
+
+        }, 1000);
         saveAdvConfig()
     }
 }
@@ -250,7 +275,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
     }
 
     if (msg.op === "init") {
-        init(msg, sender).then(x => respond(x)).catch(x => console.log(x));
+        init(msg, sender)
 
     } else if (msg.op === "checkdata") {
         checkdata(msg, sender, respond);
@@ -316,12 +341,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respond) {
             action: "nop"
         });
         let ti = Tabinfo.get(sender.tab.id);
-        let tabState = ti.state;
-        // if (["watching", "init", "red_done"].indexOf(tabState) !== -1) {
-        //     redflagCheck(ti);
-        // }
         blockPassword(ti);
-
     } else if (msg.op === "test_now") {
         const ti = Tabinfo.get(msg.tab.id);
         redflagCheck(ti, true);
@@ -346,180 +366,90 @@ function inject(tab) {
 
 
 function blockPassword(ti) {
-    if (CHECKS_RESULT != undefined && (!SECURE_IMAGE_SHOWN || (SECURE_IMAGE_SHOWN && CHECKS_RESULT.op === "redflag"))) {
+    if (CHECKS_RESULT != undefined) {
         ti.port.postMessage(CHECKS_RESULT)
-        SECURE_IMAGE_SHOWN = true
     }
     CHECKS_RESULT = undefined
 }
 
-async function init(msg, sender) {
-    return new Promise((res, rej) => {
-        CHECKS_RESULT = undefined
-        const ti = Tabinfo.get(sender.tab.id);
-        if (ti == undefined) {
-            res({
-                action: "nop"
-            });
-        }
-        const tab = ti.tab;
-        //console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
-        // if (msg.top) console.log("init", tab.id, tab.url, msg.top ? "top" : "iframe", msg, Date());
+function init(msg, sender) {
 
-        if (END_STATES.indexOf(ti.state) !== -1) {
-            res({
-                action: "nop"
-            });
-        }
+    CHECKS_RESULT = undefined
+    const ti = Tabinfo.get(sender.tab.id);
+    if (ti == undefined) {
+        return;
+    }
+    const tab = ti.tab;
 
-        res({
-            action: "check"
-        });
-        if (msg.top) {
+    if (msg.top) {
+        ti.dpr = msg.dpr;
+        ti.topReady = true;
+        ti.inputFields = msg.inputFields;
 
-            ti.dpr = msg.dpr;
-            ti.topReady = true;
-            ti.inputFields = msg.inputFields;
-            let currentDomain = tab.url.split("/")[2];
+        let currentDomain = tab.url.split("/")[2];
+        let currentTime = +new Date();
+        let lastDomain, lastTime, lastState;
+        chrome.storage.local.get("" + tab.id + "", function (result) {
+            result = result["" + tab.id + ""];
+            if (!_.isEmpty(result)) {
+                lastDomain = result.last_domain;
+                lastTime = result.last_time;
+                lastState = result.last_state;
+            }
+            if (currentDomain === lastDomain && currentTime - lastTime < REVISIT_DURATION && (END_STATES.indexOf(lastState) != -1)) {
+                //domain not changed
+                ti.state = lastState;
+                setIcon(ti, lastState, {
+                    site: lastDomain
+                });
+            } else {
 
-            let currentTime = +new Date();
-            let lastDomain, lastTime, lastState;
-            chrome.storage.local.get("" + tab.id + "", async function (result) {
-                result = result["" + tab.id + ""];
-                if (!_.isEmpty(result)) {
-                    lastDomain = result.last_domain;
-                    lastTime = result.last_time;
-                    lastState = result.last_state;
-                }
-                if (currentDomain != lastDomain || currentTime - lastTime >= REVISIT_DURATION) {
-                    //domain change
-                    let isInSafeDomains = Sites.getSafeDomain(currentDomain) != undefined ? true : false;
-                    if (EXEMPT_CHECKS && isInSafeDomains) {
-                        // ti.state = "safe"
-                        setIcon(ti, "safe");
-                        ti.port.postMessage({
-                            op: "greenflag",
-                            site: currentDomain,
-                            type: 1
-                        });
-                        SECURE_IMAGE_SHOWN = true;
-                        console.log("safe domain");
-
+                let SDL = getSafeDomainsData();
+                let found = SDL.find(item => currentDomain.endsWith(item.domain))
+                if (found) {
+                    if (EXEMPT_CHECKS) {
+                        ti.state = "safe";
                     } else {
-                        let screenshot = await snapTab(tab)
-                            .then(image => normalizeScreenshot(image, tab.width, tab.height, ti.dpr));
-                        let result;
-                        try {
-                            let startTime = performance.now();
-                            result = await predict(screenshot, AVAILABLE_MODELS);
-                            GPU_BUSY = false;
-
-                            console.log(performance.now() - startTime)
-                            console.log(result);
-                        } catch (err) {
-                            alert(err);
-                            GPU_BUSY = false;
-                            result = undefined;
-                        }
-                        if (result !== undefined && result.site !== "NaN") {
-                            //predicted
-                            SECURE_IMAGE_SHOWN = true;
-                            let site = result.site
-                            site += " with "
-                            site += categorize(result.confidence)
-                            if (equalStrings(currentDomain, result.site)) {
-
-                                ti.state = "greenflagged";
-                                setIcon(ti, "greenflagged", {
-                                    site: currentDomain
-                                });
-                                ti.port.postMessage({
-                                    op: "greenflag",
-                                    site: currentDomain,
-                                    type: 2
-                                });
-                                console.log("predicted safe");
-                            } else {
-                                ti.state = "redflagged";
-                                setIcon(ti, "redflagged", {
-                                    site: result.site
-                                });
-                                ti.port.postMessage({
-                                    op: "redflag",
-                                    site: site,
-                                    img: result.image
-                                })
-                                console.log("predicted unsafe");
-                            }
-
+                        if (found.protected) {
+                            ti.state = "safe";
                         } else {
-                            //not predicted
-                            if (isInSafeDomains) {
-                                // ti.state = "safe"
-
-                                setIcon(ti, "safe");
-                                ti.port.postMessage({
-                                    op: "greenflag",
-                                    site: currentDomain,
-                                    type: 1
-
-                                });
-                                SECURE_IMAGE_SHOWN = true;
-
-                                console.log("safe domain");
-
-                            } else {
-                                SECURE_IMAGE_SHOWN = false;
-
-                                ti.nchecks++;
-                                if (ti.state !== "redflagged" && ti.watches.length === 0) {
-                                    ti.state = "red_done";
-                                }
-                                if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
-                                    setIcon(ti, "checked"); // The page is checked atleast once.
-                                }
-                                console.log("nothing safe");
-
-                            }
+                            ti.port.postMessage({
+                                op: "check",
+                            });
                         }
-
                     }
-
-                    chrome.storage.local.set({
-                        [tab.id]: {
-                            last_time: currentTime,
-                            last_domain: currentDomain,
-                            last_state: ti.state
-                        },
-                    })
                 } else {
-                    //domain not changed
-                    SECURE_IMAGE_SHOWN = false;
-                    ti.state = lastState;
-                    setIcon(ti, lastState, {
-                        site: currentDomain
+                    ti.port.postMessage({
+                        op: "check",
                     });
                 }
-            });
+                setIcon(ti, ti.state, {
+                    site: currentDomain
+                });
+                chrome.storage.local.set({
+                    [tab.id]: {
+                        last_time: currentTime,
+                        last_domain: currentDomain,
+                        last_state: ti.state
+                    },
+                })
 
-        } else {
 
-        }
-    })
+            }
+        });
 
+    }
 
 
 
 }
 
+
+
 function equalStrings(a, b) {
     a = a.replace(/\s+/g, "").toLowerCase(); //www.onlinesbi.com
     b = b.replace(/\s+/g, "").toLowerCase(); //sbi
-
-
-
-
-    if (CONVERTER != undefined && CONVERTER[b] != undefined && CONVERTER[b].includes(a)) {
+    if (CONVERTER != undefined && CONVERTER[b] != undefined && CONVERTER[b].some(x => a.endsWith(x))) {
         return true;
     }
     return false;
@@ -531,12 +461,23 @@ function checkdata(msg, sender, respond) {
         action: "nop"
     });
     const ti = Tabinfo.get(sender.tab.id);
+    const tab = ti.tab;
+
     if (msg.data && !ti.checkState && (ti.state !== "greenflagged" || ti.state !== "redflagged")) {
         ti.checkState = true;
         ti.state = "watching";
         const now = Date.now();
         ti.watches = watches.map(x => now + x);
+
         console.log("WATCHING", Date());
+        let currentDomain = tab.url.split("/")[2];
+        chrome.storage.local.set({
+            [tab.id]: {
+                last_time: +new Date(),
+                last_domain: currentDomain,
+                last_state: ti.state
+            },
+        })
     }
 }
 
@@ -613,7 +554,6 @@ async function redflagCheck(ti, testNow) {
     } catch (err) {
         alert(err);
         GPU_BUSY = false;
-
         result = undefined
     }
     if (result !== undefined && result.site !== "NaN") {
@@ -642,6 +582,15 @@ async function redflagCheck(ti, testNow) {
                 type: 2
             }
 
+
+            chrome.storage.local.set({
+                [tab.id]: {
+                    last_time: +new Date(),
+                    last_domain: currentDomain,
+                    last_state: ti.state
+                },
+            })
+
         } else {
             ti.state = "redflagged";
             setIcon(ti, "redflagged", {
@@ -652,6 +601,13 @@ async function redflagCheck(ti, testNow) {
                 site: site,
                 img: corr_img
             }
+            chrome.storage.local.set({
+                [tab.id]: {
+                    last_time: +new Date(),
+                    last_domain: currentDomain,
+                    last_state: ti.state
+                },
+            })
 
         }
     } else {
@@ -663,10 +619,19 @@ async function redflagCheck(ti, testNow) {
         ti.nchecks++;
         if (ti.state !== "redflagged" && ti.watches.length === 0) {
             ti.state = "red_done";
+            let currentDomain = tab.url.split("/")[2];
+            chrome.storage.local.set({
+                [tab.id]: {
+                    last_time: +new Date(),
+                    last_domain: currentDomain,
+                    last_state: ti.state
+                },
+            })
         }
         if (["redflagged", "greenflagged", "safe"].indexOf(ti.state) === -1) {
             setIcon(ti, "checked"); // The page is checked atleast once.
         }
+        console.log(ti.state);
     }
 }
 
@@ -872,6 +837,8 @@ function setDefaultSecurityImage(cb) {
 loadDefaults()
 var ready = false;
 async function loadDefaults() {
+    webglStatus = webgl_detect()
+
     await initAdvConfigs();
     setDefaultSecurityImage();
     await Sites.init()
@@ -914,7 +881,8 @@ function backupDB(respond) {
                 secureImageDuration: getSecureImageDuration(),
                 availableModels: getAvailableModels(),
                 exemptChecks: getExemptChecksFlag(),
-                converter: getConverter()
+                converter: getConverter(),
+                safe_domains: getSafeDomains()
 
             });
         });
@@ -925,6 +893,10 @@ function backupDB(respond) {
 function restoreBackup(data, respond) {
     return Sites.backupRestore(data.sites)
         .then(x => {
+            if (!!data.safe_domains) {
+                SAFE_DOMAINS = data.safe_domains
+                saveAdvConfig()
+            }
             if (!!data.secureImage) {
                 setSecurityImage(data.secureImage);
             }
@@ -941,6 +913,7 @@ function restoreBackup(data, respond) {
             if (!!data.secureImageDuration) {
                 setSecureImageDuration(data.secureImageDuration)
             }
+
             if (!!data.availableModels) {
                 AVAILABLE_MODELS = data.availableModels
                 $("body").empty();
@@ -963,10 +936,42 @@ async function primeWebgl(item) {
     let Model = (await import(item.src)).default;
     ROOT_DIR = item.root
     let x = new Model();
-    await x.predict("./assets/img/pixel.png");
+    if (webglStatus) {
+        try {
+            await x.predict("./assets/img/pixel.png", item.model);
+        } catch (e) {
+            console.log(e);
+        }
+    }
     ROOT_DIR = undefined;
 }
 
+function myCustomWarn() {
+    var args = Array.prototype.slice.call(arguments);
+    var messages = args.filter(function (a) {
+        return typeof a == 'string';
+    });
+
+
+    for (var m in messages) {
+        if ("Initialization of backend webgl failed" === messages[m]) {
+            throw messages[m];
+        };
+    };
+
+    /**
+     *  Calling console.oldWarn with previous args seems to lead to a
+     *  infinite recurvise loop on iOS. Not sure why, disabled.
+     *  then again, if you show your log message in alert why would you
+     *  post them to console ?
+     */
+
+    return console.oldWarn(arguments);
+};
+
+console.oldWarn = console.warn;
+
+console.warn = myCustomWarn;
 async function initAdvConfigs() {
     return new Promise((res, rej) => {
         chrome.storage.local.get("adv_config", function (result) {
@@ -976,6 +981,8 @@ async function initAdvConfigs() {
                 DEBUG = data.debug ? true : false;
                 SECURE_IMAGE = data.show_secure_image ? true : false;
                 SECURE_IMAGE_DURATION = data.secure_image_duration ? data.secure_image_duration : 1;
+                SAFE_DOMAINS = data.safe_domains ? data.safe_domains : [];
+
                 EXEMPT_CHECKS = data.EXEMPT_CHECKS ? data.EXEMPT_CHECKS : false;
                 AVAILABLE_MODELS = data.available_models ? data.available_models : [];
                 MODEL_UPDATE_TIME = data.MODEL_UPDATE_TIME ? data.MODEL_UPDATE_TIME : +new Date();
@@ -1016,6 +1023,7 @@ function saveAdvConfig() {
             debug: DEBUG,
             show_secure_image: SECURE_IMAGE,
             secure_image_duration: SECURE_IMAGE_DURATION,
+            safe_domains: SAFE_DOMAINS,
             EXEMPT_CHECKS: EXEMPT_CHECKS,
             available_models: AVAILABLE_MODELS,
             MODEL_UPDATE_TIME: MODEL_UPDATE_TIME,
@@ -1071,6 +1079,14 @@ function getSecureImageDuration() {
     return SECURE_IMAGE_DURATION;
 }
 
+function addToSafeDomain(value) {
+    SAFE_DOMAINS.push(value);
+    saveAdvConfig();
+}
+
+function getSafeDomains() {
+    return SAFE_DOMAINS;
+}
 
 
 function selectModel(model_name) {
@@ -1107,9 +1123,24 @@ function setAvailableModels(value) {
     AVAILABLE_MODELS.push(value);
     injectScripts(value);
     saveAdvConfig();
+    setTimeout(() => {
+        saveModelToIndexedDB(value);
+
+    }, 1000);
+
+}
+
+async function saveModelToIndexedDB(item) {
+    if (item.name === "Template_Matching") {
+        return;
+    }
+    let x = await tf.loadGraphModel(item.model_url);
+    let z = await x.save(item.model)
+
 }
 
 async function setFactoryAvailableModels() {
+    SAFE_DOMAINS = []
     AVAILABLE_MODELS = []
     $("body").empty()
     await loadPreconfiguredModels()
@@ -1246,3 +1277,33 @@ function addSafeDomain(domain, respond) {
             error: x.message
         }));
 }
+
+function webgl_detect() {
+    if (!!window.WebGLRenderingContext) {
+        let names = ["webgl2", "webgl", "experimental-webgl", "moz-webgl", "webkit-3d"]
+
+
+        for (let i = 0; i < names.length; i++) {
+            try {
+                let context = document.createElement("canvas").getContext(names[i]);
+                if (context && typeof context.getParameter == "function") {
+                    // WebGL is enabled
+                    console.log(names[i] + " detected on this machine");
+
+                    // else, return just true
+                    return true;
+                }
+            } catch (e) {}
+        }
+
+        // WebGL is supported, but disabled
+        // alert("Enable Webgl flag")
+        return false;
+    }
+
+    // WebGL not supported
+    //   alert("Webgl not supported on this device")
+
+    return false;
+}
+// --------------------------------------------------------------------------------------------------------------

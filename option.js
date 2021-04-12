@@ -15,7 +15,9 @@ var template_of_MLmodel = {
     selected: false,
     weightage: 0,
     webgl: false,
-    brands: []
+    brands: [],
+    model_url: "",
+    model: ""
 
 };
 
@@ -305,10 +307,11 @@ function updateImage(data) {
 function renderSafeDomainTable() {
     $(".kp-safelist").empty();
     let safeSites = bkg.getSafeDomainsData();
+    console.log(safeSites);
     safeSites.sort(function (a, b) {
         var keyA = a.domain,
             keyB = b.domain;
-        // Compare the 2 dates
+
         if (keyA < keyB) return -1;
         if (keyA > keyB) return 1;
         return 0;
@@ -643,6 +646,7 @@ $(document).ready(function () {
                 if (res.error) {
                     return alert(res.error);
                 }
+                bkg.addToSafeDomain(val)
                 renderSafeDomainTable();
             });
         }
@@ -799,6 +803,13 @@ $(document).ready(function () {
                     template_of_MLmodel.dependencies = [];
 
                 }
+                if (Model.model !== undefined && (typeof Model.model === 'string' || Model.model instanceof String)) {
+                    template_of_MLmodel.model_url = Model.model;
+                } else {
+                    template_of_MLmodel.model_url = "";
+                }
+                template_of_MLmodel.model = "indexeddb://" + Model.name
+
             } else {
                 alert("Does not contain the predict function")
                 $(this).val(template_of_MLmodel.src);
@@ -839,7 +850,9 @@ $(document).ready(function () {
             selected: false,
             weightage: 0,
             webgl: false,
-            brands: []
+            brands: [],
+            model_url: "",
+            model: ""
         };
 
 

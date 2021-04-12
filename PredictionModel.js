@@ -6,9 +6,12 @@ window.predict = async function predict(screenshot, available_models) {
   if (total !== 100) {
     alert("Please corrects the weights.")
     ROOT_DIR = undefined;
-    return;
+    return {
+      site: "NaN",
+      confidence: 0,
+      image: screenshot
+    };
   }
-  let webglStatus = webgl_detect();
 
   let result = await Promise.all(available_models.filter(item => item.selected).map(async function (item) {
     // let model = eval("new " + item.name + "()");
@@ -18,18 +21,20 @@ window.predict = async function predict(screenshot, available_models) {
 
     let x = new Model();
     if (item.webgl) {
+
       if (webglStatus) {
         let z;
         try {
           let startTime = performance.now()
-          z = await x.predict(screenshot);
+          z = await x.predict(screenshot, item.model);
           console.log(performance.now() - startTime);
         } catch (e) {
+          console.log(e);
           ROOT_DIR = undefined
-
           return {
             site: "NaN",
-            weightage: item.weightage
+            weightage: item.weightage,
+            image: screenshot
           }
         }
         ROOT_DIR = undefined
@@ -38,26 +43,28 @@ window.predict = async function predict(screenshot, available_models) {
           weightage: item.weightage
         }
       } else {
-        alert("Webgl not present. Skipped " + item.label);
+        // alert("Webgl not present. Skipped " + item.label);
         ROOT_DIR = undefined
 
         return {
           site: "NaN",
-          weightage: item.weightage
+          weightage: item.weightage,
+          image: screenshot
         }
       }
     } else {
       let z;
       try {
         let startTime = performance.now()
-        z = await x.predict(screenshot);
+        z = await x.predict(screenshot, item.model);
         console.log(performance.now() - startTime);
 
       } catch (e) {
         ROOT_DIR = undefined
         return {
           site: "NaN",
-          weightage: item.weightage
+          weightage: item.weightage,
+          image: screenshot
         }
       }
       ROOT_DIR = undefined
@@ -77,6 +84,8 @@ window.predict = async function predict(screenshot, available_models) {
 
     return {
       site: "NaN",
+      confidence: 0,
+      image: screenshot
     }
   } else if (enabled_models === 1) {
     result = result[0];
@@ -86,7 +95,6 @@ window.predict = async function predict(screenshot, available_models) {
       site: result.site,
       confidence: result.weightage,
       image: result.image
-
     }
   }
   result = result.filter(x => x.site !== "NaN");
@@ -94,7 +102,9 @@ window.predict = async function predict(screenshot, available_models) {
     ROOT_DIR = undefined;
 
     return {
-      site: "NaN"
+      site: "NaN",
+      confidence: 100,
+      image: screenshot
     }
   }
   let map = new Map();
@@ -118,33 +128,4 @@ window.predict = async function predict(screenshot, available_models) {
     confidence: max,
     image: correct_model.image
   }
-}
-
-function webgl_detect() {
-  if (!!window.WebGLRenderingContext) {
-    var canvas = document.createElement("canvas"),
-      names = ["webgl2", "webgl", "experimental-webgl", "moz-webgl", "webkit-3d"],
-      context = false;
-
-    for (var i = 0; i < names.length; i++) {
-      try {
-        context = canvas.getContext(names[i]);
-        if (context && typeof context.getParameter == "function") {
-          // WebGL is enabled
-
-          // else, return just true
-          return true;
-        }
-      } catch (e) {}
-    }
-
-    // WebGL is supported, but disabled
-    alert("Enable Webgl flag")
-    return false;
-  }
-
-  // WebGL not supported
-  alert("Webgl not supported on this device")
-
-  return false;
 }
